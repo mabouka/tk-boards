@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "menu": "Menu",
+    "cart": "Panier",
+    "account": "Compte",
+    "close": "Fermer"
+  },
+  "footer": {
+    "legal": {
+      "privacy": "Politique de confidentialité",
+      "cookies": "Politique des cookies"
+    }
+  }
+}

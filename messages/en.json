@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "menu": "Menu",
+    "cart": "Cart",
+    "account": "Account",
+    "close": "Close"
+  },
+  "footer": {
+    "legal": {
+      "privacy": "Privacy policy",
+      "cookies": "Cookie policy"
+    }
+  }
+}
