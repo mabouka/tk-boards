@@ -1,5 +1,4 @@
 import { defineField, defineType } from 'sanity'
-import { isUniqueSlugPerLanguage } from '../../lib/isUniqueSlugPerLanguage'
 
 export const series = defineType({
   name: 'series',
@@ -9,24 +8,25 @@ export const series = defineType({
     defineField({
       name: 'name',
       title: 'Name',
-      type: 'string',
+      type: 'internationalizedArrayString',
       validation: (r) => r.required(),
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: { source: 'name', isUnique: isUniqueSlugPerLanguage },
+      options: { source: 'name.0.value' },
       validation: (r) => r.required(),
-    }),
-    defineField({
-      name: 'language',
-      type: 'string',
-      readOnly: true,
-      hidden: true,
     }),
   ],
   preview: {
-    select: { title: 'name' },
+    select: { name: 'name' },
+    prepare({ name }) {
+      const title =
+        name?.find((n: { _key: string; value: string }) => n._key === 'en')?.value ??
+        name?.[0]?.value ??
+        'Unnamed'
+      return { title }
+    },
   },
 })

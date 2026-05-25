@@ -3,6 +3,7 @@ import { structureTool } from 'sanity/structure'
 import type { StructureBuilder } from 'sanity/structure'
 import { visionTool } from '@sanity/vision'
 import { documentInternationalization } from '@sanity/document-internationalization'
+import { internationalizedArray } from 'sanity-plugin-internationalized-array'
 import { media } from 'sanity-plugin-media'
 import { schemaTypes } from './sanity/schemas'
 
@@ -32,10 +33,7 @@ const structure = (S: StructureBuilder) =>
                 .title('Series')
                 .icon(() => '🏷️')
                 .child(
-                  S.documentTypeList('series')
-                    .title('Series')
-                    .filter('_type == "series" && language == $lang')
-                    .params({ lang: DEFAULT_LANGUAGE })
+                  S.documentTypeList('series').title('Series')
                 ),
             ])
         ),
@@ -66,7 +64,7 @@ const SUPPORTED_LANGUAGES = [
   { id: 'es', title: 'Español' },
 ]
 
-export const TRANSLATABLE_TYPES = ['board', 'series', 'page']
+export const TRANSLATABLE_TYPES = ['board', 'page']
 
 export default defineConfig({
   name: 'tk-boards',
@@ -81,6 +79,11 @@ export default defineConfig({
     documentInternationalization({
       supportedLanguages: SUPPORTED_LANGUAGES,
       schemaTypes: TRANSLATABLE_TYPES,
+    }),
+    internationalizedArray({
+      languages: SUPPORTED_LANGUAGES,
+      defaultLanguages: ['en'],
+      fieldTypes: ['string'],
     }),
   ],
   schema: {

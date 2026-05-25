@@ -5,6 +5,7 @@ export async function isUniqueSlugPerLanguage(
   context: SlugValidationContext
 ) {
   const { document, getClient } = context
+  if (!document) return true
   const client = getClient({ apiVersion: '2025-05-25' })
 
   const id = document._id.replace(/^drafts\./, '')

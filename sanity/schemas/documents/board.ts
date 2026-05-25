@@ -24,12 +24,6 @@ export const board = defineType({
       title: 'Series',
       type: 'reference',
       to: [{ type: 'series' }],
-      options: {
-        filter: ({ document }) => ({
-          filter: 'language == $language',
-          params: { language: document.language },
-        }),
-      },
       validation: (r) => r.required(),
     }),
     defineField({
