@@ -1,0 +1,19 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.grid {
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  column-gap: var(--col-gutter);
+  padding-inline: var(--gutter);
+}
+
+.col {
+  background: rgba(46, 41, 102, 0.25);
+  border-inline: 1px solid rgba(46, 41, 102, 0.4);
+}

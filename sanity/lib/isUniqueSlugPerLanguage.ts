@@ -9,6 +9,9 @@ export async function isUniqueSlugPerLanguage(
   const client = getClient({ apiVersion: '2025-05-25' })
 
   const id = document._id.replace(/^drafts\./, '')
+  const language = (document as { language?: string }).language
+
+  if (!language) return true
 
   const result = await client.fetch<string[]>(
     `*[
@@ -22,7 +25,7 @@ export async function isUniqueSlugPerLanguage(
       draft: `drafts.${id}`,
       published: id,
       slug,
-      language: document.language,
+      language,
     }
   )
 

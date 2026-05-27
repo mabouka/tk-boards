@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 const nextConfig: NextConfig = {
   transpilePackages: ['sanity-plugin-media', 'filesize', 'copy-to-clipboard'],
   images: {
+    qualities: [75, 85, 90],
     remotePatterns: [
       {
         protocol: 'https',

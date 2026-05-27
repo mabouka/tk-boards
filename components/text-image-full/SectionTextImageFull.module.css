@@ -1,0 +1,92 @@
+/* ── Block ── */
+.textImageFull {
+  display: grid;
+  grid-template-columns: 50vw 1fr;
+  background: var(--color-cream);
+  overflow: hidden;
+}
+
+/* ── Modifier dark ── */
+.textImageFull--dark {
+  background: var(--color-dark);
+}
+
+.textImageFull--dark .textImageFull__eyebrow {
+  color: var(--color-white-72);
+}
+
+.textImageFull--dark .textImageFull__eyebrow::after {
+  background: var(--color-white-72);
+}
+
+.textImageFull--dark .textImageFull__title {
+  color: var(--color-white);
+}
+
+.textImageFull--dark .textImageFull__body {
+  color: var(--color-white-80);
+}
+
+/* ── Modifier reverse ── */
+.textImageFull--reverse {
+  grid-template-columns: 1fr 50vw;
+}
+
+.textImageFull--reverse .textImageFull__image {
+  order: 2;
+}
+
+.textImageFull--reverse .textImageFull__content {
+  order: 1;
+  padding-left: var(--gutter);
+  padding-right: col(1);
+}
+
+/* ── Elements ── */
+.textImageFull__image {
+  position: relative;
+  /* aspect-ratio: 4/3; */
+}
+
+.textImageFull__image img {
+  object-fit: cover;
+}
+
+.textImageFull__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding:
+    var(--space-3xl)
+    calc(var(--gutter) + var(--col-gutter) + var(--col-width))
+    var(--space-3xl)
+    calc((var(--col-gutter) * 1.5) + var(--col-width));
+  gap: var(--space-xs);
+} 
+
+.textImageFull--reverse .textImageFull__content {
+  padding:
+    var(--space-3xl)
+    calc((var(--col-gutter) * 1.5) + var(--col-width))
+    var(--space-3xl)
+    calc(var(--gutter) + var(--col-gutter) + var(--col-width));
+}
+
+.textImageFull__eyebrow {
+  composes: u-eyebrow from global;
+}
+
+.textImageFull__title {
+  composes: u-title u-title--36 from global;
+  color: var(--color-black);
+  margin-bottom: var(--space-sm);
+}
+
+.textImageFull__body {
+  composes: u-body from global;
+}
+
+.textImageFull__cta {
+  margin-top: var(--space-md);
+  align-self: flex-start;
+}

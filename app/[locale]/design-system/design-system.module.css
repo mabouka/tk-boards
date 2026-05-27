@@ -1,0 +1,23 @@
+.col-1  { width: col(1); }
+.col-2  { width: col(2); }
+.col-3  { width: col(3); }
+.col-4  { width: col(4); }
+.col-6  { width: col(6); }
+.col-8  { width: col(8); }
+.col-12 { width: col(12); }
+
+.col-bar {
+  height: 24px;
+  background: var(--color-carbon);
+  display: flex;
+  align-items: center;
+  padding-inline: 8px;
+}
+
+.col-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--color-cream);
+  text-transform: uppercase;
+}

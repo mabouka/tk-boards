@@ -107,7 +107,10 @@ export const board = defineType({
       media: 'mainImage',
     },
     prepare({ title, seriesName, media }) {
-      return { title, subtitle: seriesName, media }
+      const subtitle = Array.isArray(seriesName)
+        ? (seriesName.find((n: { language: string; value: string }) => n.language === 'en')?.value ?? seriesName[0]?.value ?? '')
+        : (seriesName ?? '')
+      return { title, subtitle, media }
     },
   },
 })

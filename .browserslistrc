@@ -1,0 +1,12 @@
+[production]
+Chrome >= 100
+Edge >= 100
+Firefox >= 100
+Safari >= 15.4
+iOS >= 15.4
+not IE 11
+
+[development]
+last 1 Chrome version
+last 1 Firefox version
+last 1 Safari version

@@ -1,7 +1,24 @@
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import { Space_Mono, Space_Grotesk } from 'next/font/google'
 import { routing } from '@/i18n/routing'
+import GridOverlay from '@/components/dev/GridOverlay'
+import '../globals.css'
+
+const spaceMono = Space_Mono({
+  variable: '--font-space-mono',
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  display: 'swap',
+})
+
+const spaceGrotesk = Space_Grotesk({
+  variable: '--font-space-grotesk',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+})
 
 type Props = {
   children: React.ReactNode
@@ -22,8 +39,13 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages()
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      {children}
-    </NextIntlClientProvider>
+    <html lang={locale} className={`${spaceMono.variable} ${spaceGrotesk.variable}`}>
+      <body>
+        <NextIntlClientProvider messages={messages}>
+          {children}
+          {process.env.NODE_ENV === 'development' && <GridOverlay />}
+        </NextIntlClientProvider>
+      </body>
+    </html>
   )
 }

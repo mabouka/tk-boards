@@ -1,0 +1,128 @@
+.header {
+  position: absolute; /* scroll avec la page dans la zone hero */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 148px;
+  background-color: transparent;
+  /* Aucune transition — tous les changements sont instantanés */
+}
+
+.header--fixed {
+  position: fixed;   /* scrubbing après 100vh */
+  height: 80px;
+  background-color: var(--color-dark);
+  /* transform géré par JS */
+}
+
+.header__inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ── Menu (left) ── */
+
+.header__menu {
+  composes: u-glass-hover from global;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-white);
+  padding: 4px 8px 4px 4px;
+  justify-self: start;
+}
+
+.header__menu_label {
+  composes: u-label-mono from global;
+}
+
+/* ── Logo (center) ── */
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+  text-decoration: none;
+  filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.25));
+}
+
+/* ── Actions (right) ── */
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  justify-self: end;
+}
+
+.header__lang {
+  composes: u-glass-hover from global;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.header__lang_current {
+  composes: u-label-mono from global;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: default;
+}
+
+.header__lang_others {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width 0.3s ease, opacity 0.2s ease;
+}
+
+.header__lang:hover .header__lang_others {
+  max-width: 100px;
+  opacity: 1;
+}
+
+.header__lang_option {
+  composes: u-label-mono from global;
+  opacity: 0.5;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+  text-decoration: none;
+}
+
+.header__lang_option:hover {
+  opacity: 1;
+}
+
+.header__cart {
+  composes: u-glass-hover from global;
+  composes: u-label-mono from global;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 4px 8px;
+}
+
+.header__account {
+  composes: u-glass-hover from global;
+  composes: u-label-mono from global;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 4px 8px;
+}

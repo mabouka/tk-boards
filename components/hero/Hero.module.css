@@ -1,0 +1,85 @@
+.hero {
+  position: relative;
+  height: 100svh;
+  min-height: 700px;
+  overflow: hidden;
+  background: var(--color-dark);
+
+    display: flex;
+    flex-direction: column;
+    /* height: 100%; */
+    justify-content: center;
+}
+
+/* ── Background ── */
+
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero__bg_image {
+  /* object-fit/position gérés via style prop sur le composant Image */
+}
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0.12deg, #0d0f14 0.156%, rgba(13, 15, 20, 0) 20.453%),
+    linear-gradient(90deg, rgba(10, 10, 10, 0.45) 0%, rgba(10, 10, 10, 0) 50%),
+    linear-gradient(180deg, rgba(10, 10, 10, 0.44) 0%, rgba(10, 10, 10, 0) 30%, rgba(10, 10, 10, 0) 42.5%, rgba(10, 10, 10, 0.8) 90%);
+}
+
+/* ── Content ── */
+
+.hero__content {
+  position: relative;
+  margin-left: calc( var(--gutter) + var(--col-gutter) + var(--col-width) );
+}
+
+.hero__title {
+  composes: u-title u-title--96 from global;
+  white-space: pre-line;
+  margin-bottom: clamp(20px, 2.2vw, 38px);
+}
+
+.hero__subtitle {
+  composes: u-title u-title--24 from global;
+  max-width: 564px;
+  white-space: pre-line;
+}
+/* ── Scroll indicator ── */
+
+.hero__scroll {
+  position: absolute;
+  right: calc(var(--gutter) * 1.5);
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.hero__scroll_text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-white);
+  writing-mode: vertical-rl;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.hero__scroll_line {
+  display: block;
+  width: 1px;
+  height: 37px;
+  background: var(--color-white);
+  opacity: 0.6;
+}

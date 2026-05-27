@@ -1,11 +1,11 @@
 import { groq } from 'next-sanity'
 
 export const boardsQuery = groq`
-  *[_type == "board" && language == $locale] | order(order asc) {
+  *[_type == "board" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {
     _id,
     name,
     slug,
-    series->{ _id, name, slug },
+    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },
     style,
     tagline,
     weight,
@@ -15,11 +15,11 @@ export const boardsQuery = groq`
 `
 
 export const boardBySlugQuery = groq`
-  *[_type == "board" && slug.current == $slug && language == $locale][0] {
+  *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {
     _id,
     name,
     slug,
-    series->{ _id, name, slug, tagline, heroImage },
+    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },
     style,
     tagline,
     weight,
@@ -30,21 +30,25 @@ export const boardBySlugQuery = groq`
 `
 
 export const seriesQuery = groq`
-  *[_type == "series" && language == $locale] | order(order asc) {
+  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) {
     _id,
-    name,
+    "name": coalesce(
+      name[language == $locale][0].value,
+      name[language == "en"][0].value,
+      name[0].value
+    ),
     slug,
-    tagline,
-    heroImage,
-    "boards": *[_type == "board" && references(^._id) && language == $locale] | order(order asc) {
+    tagVariant,
+    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {
       _id,
       name,
       slug,
       style,
       mainImage
     }
-  }
+  }[count(boards) > 0]
 `
+
 
 export const siteSettingsQuery = groq`
   *[_type == "siteSettings" && _id == "siteSettings"][0] {
@@ -56,13 +60,68 @@ export const siteSettingsQuery = groq`
   }
 `
 
+export const navigationQuery = groq`
+  *[_type == "navigation" && title == $title][0] {
+    items[] {
+      label,
+      openInNewTab,
+      "slug": internalLink->slug.current,
+      "externalUrl": externalUrl,
+    }
+  }
+`
+
+export const footerSeriesQuery = groq`
+  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) [0..1] {
+    _id,
+    "name": coalesce(
+      name[language == $locale][0].value,
+      name[language == "en"][0].value,
+      name[0].value
+    ),
+    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {
+      _id,
+      name,
+      slug
+    }
+  }
+`
+
 export const pageBySlugQuery = groq`
-  *[_type == "page" && slug.current == $slug && language == $locale][0] {
+  coalesce(
+    *[_type == "page" && slug.current == $slug && language == $locale][0],
+    *[_type == "page" && slug.current == $slug && language == "fr"][0]
+  ) {
     _id,
     title,
+    heroImage,
+    heroTitle,
+    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),
     slug,
     seoTitle,
     seoDescription,
-    content
+    sections[] {
+      _type,
+      _key,
+      title,
+      showFilters,
+      items,
+      eyebrow,
+      label,
+      body,
+      image,
+      imagePosition,
+      theme,
+      "cta": cta {
+        "text": text,
+        "openInNewTab": openInNewTab,
+        "href": select(
+          type == "internal" => "/" + internalLink->slug.current,
+          type == "external" => url,
+          type == "email" => "mailto:" + email,
+          type == "phone" => "tel:" + phone
+        )
+      }
+    }
   }
 `

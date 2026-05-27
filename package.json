@@ -18,6 +18,7 @@
     "react-dom": "19.2.4",
     "sanity": "^5.26.0",
     "sanity-plugin-internationalized-array": "^5.1.2",
+    "sanity-plugin-link-field": "^1.5.1",
     "sanity-plugin-media": "^4.3.0",
     "styled-components": "^6.4.2"
   },

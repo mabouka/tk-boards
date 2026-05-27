@@ -18,6 +18,23 @@ export const series = defineType({
       options: { source: 'name.0.value' },
       validation: (r) => r.required(),
     }),
+    defineField({
+      name: 'tagVariant',
+      title: 'Tag Color',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Dark (default)', value: 'dark' },
+          { title: 'Amber', value: 'amber' },
+          { title: 'Cream', value: 'cream' },
+          { title: 'Red', value: 'red' },
+          { title: 'Outline light', value: 'outline-light' },
+          { title: 'Outline muted', value: 'outline-muted' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'dark',
+    }),
   ],
   preview: {
     select: { name: 'name' },

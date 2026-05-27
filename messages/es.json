@@ -1,14 +1,32 @@
 {
   "nav": {
-    "menu": "Menú",
+    "boards": "Boards",
+    "about": "Sobre nosotros",
     "cart": "Carrito",
     "account": "Cuenta",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "menu": "Menú"
+  },
+  "home": {
+    "hero_title": "Beyond\nthe Limits",
+    "hero_subtitle": "Descubre el TK Rocket.\n2,2 kg de perfección sin straps.\nEl board de kitesurf construido para detonar.\nMoldeado en Tarifa, España.",
+    "hero_cta": "Descubrir los boards",
+    "boards_title": "Nuestros Boards",
+    "boards_discover": "Descubrir los Boards TK",
+    "view_board": "Ver board"
+  },
+  "boards": {
+    "title": "Boards",
+    "specs": "Especificaciones",
+    "weight": "Peso",
+    "order": "Pedir este board",
+    "back": "Todos los boards"
   },
   "footer": {
     "legal": {
       "privacy": "Política de privacidad",
       "cookies": "Política de cookies"
-    }
+    },
+    "tagline": "Fabricados artesanalmente en Tarifa, España."
   }
 }

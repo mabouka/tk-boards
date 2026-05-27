@@ -1,0 +1,125 @@
+.boards {
+  padding: var(--space-2xl) 0 var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Title ── */
+
+.boards__title {
+  composes: u-title u-title--66 from global;
+  text-align: center;
+  color: var(--color-white);
+  margin-bottom: var(--space-lg);
+}
+
+/* ── Filters ── */
+
+.boards__filters {
+  composes: u-tab-filters from global;
+  margin-bottom: var(--space-lg);
+}
+
+.boards__filter {
+  composes: u-tab-filter from global;
+}
+
+.boards__filter--active {
+  composes: u-tab-filter--active from global;
+}
+
+/* ── Horizontal scroll ── */
+
+.boards__scroll {
+  width: 100%;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  margin-bottom: var(--space-lg);
+
+}
+
+.boards__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.boards__track {
+  display: flex;
+  gap: var(--col-gutter);
+  padding: 0 var(--gutter);
+  min-width: 100%;
+  justify-content: center;
+}
+
+/* ── Card ── */
+
+.boards__card {
+  position: relative;
+  width: col(3);
+  aspect-ratio: 390 / 606;
+  padding: 24px;
+
+  flex-shrink: 0;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+  color: var(--color-white);
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.boards__card_img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.boards__card_overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.88) 0%,
+    rgba(0, 0, 0, 0.45) 35%,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+.boards__card_name {
+  composes: u-title u-title--24 from global;
+  z-index: 2;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px color(--color-black / 0.8);
+  white-space: nowrap;
+  padding-bottom: 10px;
+}
+
+.boards__card_meta {
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-bottom: 10px;
+}
+
+.boards__card_tag {
+  composes: u-tag from global;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.boards__card_cta {
+  composes: u-cta u-cta--black-fill from global;
+  z-index: 2;
+}
+
+/* ── Discover CTA ── */
+
+.boards__discover {
+  composes: u-cta u-cta--white-outline from global;
+}

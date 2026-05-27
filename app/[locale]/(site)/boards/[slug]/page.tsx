@@ -1,0 +1,83 @@
+import { getTranslations } from 'next-intl/server'
+import { notFound } from 'next/navigation'
+import { client } from '@/sanity/lib/client'
+import { boardBySlugQuery } from '@/sanity/lib/queries'
+import { urlFor } from '@/sanity/lib/image'
+import { Link } from '@/i18n/navigation'
+import Image from 'next/image'
+import styles from './board.module.css'
+
+type Props = {
+  params: Promise<{ locale: string; slug: string }>
+}
+
+export default async function BoardPage({ params }: Props) {
+  const { locale, slug } = await params
+  const t = await getTranslations('boards')
+
+  const board = await client.fetch(boardBySlugQuery, { locale, slug })
+
+  if (!board) notFound()
+
+  return (
+    <div className={styles.board}>
+      <div className={styles.board__back}>
+        <Link href="/boards" className={styles.board__back_link}>
+          ← {t('back')}
+        </Link>
+      </div>
+
+      <div className={styles.board__layout}>
+        <div className={styles.board__media}>
+          {board.mainImage && (
+            <div className={styles.board__image}>
+              <Image
+                src={urlFor(board.mainImage).width(1200).height(900).url()}
+                alt={board.name}
+                fill
+                priority
+                sizes="(min-width: 1024px) 55vw, 100vw"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className={styles.board__content}>
+          {board.series?.name && (
+            <span className={styles.board__series}>{board.series.name}</span>
+          )}
+          <h1 className={styles.board__name}>{board.name}</h1>
+          {board.tagline && (
+            <p className={styles.board__tagline}>{board.tagline}</p>
+          )}
+
+          {board.specs && board.specs.length > 0 && (
+            <div className={styles.board__specs}>
+              <h2 className={styles.board__specs_title}>{t('specs')}</h2>
+              <dl className={styles.board__specs_list}>
+                {board.specs.map((spec: { label: string; value: string }, i: number) => (
+                  <div key={i} className={styles.board__spec}>
+                    <dt className={styles.board__spec_label}>{spec.label}</dt>
+                    <dd className={styles.board__spec_value}>{spec.value}</dd>
+                  </div>
+                ))}
+                {board.weight && (
+                  <div className={styles.board__spec}>
+                    <dt className={styles.board__spec_label}>{t('weight')}</dt>
+                    <dd className={styles.board__spec_value}>{board.weight} kg</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          )}
+
+          <div className={styles.board__cta}>
+            <button className={styles.board__order_btn} type="button">
+              {t('order')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
