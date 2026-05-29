@@ -13,7 +13,16 @@ type Props = {
 
 export default function SectionAboutPreview({ eyebrow, title, image, body, cta }: Props) {
   return (
-    <section className={styles.aboutPreview}>
+    <section
+      className={styles.aboutPreview}
+      data-halo
+      data-halo-rgb="215, 215, 255"
+      data-halo-opacity="0.23"
+      data-halo-w="143vw"
+      data-halo-h="46vh"
+      data-halo-spread="11%"
+      data-halo-anchor="top-right"
+    >
 
       {/* ── Row 1 : eyebrow + titre animé ── */}
       {eyebrow && <p className={styles.aboutPreview__eyebrow}>{eyebrow}</p>}
@@ -21,7 +30,16 @@ export default function SectionAboutPreview({ eyebrow, title, image, body, cta }
 
       {/* ── Row 2 : image + texte/CTA ── */}
       {image && (
-        <div className={styles.aboutPreview__image}>
+        <div
+          className={styles.aboutPreview__image}
+          data-halo
+          data-halo-rgb="215, 215, 255"
+          data-halo-opacity="0.22"
+          data-halo-w="87vw"
+          data-halo-h="44vh"
+          data-halo-spread="1%"
+          data-halo-anchor="bottom-left"
+        >
           <Image
             src={urlFor(image).width(800).url()}
             alt=""

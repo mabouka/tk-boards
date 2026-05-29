@@ -29,7 +29,10 @@ export default function SectionMarquee({ items }: Props) {
   if (!items?.length) return null
 
   return (
-    <div className={styles.marquee} aria-label="marquee">
+    <div
+      className={styles.marquee}
+      aria-label="marquee"
+    >
       <div className={styles.marquee__track}>
         <Track items={items} />
         {/* Duplicated for seamless loop */}

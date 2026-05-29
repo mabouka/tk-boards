@@ -1,0 +1,129 @@
+/* ── Block ── */
+.textImage {
+  display: grid;
+  grid-template-columns: 50vw 1fr;
+  background: var(--color-cream);
+  overflow: hidden;
+}
+
+/* ── Modifier dark ── */
+.textImage--dark {
+  background: transparent;
+}
+
+.textImage--dark .textImage__eyebrow {
+  color: var(--color-white-72);
+}
+
+.textImage--dark .textImage__eyebrow::after {
+  background: var(--color-white-72);
+}
+
+.textImage--dark .textImage__title {
+  color: var(--color-white);
+}
+
+.textImage--dark .textImage__body {
+  color: var(--color-white-80);
+}
+
+/* ── Modifier reverse ── */
+.textImage--reverse {
+  grid-template-columns: 1fr 50vw;
+}
+
+/* In reverse, image column (imageOuter or image) goes last */
+.textImage--reverse .textImage__image,
+.textImage--reverse .textImage__imageOuter {
+  order: 2;
+}
+
+.textImage--reverse .textImage__content {
+  order: 1;
+  padding-left: var(--gutter);
+  padding-right: col(1);
+}
+
+/* ── Full layout — image bleeds to edge ── */
+.textImage__image {
+  position: relative;
+}
+
+.textImage__image img {
+  object-fit: cover;
+}
+
+/* ── Contained layout — image inset with rounded corners ── */
+.textImage--contained {
+  overflow: visible;
+  align-items: center;
+}
+
+.textImage--contained .textImage__imageOuter {
+  padding: var(--space-lg);
+  display: flex;
+  align-items: stretch;
+}
+
+/* Reverse + contained: swap padding side */
+.textImage--contained.textImage--reverse .textImage__imageOuter {
+  padding: var(--space-lg);
+}
+
+.textImage--contained .textImage__image {
+  flex: 1;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ── Content column ── */
+.textImage__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding:
+    var(--space-3xl)
+    calc(var(--gutter) + var(--col-gutter) + var(--col-width))
+    var(--space-3xl)
+    calc((var(--col-gutter) * 1.5) + var(--col-width));
+  gap: var(--space-xs);
+}
+
+.textImage--reverse .textImage__content {
+  padding:
+    var(--space-3xl)
+    calc((var(--col-gutter) * 1.5) + var(--col-width))
+    var(--space-3xl)
+    calc(var(--gutter) + var(--col-gutter) + var(--col-width));
+}
+
+/* ── Typography ── */
+.textImage__eyebrow {
+  composes: u-eyebrow from global;
+}
+
+.textImage__title {
+  composes: u-title u-title--36 from global;
+  color: var(--color-black);
+  margin-bottom: var(--space-sm);
+}
+
+.textImage--dark .textImage__title {
+  color: var(--color-white);
+}
+
+.textImage__body {
+  composes: u-body from global;
+}
+
+.textImage__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.textImage__cta {
+  align-self: flex-start;
+}

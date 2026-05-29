@@ -8,7 +8,8 @@
 
 /* ── Modifier dark ── */
 .textImageFull--dark {
-  background: var(--color-dark);
+  //background: var(--color-dark);
+  background: transparent;
 }
 
 .textImageFull--dark .textImageFull__eyebrow {

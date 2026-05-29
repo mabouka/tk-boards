@@ -121,6 +121,17 @@ export const pageBySlugQuery = groq`
           type == "email" => "mailto:" + email,
           type == "phone" => "tel:" + phone
         )
+      },
+      "ctas": ctas[] {
+        _key,
+        "text": text,
+        "openInNewTab": openInNewTab,
+        "href": select(
+          type == "internal" => "/" + internalLink->slug.current,
+          type == "external" => url,
+          type == "email" => "mailto:" + email,
+          type == "phone" => "tel:" + phone
+        )
       }
     }
   }

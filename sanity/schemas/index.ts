@@ -6,6 +6,6 @@ import { siteSettings } from './documents/siteSettings'
 import { sectionAboutPreview } from './sections/sectionAboutPreview'
 import { sectionBoards } from './sections/sectionBoards'
 import { sectionMarquee } from './sections/sectionMarquee'
-import { sectionTextImageFull } from './sections/sectionTextImageFull'
+import { sectionTextImage } from './sections/sectionTextImage'
 
-export const schemaTypes = [board, navigation, page, series, siteSettings, sectionAboutPreview, sectionBoards, sectionMarquee, sectionTextImageFull]
+export const schemaTypes = [board, navigation, page, series, siteSettings, sectionAboutPreview, sectionBoards, sectionMarquee, sectionTextImage]

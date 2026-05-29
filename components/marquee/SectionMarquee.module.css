@@ -1,5 +1,4 @@
 .marquee {
-  background: var(--color-dark);
   margin: var(--space-3xl) 0;
   overflow: hidden;
 }
@@ -11,10 +10,6 @@
   animation: marquee-scroll 30s linear infinite;
 }
 
-.marquee__track:hover {
-   /*animation-play-state: paused;*/ /* IGNORE */
-}
-
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -24,6 +19,7 @@
   display: inline-flex;
   align-items: baseline;
   gap: 20px;
+  padding-bottom: 10px;
 }
 
 .marquee__item {

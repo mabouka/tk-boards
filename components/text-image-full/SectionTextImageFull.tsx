@@ -37,7 +37,17 @@ export default function SectionTextImageFull({
   const ctaVariant = isDark ? 'u-cta--white-outline' : 'u-cta--black-outline'
 
   return (
-    <section className={classList}>
+    <section
+      className={classList}
+      {...(isDark ? {
+        'data-halo': '',
+        'data-halo-rgb': '212, 172, 251',
+        'data-halo-opacity': '0.28',
+        'data-halo-w': '61vw',
+        'data-halo-h': '39vh',
+        'data-halo-spread': '29%',
+      } : {})}
+    >
       {image && (
         <div className={styles.textImageFull__image}>
           <Image

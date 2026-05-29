@@ -56,7 +56,7 @@ export const page = defineType({
         { type: 'sectionAboutPreview' },
         { type: 'sectionBoards' },
         { type: 'sectionMarquee' },
-        { type: 'sectionTextImageFull' },
+        { type: 'sectionTextImage' },
       ],
       group: 'content',
     }),

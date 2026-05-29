@@ -1,6 +1,6 @@
 /* ── Section ── */
 .aboutPreview {
-  margin: var(--space-3xl) 0;
+  margin: var(--space-4xl) 0 var(--space-3xl);
   padding: 0 var(--gutter);
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -37,10 +37,10 @@
 /* ── Row 2 ── */
 
 .aboutPreview__image {
-  grid-column: 3 / 7;
+  grid-column: 2 / 7;
   grid-row: 2;
   position: relative;
-  aspect-ratio: 526 / 447;
+  aspect-ratio: 664 / 447;
 }
 
 .aboutPreview__aside {

@@ -54,7 +54,15 @@ export default function BoardsPreviewClient({ series, title, discoverCta, viewBo
       )}
 
       <div className={styles.boards__scroll}>
-        <div className={styles.boards__track}>
+        <div
+          className={styles.boards__track}
+          data-halo
+          data-halo-rgb="215, 215, 255"
+          data-halo-opacity="0.39"
+          data-halo-w="74vw"
+          data-halo-h="71vh"
+          data-halo-spread="13%"
+        >
           {boards.map(board => (
             <Link
               key={board._id}

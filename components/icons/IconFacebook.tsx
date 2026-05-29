@@ -1,8 +1,8 @@
 import type { SVGProps } from 'react'
 export default function IconFacebook(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    <svg width="24" height="24" viewBox="0 0 40 39.8528" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="M39.9992 19.9996C39.9992 8.95422 31.045 0 19.9996 0C8.95422 0 0 8.95422 0 19.9996C0 29.3786 6.45747 37.2489 15.1685 39.4104V26.1115H11.0446V19.9996H15.1685V17.3661C15.1685 10.559 18.2492 7.40385 24.9323 7.40385C26.1995 7.40385 28.3858 7.65265 29.2802 7.90064V13.4405C28.8082 13.3909 27.9882 13.3661 26.9699 13.3661C23.6907 13.3661 22.4235 14.6085 22.4235 17.838V19.9996H28.9562L27.8338 26.1115H22.4235V39.8528C32.3266 38.6568 40 30.225 40 19.9996H39.9992Z" />
     </svg>
   )
 }

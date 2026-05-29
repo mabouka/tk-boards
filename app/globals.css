@@ -1,3 +1,10 @@
+/* ─── Background Canvas — default values ────────────────── */
+:root {
+  --bg-base:       #08080c;
+  --grain-opacity: 1.00;
+  --grain-blend:   overlay;
+}
+
 /* ─── Fonts ─────────────────────────────────────────────── */
 /* Integral CF must be self-hosted — place files in /public/fonts/
    and uncomment when available:
@@ -91,7 +98,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
+  position: relative;
 }
 
 img, picture, video, canvas, svg {
@@ -147,6 +154,11 @@ body {
   color: var(--color-white);
   font-family: var(--font-body);
   overflow-x: hidden;
+}
+
+main {
+  position: relative;
+  z-index: 1;
 }
 
 /* ─── Typography utilities ──────────────────────────────── */

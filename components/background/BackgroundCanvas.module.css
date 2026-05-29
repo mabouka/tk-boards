@@ -1,0 +1,38 @@
+/* ── Fixed background canvas ─────────────────────────────────────────────── */
+
+.bgCanvas {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  /* Smooth opacity transitions when sections change (via @property) */
+  transition:
+    --h1-opacity 1s ease,
+    --h2-opacity 1s ease;
+
+  background-color: var(--bg-base, #08080c);
+}
+
+/* ── Halo layer ───────────────────────────────────────────────────────────── */
+
+.bgHalosLayer {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* ── Film grain ───────────────────────────────────────────────────────────── */
+
+.bgGrain {
+  position: absolute;
+  inset: 0;
+  opacity: var(--grain-opacity, 0.22);
+  mix-blend-mode: var(--grain-blend, luminosity);
+  filter: url(#grain-filter);
+}

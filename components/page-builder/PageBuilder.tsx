@@ -5,7 +5,7 @@ import { seriesQuery } from '@/sanity/lib/queries'
 import SectionAboutPreview from '@/components/about-preview/SectionAboutPreview'
 import BoardsPreviewClient from '@/components/boards-preview/BoardsPreviewClient'
 import SectionMarquee from '@/components/marquee/SectionMarquee'
-import SectionTextImageFull from '@/components/text-image-full/SectionTextImageFull'
+import SectionTextImage from '@/components/text-image/SectionTextImage'
 
 type Section = {
   _type: string
@@ -17,13 +17,15 @@ type Section = {
   items?: { _key: string; text: string; accent?: boolean }[]
   // sectionAboutPreview
   eyebrow?: string
-  // sectionTextImageFull
+  cta?: { text?: string; href?: string; openInNewTab?: boolean }
+  // sectionTextImage
   label?: string
   body?: any[]
   image?: any
-  cta?: { text?: string; href?: string; openInNewTab?: boolean }
+  ctas?: { _key?: string; text?: string; href?: string; openInNewTab?: boolean }[]
   theme?: 'light' | 'dark'
   imagePosition?: 'left' | 'right'
+  layout?: 'full' | 'contained'
 }
 
 type Props = {
@@ -87,18 +89,20 @@ export default async function PageBuilder({ sections, locale }: Props) {
                 items={section.items ?? []}
               />
             )
-          case 'sectionFeature': // legacy — remove once docs are updated in Studio
-          case 'sectionTextImageFull':
+          case 'sectionFeature':       // legacy
+          case 'sectionTextImageFull': // legacy — migrate docs to sectionTextImage in Studio
+          case 'sectionTextImage':
             return (
-              <SectionTextImageFull
+              <SectionTextImage
                 key={section._key}
                 label={section.label}
                 title={section.title ?? ''}
                 body={section.body}
                 image={section.image}
-                cta={section.cta}
+                ctas={section.ctas}
                 theme={section.theme}
                 imagePosition={section.imagePosition}
+                layout={section.layout}
               />
             )
           default:
