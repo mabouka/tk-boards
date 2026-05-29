@@ -111,6 +111,7 @@ export const pageBySlugQuery = groq`
       body,
       image,
       imagePosition,
+      layout,
       theme,
       "cta": cta {
         "text": text,
