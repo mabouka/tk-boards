@@ -124,6 +124,7 @@ export const pageBySlugQuery = groq`
     slug,
     seoTitle,
     seoDescription,
+    ogImage,
     sections[] {
       _type,
       _key,

@@ -74,6 +74,21 @@ export const page = defineType({
       group: 'seo',
     }),
     defineField({
+      name: 'ogImage',
+      title: 'Social Share Image',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Used for social media previews (recommended 1200×630). Falls back to the Hero Image, then the site default.',
+      group: 'seo',
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt Text',
+          type: 'string',
+        }),
+      ],
+    }),
+    defineField({
       name: 'language',
       type: 'string',
       readOnly: true,

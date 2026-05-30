@@ -24,7 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: page?.seoTitle ?? undefined,
     absoluteTitle: Boolean(page?.seoTitle),
     description: page?.seoDescription ?? settings?.seoDescription ?? undefined,
-    image: page?.heroImage ?? undefined,
+    image: page?.ogImage ?? page?.heroImage ?? undefined,
+    imageAlt: page?.ogImage?.alt ?? page?.seoTitle ?? page?.title,
     alternateLanguages: true,
   })
 }
