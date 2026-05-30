@@ -6,26 +6,9 @@
 }
 
 /* ─── Fonts ─────────────────────────────────────────────── */
-/* Integral CF must be self-hosted — place files in /public/fonts/
-   and uncomment when available:
-
-@font-face {
-  font-family: 'Integral CF';
-  src: url('/fonts/IntegralCF-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Integral CF';
-  src: url('/fonts/IntegralCF-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-*/
-
-/* Space Mono and Space Grotesk are loaded via next/font in app/layout.tsx */
+/* All families (Integral CF, Space Mono, Space Grotesk) are self-hosted
+   via next/font in app/layout.tsx and exposed as CSS variables:
+   --font-integral, --font-space-mono, --font-space-grotesk */
 
 /* ─── Design Tokens ─────────────────────────────────────── */
 :root {
@@ -47,7 +30,7 @@
   --color-black-80: rgba(0, 0, 0, 0.80);
 
   /* Typography — Space Mono/Grotesk injected by next/font via CSS vars */
-  --font-display: 'Integral CF', sans-serif;
+  --font-display: var(--font-integral), sans-serif;
   --font-mono: var(--font-space-mono), monospace;
   --font-body: var(--font-space-grotesk), sans-serif;
 

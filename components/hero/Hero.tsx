@@ -1,18 +1,16 @@
 import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
+import type { SanityImage } from '@/sanity/lib/types'
 import ScrollButton from './ScrollButton'
 import styles from './Hero.module.css'
-
-type SanityImage = { _type: string; asset: { _ref: string } }
 
 type HeroProps = {
   title: string
   subtitle: string
-  ctaLabel?: string
   backgroundImage?: SanityImage
 }
 
-export default function Hero({ title, subtitle, ctaLabel, backgroundImage }: HeroProps) {
+export default function Hero({ title, subtitle, backgroundImage }: HeroProps) {
   return (
     <div className={styles.hero}>
 

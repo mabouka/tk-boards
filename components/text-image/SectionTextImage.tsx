@@ -1,15 +1,13 @@
 import Image from 'next/image'
 import { PortableText } from 'next-sanity'
 import { urlFor } from '@/sanity/lib/image'
+import type { SanityImage, PortableTextValue, Cta } from '@/sanity/lib/types'
 import styles from './SectionTextImage.module.css'
-
-type SanityImage = { _type: string; asset: { _ref: string } }
-type Cta = { _key?: string; text?: string; href?: string; openInNewTab?: boolean }
 
 type Props = {
   label?: string
   title: string
-  body?: any[]
+  body?: PortableTextValue
   image?: SanityImage
   ctas?: Cta[]
   theme?: 'light' | 'dark'
@@ -27,14 +25,14 @@ export default function SectionTextImage({
   imagePosition = 'left',
   layout = 'full',
 }: Props) {
-  const isDark      = theme === 'dark'
-  const isReverse   = imagePosition === 'right'
+  const isDark = theme === 'dark'
+  const isReverse = imagePosition === 'right'
   const isContained = layout === 'contained'
 
   const classList = [
     styles.textImage,
-    isDark      ? styles['textImage--dark']      : '',
-    isReverse   ? styles['textImage--reverse']   : '',
+    isDark ? styles['textImage--dark'] : '',
+    isReverse ? styles['textImage--reverse'] : '',
     isContained ? styles['textImage--contained'] : '',
   ].filter(Boolean).join(' ')
 
@@ -42,12 +40,22 @@ export default function SectionTextImage({
 
   const imageEl = image && (
     <div className={styles.textImage__image}>
-      <Image
-        src={urlFor(image).width(1800).quality(85).url()}
-        alt={title}
-        fill
-        sizes={isContained ? '45vw' : '57vw'}
-      />
+      {isContained ? (
+        <Image
+          src={urlFor(image).width(1200).quality(85).url()}
+          alt={title}
+          sizes="390px"
+          width={664}
+          height={534}
+        />
+      ) : (
+        <Image
+          src={urlFor(image).width(1200).quality(85).url()}
+          alt={title}
+          fill
+          sizes="390px"
+        />
+      )}
     </div>
   )
 
@@ -63,10 +71,7 @@ export default function SectionTextImage({
         'data-halo-spread': '29%',
       } : {})}
     >
-      {isContained
-        ? image && <div className={styles.textImage__imageOuter}>{imageEl}</div>
-        : imageEl
-      }
+      {imageEl}
 
       <div className={styles.textImage__content}>
         {label && <span className={styles.textImage__eyebrow}>{label}</span>}

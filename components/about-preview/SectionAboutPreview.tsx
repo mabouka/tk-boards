@@ -1,14 +1,15 @@
 import Image from 'next/image'
-import { PortableText } from '@portabletext/react'
+import { PortableText } from 'next-sanity'
 import { urlFor } from '@/sanity/lib/image'
+import type { SanityImage, PortableTextValue, Cta } from '@/sanity/lib/types'
 import styles from './SectionAboutPreview.module.css'
 
 type Props = {
   eyebrow?: string
   title?: string
-  image?: any
-  body?: any[]
-  cta?: { text?: string; href?: string; openInNewTab?: boolean }
+  image?: SanityImage
+  body?: PortableTextValue
+  cta?: Cta
 }
 
 export default function SectionAboutPreview({ eyebrow, title, image, body, cta }: Props) {

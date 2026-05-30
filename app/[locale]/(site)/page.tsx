@@ -19,7 +19,6 @@ export default async function HomePage({ params }: Props) {
       <Hero
         title={page?.heroTitle ?? page?.title ?? t('hero_title')}
         subtitle={page?.heroSubtitle ?? t('hero_subtitle')}
-        ctaLabel={t('hero_cta')}
         backgroundImage={page?.heroImage}
       />
       {page?.sections && (

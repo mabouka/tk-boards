@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { client } from '@/sanity/lib/client'
 import { urlFor } from '@/sanity/lib/image'
 import { seriesQuery } from '@/sanity/lib/queries'
+import type { SanityImage, PortableTextValue, Cta } from '@/sanity/lib/types'
 import SectionAboutPreview from '@/components/about-preview/SectionAboutPreview'
 import BoardsPreviewClient from '@/components/boards-preview/BoardsPreviewClient'
 import SectionMarquee from '@/components/marquee/SectionMarquee'
@@ -17,15 +18,32 @@ type Section = {
   items?: { _key: string; text: string; accent?: boolean }[]
   // sectionAboutPreview
   eyebrow?: string
-  cta?: { text?: string; href?: string; openInNewTab?: boolean }
+  cta?: Cta
   // sectionTextImage
   label?: string
-  body?: any[]
-  image?: any
-  ctas?: { _key?: string; text?: string; href?: string; openInNewTab?: boolean }[]
+  body?: PortableTextValue
+  image?: SanityImage
+  ctas?: Cta[]
   theme?: 'light' | 'dark'
   imagePosition?: 'left' | 'right'
   layout?: 'full' | 'contained'
+}
+
+// Raw shape returned by `seriesQuery`, before image URLs are resolved.
+type RawBoard = {
+  _id: string
+  name: string
+  slug: { current: string }
+  style?: string
+  mainImage?: SanityImage
+}
+
+type RawSeries = {
+  _id: string
+  name: string
+  slug: { current: string }
+  tagVariant?: 'dark' | 'amber' | 'cream' | 'red' | 'outline-light' | 'outline-muted'
+  boards: RawBoard[]
 }
 
 type Props = {
@@ -40,12 +58,14 @@ export default async function PageBuilder({ sections, locale }: Props) {
 
   // Pre-fetch data only for section types that are actually present
   const needsBoards = sections.some((s) => s._type === 'sectionBoards')
-  const rawSeries = needsBoards ? await client.fetch(seriesQuery, { locale }) : []
+  const rawSeries: RawSeries[] = needsBoards
+    ? await client.fetch<RawSeries[]>(seriesQuery, { locale })
+    : []
 
   // Pre-resolve image URLs server-side so @sanity/image-url never reaches the client bundle
-  const series = rawSeries.map((s: any) => ({
+  const series = rawSeries.map((s) => ({
     ...s,
-    boards: s.boards.map((board: any) => ({
+    boards: s.boards.map((board) => ({
       _id: board._id,
       name: board.name,
       slug: board.slug,
@@ -89,8 +109,6 @@ export default async function PageBuilder({ sections, locale }: Props) {
                 items={section.items ?? []}
               />
             )
-          case 'sectionFeature':       // legacy
-          case 'sectionTextImageFull': // legacy — migrate docs to sectionTextImage in Studio
           case 'sectionTextImage':
             return (
               <SectionTextImage

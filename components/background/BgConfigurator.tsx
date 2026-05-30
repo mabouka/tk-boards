@@ -281,7 +281,9 @@ export default function BgConfigurator() {
   /* ── Scan real halos when panel becomes visible or route changes ── */
   useEffect(() => {
     if (!visible) return
-    setRealHalos(scanRealHalos())
+    // Defer one frame so the DOM/layout is committed before reading halo rects
+    const id = requestAnimationFrame(() => setRealHalos(scanRealHalos()))
+    return () => cancelAnimationFrame(id)
   }, [visible, pathname])
 
   /* ── Mount: create raw DOM pins overlay (fixed, viewport-relative) ── */

@@ -6,7 +6,9 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint && node scripts/validate-css.js",
+    "lint:js": "eslint",
+    "lint:css": "node scripts/validate-css.js"
   },
   "dependencies": {
     "@sanity/document-internationalization": "^6.2.0",
@@ -29,6 +31,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "lightningcss": "^1.32.0",
     "typescript": "^5"
   }
 }

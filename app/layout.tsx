@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Space_Mono, Space_Grotesk } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 
 const spaceMono = Space_Mono({
@@ -16,6 +17,15 @@ const spaceGrotesk = Space_Grotesk({
   display: 'swap',
 })
 
+const integralCF = localFont({
+  variable: '--font-integral',
+  src: [
+    { path: './fonts/IntegralCF-Medium.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/IntegralCF-Bold.woff2', weight: '700', style: 'normal' },
+  ],
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   title: 'TK Boards — Handcrafted Strapless Kitesurf Boards',
   description: 'TK develops handcrafted strapless boards built around precision. Shaped in Tarifa, Spain.',
@@ -23,7 +33,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html suppressHydrationWarning className={`${spaceMono.variable} ${spaceGrotesk.variable}`}>
+    <html suppressHydrationWarning className={`${spaceMono.variable} ${spaceGrotesk.variable} ${integralCF.variable}`}>
       <body>{children}</body>
     </html>
   )

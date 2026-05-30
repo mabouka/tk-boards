@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import LogoTK from '@/components/icons/LogoTK'
@@ -18,7 +18,6 @@ export default function Header({ locale }: { locale: string }) {
   const headerRef      = useRef<HTMLElement>(null)
   const prevY          = useRef(0)
   const offsetY        = useRef(0)
-  const [isFixed, setIsFixed] = useState(false)
   const isFixedRef     = useRef(false)
   const pendingExitRef = useRef(false)
   const exitTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -27,10 +26,15 @@ export default function Header({ locale }: { locale: string }) {
     prevY.current = window.scrollY
     const vh = window.innerHeight * 0.6
 
+    // Toggle la classe `fixed` directement sur le nœud DOM — pas de re-render
+    const setFixed = (on: boolean) => {
+      isFixedRef.current = on
+      headerRef.current?.classList.toggle(styles['header--fixed'], on)
+    }
+
     // Page chargée déjà au-delà de 100vh → fixed + caché d'emblée
     if (window.scrollY >= vh) {
-      isFixedRef.current = true
-      setIsFixed(true)
+      setFixed(true)
       offsetY.current = -COMPACT_HEIGHT
       if (headerRef.current) headerRef.current.style.transform = `translateY(${-COMPACT_HEIGHT}px)`
     }
@@ -54,8 +58,7 @@ export default function Header({ locale }: { locale: string }) {
           exitTimerRef.current = setTimeout(() => {
             pendingExitRef.current = false
             exitTimerRef.current   = null
-            isFixedRef.current     = false
-            setIsFixed(false)
+            setFixed(false)
             if (headerRef.current) {
               headerRef.current.style.transition = ''
               headerRef.current.style.transform  = ''
@@ -76,8 +79,7 @@ export default function Header({ locale }: { locale: string }) {
 
       // ── Passage absolute → fixed : instantané, caché, noir ──────
       if (!isFixedRef.current) {
-        isFixedRef.current = true
-        setIsFixed(true)
+        setFixed(true)
         offsetY.current = -COMPACT_HEIGHT
         if (headerRef.current) {
           headerRef.current.style.transition = ''
@@ -98,10 +100,8 @@ export default function Header({ locale }: { locale: string }) {
     }
   }, [])
 
-  const headerClass = [styles.header, isFixed ? styles['header--fixed'] : ''].filter(Boolean).join(' ')
-
   return (
-    <header ref={headerRef} className={headerClass}>
+    <header ref={headerRef} className={styles.header}>
       <div className={styles.header__inner}>
 
         <button className={styles.header__menu} type="button" aria-label={t('menu')}>
