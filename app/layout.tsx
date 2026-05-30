@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html suppressHydrationWarning className={`${spaceMono.variable} ${spaceGrotesk.variable} ${integralCF.variable}`}>
+    <html suppressHydrationWarning data-scroll-behavior="smooth" className={`${spaceMono.variable} ${spaceGrotesk.variable} ${integralCF.variable}`}>
       <body>{children}</body>
     </html>
   )
