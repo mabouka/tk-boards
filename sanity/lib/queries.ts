@@ -25,7 +25,11 @@ export const boardBySlugQuery = groq`
     weight,
     description,
     mainImage,
-    specs
+    specs,
+    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{
+      "lang": value->language,
+      "slug": value->slug.current
+    }
   }
 `
 

@@ -1,8 +1,11 @@
+import type { Metadata } from 'next'
+import { cache } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
+import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { Link } from '@/i18n/navigation'
 import Image from 'next/image'
 import styles from './board.module.css'
@@ -11,11 +14,41 @@ type Props = {
   params: Promise<{ locale: string; slug: string }>
 }
 
+const getBoard = cache((locale: string, slug: string) =>
+  client.fetch(boardBySlugQuery, { locale, slug })
+)
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params
+  const board = await getBoard(locale, slug)
+
+  if (!board) return {}
+
+  const settings = await getSiteSettings()
+
+  const translations: { lang?: string; slug?: string }[] = Array.isArray(board.translations)
+    ? board.translations
+    : []
+  const languageAlternates = translations
+    .filter((tr): tr is { lang: string; slug: string } => Boolean(tr.lang && tr.slug))
+    .map((tr) => ({ lang: tr.lang, path: `/boards/${tr.slug}` }))
+
+  return buildMetadata({
+    locale,
+    path: `/boards/${slug}`,
+    title: board.name,
+    description: board.tagline ?? settings?.seoDescription ?? undefined,
+    image: board.mainImage ?? undefined,
+    imageAlt: board.mainImage?.alt ?? board.name,
+    languageAlternates,
+  })
+}
+
 export default async function BoardPage({ params }: Props) {
   const { locale, slug } = await params
   const t = await getTranslations('boards')
 
-  const board = await client.fetch(boardBySlugQuery, { locale, slug })
+  const board = await getBoard(locale, slug)
 
   if (!board) notFound()
 
