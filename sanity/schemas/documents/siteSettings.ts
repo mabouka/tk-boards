@@ -29,6 +29,17 @@ export const siteSettings = defineType({
       group: 'seo'
     }),
     defineField({
+      name: 'ogImage',
+      title: 'Default Social Share Image',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Fallback for social media previews when a page or board has no image of its own (recommended 1200×630).',
+      group: 'seo',
+      fields: [
+        defineField({ name: 'alt', title: 'Alt Text', type: 'string' }),
+      ],
+    }),
+    defineField({
       name: 'contact',
       title: 'Contact',
       type: 'object',

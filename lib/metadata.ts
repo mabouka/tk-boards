@@ -8,6 +8,8 @@ import type { SanityImage } from '@/sanity/lib/types'
 
 export const SITE_NAME = 'TK Boards'
 export const DEFAULT_TITLE = `${SITE_NAME} — Handcrafted Strapless Kitesurf Boards`
+export const DEFAULT_DESCRIPTION =
+  'TK develops handcrafted strapless boards built around precision. Shaped in Tarifa, Spain.'
 
 /** Absolute origin used to resolve canonical / OG URLs. */
 export const siteUrl =
@@ -53,7 +55,7 @@ type BuildMetadataArgs = {
  * Twitter card defaults. Relative URLs are resolved against `metadataBase`
  * (set in the root layout).
  */
-export function buildMetadata({
+export async function buildMetadata({
   title,
   absoluteTitle = false,
   description,
@@ -63,7 +65,7 @@ export function buildMetadata({
   imageAlt,
   alternateLanguages = false,
   languageAlternates,
-}: BuildMetadataArgs): Metadata {
+}: BuildMetadataArgs): Promise<Metadata> {
   const url = `/${locale}${path}`
 
   const resolvedTitle = title
@@ -72,13 +74,27 @@ export function buildMetadata({
       : `${title} — ${SITE_NAME}`
     : DEFAULT_TITLE
 
-  const images = image
+  // Collapse newlines / repeated whitespace — meta descriptions should be single-line.
+  const resolvedDescription = description?.replace(/\s+/g, ' ').trim() || DEFAULT_DESCRIPTION
+
+  // Fall back to the site-wide default OG image when no specific image is provided.
+  let ogImage = image
+  let ogImageAlt = imageAlt
+  if (!ogImage) {
+    const settings = await getSiteSettings()
+    if (settings?.ogImage) {
+      ogImage = settings.ogImage
+      ogImageAlt = imageAlt ?? settings.ogImage.alt
+    }
+  }
+
+  const images = ogImage
     ? [
         {
-          url: urlFor(image).width(1200).height(630).fit('crop').url(),
+          url: urlFor(ogImage).width(1200).height(630).fit('crop').url(),
           width: 1200,
           height: 630,
-          alt: imageAlt ?? title ?? SITE_NAME,
+          alt: ogImageAlt ?? title ?? SITE_NAME,
         },
       ]
     : undefined
@@ -99,22 +115,22 @@ export function buildMetadata({
 
   return {
     ...(title ? { title: absoluteTitle ? { absolute: title } : title } : {}),
-    ...(description ? { description } : {}),
+    description: resolvedDescription,
     alternates: {
       canonical: url,
       ...(languages ? { languages } : {}),
     },
     openGraph: {
       title: resolvedTitle,
-      ...(description ? { description } : {}),
+      description: resolvedDescription,
       url,
       locale: OG_LOCALE[locale] ?? OG_LOCALE.en,
       ...(images ? { images } : {}),
     },
     twitter: {
-      card: image ? 'summary_large_image' : 'summary',
+      card: ogImage ? 'summary_large_image' : 'summary',
       title: resolvedTitle,
-      ...(description ? { description } : {}),
+      description: resolvedDescription,
       ...(images ? { images: images.map((i) => i.url) } : {}),
     },
   }

@@ -36,10 +36,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildMetadata({
     locale,
     path: `/boards/${slug}`,
-    title: board.name,
-    description: board.tagline ?? settings?.seoDescription ?? undefined,
-    image: board.mainImage ?? undefined,
-    imageAlt: board.mainImage?.alt ?? board.name,
+    title: board.seoTitle ?? board.name,
+    absoluteTitle: Boolean(board.seoTitle),
+    description: board.seoDescription ?? board.tagline ?? settings?.seoDescription ?? undefined,
+    image: board.ogImage ?? board.mainImage ?? undefined,
+    imageAlt: board.ogImage?.alt ?? board.mainImage?.alt ?? board.seoTitle ?? board.name,
     languageAlternates,
   })
 }

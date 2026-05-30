@@ -59,6 +59,16 @@ const structure = (S: StructureBuilder) =>
                     .title('Series')
                     .icon(() => '🏷️')
                     .child(S.documentTypeList('series').title('Series')),
+                  S.divider(),
+                  S.listItem()
+                    .title('Page Settings')
+                    .icon(() => '⚙️')
+                    .child(
+                      S.document()
+                        .schemaType('boardsPageSettings')
+                        .documentId('boardsPageSettings')
+                        .title('Boards Page Settings')
+                    ),
                 ])
             )
         ),

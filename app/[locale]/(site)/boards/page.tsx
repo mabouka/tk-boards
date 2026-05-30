@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { client } from '@/sanity/lib/client'
-import { boardsQuery } from '@/sanity/lib/queries'
+import { boardsQuery, boardsPageSettingsQuery } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { Link } from '@/i18n/navigation'
@@ -14,16 +14,20 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
-  const [t, settings] = await Promise.all([
+  const [t, settings, boardsPage] = await Promise.all([
     getTranslations({ locale, namespace: 'boards' }),
     getSiteSettings(),
+    client.fetch(boardsPageSettingsQuery, { locale }),
   ])
 
   return buildMetadata({
     locale,
     path: '/boards',
-    title: t('title'),
-    description: settings?.seoDescription ?? undefined,
+    title: boardsPage?.seoTitle || t('title'),
+    absoluteTitle: Boolean(boardsPage?.seoTitle),
+    description: boardsPage?.seoDescription || settings?.seoDescription || undefined,
+    image: boardsPage?.ogImage ?? undefined,
+    imageAlt: boardsPage?.ogImage?.alt ?? boardsPage?.seoTitle ?? t('title'),
     alternateLanguages: true,
   })
 }

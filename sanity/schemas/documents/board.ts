@@ -5,12 +5,18 @@ export const board = defineType({
   name: 'board',
   title: 'Board',
   type: 'document',
+  groups: [
+    { name: 'basic', title: 'Basic', default: true },
+    { name: 'content', title: 'Content' },
+    { name: 'seo', title: 'SEO' },
+  ],
   fields: [
     defineField({
       name: 'name',
       title: 'Name',
       type: 'string',
       validation: (r) => r.required(),
+      group: 'basic',
     }),
     defineField({
       name: 'slug',
@@ -18,6 +24,7 @@ export const board = defineType({
       type: 'slug',
       options: { source: 'name', isUnique: isUniqueSlugPerLanguage },
       validation: (r) => r.required(),
+      group: 'basic',
     }),
     defineField({
       name: 'series',
@@ -25,29 +32,34 @@ export const board = defineType({
       type: 'reference',
       to: [{ type: 'series' }],
       validation: (r) => r.required(),
+      group: 'basic',
     }),
     defineField({
       name: 'style',
       title: 'Style',
       type: 'string',
       description: 'e.g. Freestyle, Waves, Freeride',
+      group: 'content',
     }),
     defineField({
       name: 'tagline',
       title: 'Tagline',
       type: 'string',
+      group: 'content',
     }),
     defineField({
       name: 'description',
       title: 'Description',
       type: 'array',
       of: [{ type: 'block' }],
+      group: 'content',
     }),
     defineField({
       name: 'mainImage',
       title: 'Main Image',
       type: 'image',
       options: { hotspot: true },
+      group: 'content',
       fields: [
         defineField({
           name: 'alt',
@@ -66,6 +78,7 @@ export const board = defineType({
       name: 'specs',
       title: 'Specs',
       type: 'array',
+      group: 'content',
       of: [
         {
           type: 'object',
@@ -80,11 +93,43 @@ export const board = defineType({
       name: 'weight',
       title: 'Weight (kg)',
       type: 'number',
+      group: 'content',
     }),
     defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',
+      group: 'content',
+    }),
+    defineField({
+      name: 'seoTitle',
+      title: 'SEO Title',
+      type: 'string',
+      description: 'Overrides the board name in the browser tab and search results.',
+      group: 'seo',
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO Description',
+      type: 'text',
+      rows: 3,
+      description: 'Shown in search results and social previews. Falls back to the tagline.',
+      group: 'seo',
+    }),
+    defineField({
+      name: 'ogImage',
+      title: 'Social Share Image',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Used for social media previews (recommended 1200×630). Falls back to the Main Image.',
+      group: 'seo',
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt Text',
+          type: 'string',
+        }),
+      ],
     }),
     defineField({
       name: 'language',

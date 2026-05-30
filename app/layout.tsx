@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Space_Mono, Space_Grotesk } from 'next/font/google'
 import localFont from 'next/font/local'
 import { getLocale } from 'next-intl/server'
-import { DEFAULT_TITLE, SITE_NAME, siteUrl } from '@/lib/metadata'
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_NAME, siteUrl } from '@/lib/metadata'
 import './globals.css'
 
 const spaceMono = Space_Mono({
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     default: DEFAULT_TITLE,
     template: `%s — ${SITE_NAME}`,
   },
-  description: 'TK develops handcrafted strapless boards built around precision. Shaped in Tarifa, Spain.',
+  description: DEFAULT_DESCRIPTION,
   openGraph: {
     siteName: SITE_NAME,
     type: 'website',

@@ -26,6 +26,9 @@ export const boardBySlugQuery = groq`
     description,
     mainImage,
     specs,
+    seoTitle,
+    seoDescription,
+    ogImage,
     "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{
       "lang": value->language,
       "slug": value->slug.current
@@ -58,9 +61,26 @@ export const siteSettingsQuery = groq`
   *[_type == "siteSettings" && _id == "siteSettings"][0] {
     siteTitle,
     seoDescription,
+    ogImage,
     contact,
     social,
     footer
+  }
+`
+
+export const boardsPageSettingsQuery = groq`
+  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {
+    "seoTitle": coalesce(
+      seoTitle[language == $locale][0].value,
+      seoTitle[language == "en"][0].value,
+      seoTitle[0].value
+    ),
+    "seoDescription": coalesce(
+      seoDescription[language == $locale][0].value,
+      seoDescription[language == "en"][0].value,
+      seoDescription[0].value
+    ),
+    ogImage
   }
 `
 
