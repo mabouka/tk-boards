@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Space_Mono, Space_Grotesk } from 'next/font/google'
 import localFont from 'next/font/local'
+import { getLocale } from 'next-intl/server'
 import './globals.css'
 
 const spaceMono = Space_Mono({
@@ -31,9 +32,11 @@ export const metadata: Metadata = {
   description: 'TK develops handcrafted strapless boards built around precision. Shaped in Tarifa, Spain.',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale()
+
   return (
-    <html suppressHydrationWarning data-scroll-behavior="smooth" className={`${spaceMono.variable} ${spaceGrotesk.variable} ${integralCF.variable}`}>
+    <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth" className={`${spaceMono.variable} ${spaceGrotesk.variable} ${integralCF.variable}`}>
       <body>{children}</body>
     </html>
   )
