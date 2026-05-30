@@ -2,7 +2,7 @@ import styles from './SectionMarquee.module.css'
 
 type MarqueeItem = {
   _key: string
-  text: string
+  text?: string
   accent?: boolean
 }
 

@@ -41,7 +41,7 @@ export default async function HomePage({ params }: Props) {
       <Hero
         title={page?.heroTitle ?? page?.title ?? t('hero_title')}
         subtitle={page?.heroSubtitle ?? t('hero_subtitle')}
-        backgroundImage={page?.heroImage}
+        backgroundImage={page?.heroImage ?? undefined}
       />
       {page?.sections && (
         <PageBuilder sections={page.sections} locale={locale} />

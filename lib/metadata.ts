@@ -29,18 +29,18 @@ const OG_LOCALE: Record<string, string> = {
 export const getSiteSettings = cache(() => client.fetch(siteSettingsQuery))
 
 type BuildMetadataArgs = {
-  /** Page-specific title, without the site name. Omit to fall back to the default. */
-  title?: string
+  /** Page-specific title, without the site name. Omit/null to fall back to the default. */
+  title?: string | null
   /** Use the title verbatim (skip the "— TK Boards" template). */
   absoluteTitle?: boolean
-  description?: string
+  description?: string | null
   /** App locale (en | fr | es). */
   locale: string
   /** Path after the locale segment, e.g. "/boards". Must be identical across locales. */
   path?: string
   /** OG image (Sanity image source). */
   image?: SanityImage | null
-  imageAlt?: string
+  imageAlt?: string | null
   /** Emit hreflang alternates for all locales using the same `path`. Use when the
    *  path is identical in every locale (e.g. "/boards"). */
   alternateLanguages?: boolean

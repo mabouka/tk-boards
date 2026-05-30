@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const settings = await getSiteSettings()
 
-  const translations: { lang?: string; slug?: string }[] = Array.isArray(board.translations)
+  const translations: { lang: string | null; slug: string | null }[] = Array.isArray(board.translations)
     ? board.translations
     : []
   const languageAlternates = translations
@@ -89,7 +89,7 @@ export default async function BoardPage({ params }: Props) {
             <div className={styles.board__specs}>
               <h2 className={styles.board__specs_title}>{t('specs')}</h2>
               <dl className={styles.board__specs_list}>
-                {board.specs.map((spec: { label: string; value: string }, i: number) => (
+                {board.specs.map((spec, i) => (
                   <div key={i} className={styles.board__spec}>
                     <dt className={styles.board__spec_label}>{spec.label}</dt>
                     <dd className={styles.board__spec_value}>{spec.value}</dd>

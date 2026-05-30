@@ -45,7 +45,7 @@ export default async function BoardsPage({ params }: Props) {
       </div>
 
       <ul className={styles.boards__grid}>
-        {boards.map((board: BoardListItem) => (
+        {boards.map((board) => (
           <li key={board._id} className={styles.board_card}>
             <Link href={`/boards/${board.slug.current}`} className={styles.board_card__link}>
               {board.mainImage && (
@@ -81,15 +81,3 @@ export default async function BoardsPage({ params }: Props) {
   )
 }
 
-type SanityImage = { _type: string; asset: { _ref: string } }
-
-type BoardListItem = {
-  _id: string
-  name: string
-  slug: { current: string }
-  series?: { name: string; slug: { current: string } }
-  style?: string
-  tagline?: string
-  weight?: number
-  mainImage?: SanityImage
-}

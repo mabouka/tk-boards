@@ -1,11 +1,11 @@
-import type { PortableTextBlock } from '@portabletext/types'
+import type { TypedObject } from '@portabletext/types'
 import type { SanityImageSource } from '@sanity/image-url'
 
 /** A Sanity image value that can be passed to `urlFor()`. */
 export type SanityImage = SanityImageSource
 
-/** Portable Text content (array of blocks) as returned by Sanity. */
-export type PortableTextValue = PortableTextBlock[]
+/** Portable Text content as returned by Sanity and accepted by `<PortableText>`. */
+export type PortableTextValue = TypedObject[]
 
 /** A call-to-action link, resolved to an `href` by GROQ. */
 export type Cta = {

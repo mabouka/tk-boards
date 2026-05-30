@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sanity typegen — sanity.types.ts is committed; schema.json is a regenerable artifact
+/schema.json

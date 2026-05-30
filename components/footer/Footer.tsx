@@ -15,7 +15,7 @@ import styles from './Footer.module.css'
 
 type Props = { locale: string }
 
-type NavItem = { label: string; slug?: string; externalUrl?: string; openInNewTab?: boolean }
+type NavItem = { label: string; slug: string | null; externalUrl: string | null; openInNewTab: boolean | null }
 
 const SITEMAP_FALLBACK = [
   { label: 'Home', href: '/' },
@@ -74,11 +74,11 @@ export default async function Footer({ locale }: Props) {
         </div>
 
         {/* ── Col 2 & 3 : Series ── */}
-        {series.map((s: { _id: string; name: string; boards: { _id: string; name: string; slug: { current: string } }[] }) => (
+        {series.map((s) => (
           <div key={s._id} className={styles.footer__series}>
             <p className={styles.footer__series_label}>{s.name}</p>
             <ul>
-              {s.boards.map((b: { _id: string; name: string; slug: { current: string } }) => (
+              {s.boards.map((b) => (
                 <li key={b._id}>
                   <Link href={`/boards/${b.slug.current}`} className={styles.footer__board_link}>
                     {b.name}
