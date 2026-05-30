@@ -84,6 +84,25 @@ export const boardsPageSettingsQuery = groq`
   }
 `
 
+export const sitemapBoardsQuery = groq`
+  *[_type == "board" && defined(slug.current) && !(_id in path("drafts.**"))] | order(_updatedAt desc) {
+    "slug": slug.current,
+    language,
+    _updatedAt,
+    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{
+      "lang": value->language,
+      "slug": value->slug.current
+    }
+  }
+`
+
+export const sitemapHomePagesQuery = groq`
+  *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {
+    language,
+    _updatedAt
+  }
+`
+
 export const navigationQuery = groq`
   *[_type == "navigation" && title == $title][0] {
     items[] {
