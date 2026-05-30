@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/navigation'
 import { client } from '@/sanity/lib/client'
-import { footerSeriesQuery, navigationQuery, siteSettingsQuery } from '@/sanity/lib/queries'
+import { footerSeriesQuery, navigationQuery } from '@/sanity/lib/queries'
+import { getSiteSettings } from '@/lib/metadata'
 import LogoTK from '@/components/icons/LogoTK'
 import IconFacebook from '@/components/icons/IconFacebook'
 import IconGoogle from '@/components/icons/IconGoogle'
@@ -29,7 +30,7 @@ const SITEMAP_FALLBACK = [
 export default async function Footer({ locale }: Props) {
   const [series, settings, nav] = await Promise.all([
     client.fetch(footerSeriesQuery, { locale }),
-    client.fetch(siteSettingsQuery),
+    getSiteSettings(),
     client.fetch(navigationQuery, { title: 'Footer Sitemap' }),
   ])
 
