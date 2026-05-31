@@ -174,12 +174,11 @@ export default defineConfig({
     types: schemaTypes,
   },
   document: {
-    // Translated types must be created from the language-specific structure panes
-    // (which set the language). Remove them from the global "+" button, which would
-    // otherwise create them with no language.
-    newDocumentOptions: (prev, { creationContext }) =>
-      creationContext.type === 'global'
-        ? prev.filter((item) => !TRANSLATABLE_TYPES.includes(item.templateId))
-        : prev,
+    // Translated types must be created with a language. The i18n plugin adds
+    // per-language templates ("accessory-en", "board-fr", …) that set it; the
+    // bare template ("accessory", "board", "page") would create a doc with no
+    // language. Remove the bare ones everywhere (global "+" AND pane "+").
+    newDocumentOptions: (prev) =>
+      prev.filter((item) => !TRANSLATABLE_TYPES.includes(item.templateId)),
   },
 })
