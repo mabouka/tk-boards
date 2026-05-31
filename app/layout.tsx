@@ -3,7 +3,6 @@ import { Space_Mono, Space_Grotesk } from 'next/font/google'
 import localFont from 'next/font/local'
 import { getLocale } from 'next-intl/server'
 import { getSiteSettings, siteUrl } from '@/lib/metadata'
-import './globals.css'
 
 const spaceMono = Space_Mono({
   variable: '--font-space-mono',

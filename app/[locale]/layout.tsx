@@ -9,6 +9,7 @@ import GridOverlay from '@/components/dev/GridOverlay'
 import BackgroundCanvas from '@/components/background/BackgroundCanvas'
 import BgHalos from '@/components/background/BgHalos'
 import BgConfigurator from '@/components/background/BgConfigurator'
+import '@/app/globals.css'
 
 type Props = {
   children: React.ReactNode
