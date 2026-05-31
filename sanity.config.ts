@@ -8,7 +8,7 @@ import { internationalizedArray } from 'sanity-plugin-internationalized-array'
 import { media } from 'sanity-plugin-media'
 import { linkField } from 'sanity-plugin-link-field'
 import { schemaTypes } from './sanity/schemas'
-import { MenuIcon, CogIcon, TagIcon, TagsIcon, PackageIcon } from '@sanity/icons'
+import { MenuIcon, CogIcon, TagIcon, TagsIcon, PackageIcon, TranslateIcon } from '@sanity/icons'
 import type { ComponentType } from 'react'
 import { TkIcon } from './sanity/components/TkIcon'
 import { PerformanceIcon } from './sanity/components/PerformanceIcon'
@@ -30,7 +30,6 @@ const studioClient = createClient({
 })
 
 type SeriesEntry = { _id: string; name: string; slug: string | null }
-type CategoryEntry = { _id: string; name: string }
 
 /** Pick a series icon from its slug; falls back to the TK mark. */
 function seriesIcon(slug: string | null): ComponentType {
@@ -89,44 +88,38 @@ const structure = (S: StructureBuilder) =>
       S.listItem()
         .title('Accessories')
         .icon(PackageIcon)
-        .child(() =>
-          studioClient
-            .fetch<CategoryEntry[]>(
-              '*[_type == "accessoryCategory" && !(_id in path("drafts.**"))] | order(coalesce(order, 9999) asc, _createdAt asc) { _id, "name": coalesce(name[language == "en"][0].value, name[0].value) }'
-            )
-            .then((categories) =>
-              S.list()
-                .title('Accessories')
-                .items([
-                  ...categories.map((c) =>
-                    S.listItem()
-                      .title(c.name ?? c._id)
-                      .id(c._id)
-                      .icon(PackageIcon)
-                      .child(
-                        S.documentTypeList('accessory')
-                          .title(c.name ?? c._id)
-                          .filter('_type == "accessory" && category._ref == $categoryId')
-                          .params({ categoryId: c._id })
-                      )
-                  ),
-                  S.divider(),
-                  S.listItem()
-                    .title('Categories')
-                    .icon(TagsIcon)
-                    .child(S.documentTypeList('accessoryCategory').title('Categories')),
-                  S.divider(),
-                  S.listItem()
-                    .title('Page Settings')
-                    .icon(CogIcon)
-                    .child(
-                      S.document()
-                        .schemaType('accessoriesPageSettings')
-                        .documentId('accessoriesPageSettings')
-                        .title('Accessories Page Settings')
-                    ),
-                ])
-            )
+        .child(
+          S.list()
+            .title('Accessories')
+            .items([
+              ...SUPPORTED_LANGUAGES.map((lang) =>
+                S.listItem()
+                  .title(lang.title)
+                  .id(`accessories-${lang.id}`)
+                  .icon(TranslateIcon)
+                  .child(
+                    S.documentTypeList('accessory')
+                      .title(`Accessories — ${lang.title}`)
+                      .filter('_type == "accessory" && language == $lang')
+                      .params({ lang: lang.id })
+                  )
+              ),
+              S.divider(),
+              S.listItem()
+                .title('Categories')
+                .icon(TagsIcon)
+                .child(S.documentTypeList('accessoryCategory').title('Categories')),
+              S.divider(),
+              S.listItem()
+                .title('Page Settings')
+                .icon(CogIcon)
+                .child(
+                  S.document()
+                    .schemaType('accessoriesPageSettings')
+                    .documentId('accessoriesPageSettings')
+                    .title('Accessories Page Settings')
+                ),
+            ])
         ),
       S.divider(),
       S.listItem()

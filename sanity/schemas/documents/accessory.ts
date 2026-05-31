@@ -31,7 +31,7 @@ export const accessory = defineType({
       title: 'Category',
       type: 'reference',
       to: [{ type: 'accessoryCategory' }],
-      validation: (r) => r.required(),
+      description: 'Optional — used to group accessories (Fins, Boardbags…).',
       group: 'basic',
     }),
     defineField({

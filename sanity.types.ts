@@ -228,6 +228,24 @@ export type InternationalizedArrayString = Array<
   } & InternationalizedArrayStringValue
 >;
 
+export type AccessoriesPageSettings = {
+  _id: string;
+  _type: "accessoriesPageSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  seoTitle?: InternationalizedArrayString;
+  seoDescription?: InternationalizedArrayText;
+  ogImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+};
+
 export type InternationalizedArrayTextValue = {
   _type: "internationalizedArrayTextValue";
   value?: string;
@@ -263,10 +281,93 @@ export type BoardReference = {
   [internalGroqTypeReferenceTo]?: "board";
 };
 
+export type AccessoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "accessory";
+};
+
 export type InternationalizedArrayReferenceValue = {
   _type: "internationalizedArrayReferenceValue";
-  value?: PageReference | BoardReference;
+  value?: PageReference | BoardReference | AccessoryReference;
   language: string;
+};
+
+export type AccessoryCategoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "accessoryCategory";
+};
+
+export type Accessory = {
+  _id: string;
+  _type: "accessory";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  slug: Slug;
+  category?: AccessoryCategoryReference;
+  text?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  mainImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  specifications?: Array<{
+    name?: string;
+    value?: string;
+    _key: string;
+  }>;
+  sizes?: Array<string>;
+  price?: number;
+  originalPrice?: number;
+  currency?: "EUR" | "USD" | "GBP";
+  order?: number;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  language?: string;
+};
+
+export type AccessoryCategory = {
+  _id: string;
+  _type: "accessoryCategory";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name: InternationalizedArrayString;
+  slug: Slug;
+  order?: number;
 };
 
 export type SeriesReference = {
@@ -532,12 +633,17 @@ export type AllSanitySchemaTypes =
   | BoardsPageSettings
   | InternationalizedArrayText
   | InternationalizedArrayString
+  | AccessoriesPageSettings
   | InternationalizedArrayTextValue
   | InternationalizedArrayStringValue
   | TranslationMetadata
   | InternationalizedArrayReference
   | BoardReference
+  | AccessoryReference
   | InternationalizedArrayReferenceValue
+  | AccessoryCategoryReference
+  | Accessory
+  | AccessoryCategory
   | SeriesReference
   | Board
   | Series
