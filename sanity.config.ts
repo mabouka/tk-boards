@@ -8,6 +8,8 @@ import { internationalizedArray } from 'sanity-plugin-internationalized-array'
 import { media } from 'sanity-plugin-media'
 import { linkField } from 'sanity-plugin-link-field'
 import { schemaTypes } from './sanity/schemas'
+import { MenuIcon, CogIcon, TagIcon } from '@sanity/icons'
+import { TkIcon } from './sanity/components/TkIcon'
 
 const SUPPORTED_LANGUAGES = [
   { id: 'fr', title: 'Français' },
@@ -32,7 +34,7 @@ const structure = (S: StructureBuilder) =>
     .items([
       S.listItem()
         .title('Boards')
-        .icon(() => '🏄')
+        .icon(TkIcon)
         .child(() =>
           studioClient
             .fetch<SeriesEntry[]>(
@@ -46,7 +48,7 @@ const structure = (S: StructureBuilder) =>
                     S.listItem()
                       .title(s.name ?? s._id)
                       .id(s._id)
-                      .icon(() => '🏄')
+                      .icon(TkIcon)
                       .child(
                         S.documentTypeList('board')
                           .title(s.name ?? s._id)
@@ -57,12 +59,12 @@ const structure = (S: StructureBuilder) =>
                   S.divider(),
                   S.listItem()
                     .title('Series')
-                    .icon(() => '🏷️')
+                    .icon(TagIcon)
                     .child(S.documentTypeList('series').title('Series')),
                   S.divider(),
                   S.listItem()
                     .title('Page Settings')
-                    .icon(() => '⚙️')
+                    .icon(CogIcon)
                     .child(
                       S.document()
                         .schemaType('boardsPageSettings')
@@ -74,10 +76,10 @@ const structure = (S: StructureBuilder) =>
         ),
       S.divider(),
       S.listItem()
-        .title('Navigation')
-        .icon(() => '🧭')
+        .title('Menus')
+        .icon(MenuIcon)
         .child(
-          S.documentTypeList('navigation').title('Navigation')
+          S.documentTypeList('navigation').title('Menu')
         ),
       S.divider(),
       S.listItem()
@@ -89,7 +91,7 @@ const structure = (S: StructureBuilder) =>
       S.divider(),
       S.listItem()
         .title('Site Settings')
-        .icon(() => '⚙️')
+        .icon(CogIcon)
         .child(
           S.document()
             .schemaType('siteSettings')
