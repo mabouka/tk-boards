@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Space_Mono, Space_Grotesk } from 'next/font/google'
 import localFont from 'next/font/local'
 import { getLocale } from 'next-intl/server'
-import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_NAME, siteUrl } from '@/lib/metadata'
+import { getSiteSettings, siteUrl } from '@/lib/metadata'
 import './globals.css'
 
 const spaceMono = Space_Mono({
@@ -28,20 +28,27 @@ const integralCF = localFont({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: DEFAULT_TITLE,
-    template: `%s — ${SITE_NAME}`,
-  },
-  description: DEFAULT_DESCRIPTION,
-  openGraph: {
-    siteName: SITE_NAME,
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings()
+  const brandName = settings?.brandName ?? ''
+  const defaultTitle = settings?.siteTitle ?? ''
+  const defaultDescription = (settings?.seoDescription ?? '').replace(/\s+/g, ' ').trim()
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: defaultTitle,
+      template: `%s — ${brandName}`,
+    },
+    description: defaultDescription,
+    openGraph: {
+      siteName: brandName,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+    },
+  }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

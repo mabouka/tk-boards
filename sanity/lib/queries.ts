@@ -59,8 +59,10 @@ export const seriesQuery = defineQuery(`
 
 export const siteSettingsQuery = defineQuery(`
   *[_type == "siteSettings" && _id == "siteSettings"][0] {
+    brandName,
     siteTitle,
     seoDescription,
+    logo,
     ogImage,
     contact,
     social,

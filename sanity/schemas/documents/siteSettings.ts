@@ -16,17 +16,41 @@ export const siteSettings = defineType({
   ],
   fields: [
     defineField({
-      name: 'siteTitle',
-      title: 'Site Title',
+      name: 'brandName',
+      title: 'Brand Name',
       type: 'string',
-      group: 'seo'
+      description: "The brand's proper name, e.g. “TK Boards”. Used for the browser-tab suffix, social previews and search-engine entity data (Schema.org).",
+      group: 'seo',
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: 'siteTitle',
+      title: 'Default Page Title',
+      type: 'string',
+      description: 'Default <title> for the homepage and any page with no SEO title of its own.',
+      group: 'seo',
+      validation: (r) => r.required(),
     }),
     defineField({
       name: 'seoDescription',
-      title: 'SEO Description (default)',
+      title: 'Default SEO Description',
       type: 'text',
       rows: 3,
-      group: 'seo'
+      description: 'Default meta description used when a page or board has none of its own.',
+      group: 'seo',
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: 'logo',
+      title: 'Logo',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Brand logo for search engines (Schema.org). Square or rectangular on a transparent background recommended.',
+      group: 'seo',
+      validation: (r) => r.required(),
+      fields: [
+        defineField({ name: 'alt', title: 'Alt Text', type: 'string' }),
+      ],
     }),
     defineField({
       name: 'ogImage',

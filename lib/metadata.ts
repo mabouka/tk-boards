@@ -6,11 +6,6 @@ import { siteSettingsQuery } from '@/sanity/lib/queries'
 import { routing } from '@/i18n/routing'
 import type { SanityImage } from '@/sanity/lib/types'
 
-export const SITE_NAME = 'TK Boards'
-export const DEFAULT_TITLE = `${SITE_NAME} — Handcrafted Strapless Kitesurf Boards`
-export const DEFAULT_DESCRIPTION =
-  'TK develops handcrafted strapless boards built around precision. Shaped in Tarifa, Spain.'
-
 /** Absolute origin used to resolve canonical / OG URLs. */
 export const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -25,7 +20,7 @@ const OG_LOCALE: Record<string, string> = {
   es: 'es_ES',
 }
 
-/** Site-wide settings (siteTitle, seoDescription). Memoized per request. */
+/** Site-wide settings (brandName, siteTitle, seoDescription, logo, ogImage…). Memoized per request. */
 export const getSiteSettings = cache(() => client.fetch(siteSettingsQuery))
 
 type BuildMetadataArgs = {
@@ -67,25 +62,25 @@ export async function buildMetadata({
   languageAlternates,
 }: BuildMetadataArgs): Promise<Metadata> {
   const url = `/${locale}${path}`
+  const settings = await getSiteSettings()
+  const brandName = settings?.brandName ?? ''
 
   const resolvedTitle = title
     ? absoluteTitle
       ? title
-      : `${title} — ${SITE_NAME}`
-    : DEFAULT_TITLE
+      : `${title} — ${brandName}`
+    : (settings?.siteTitle ?? '')
 
   // Collapse newlines / repeated whitespace — meta descriptions should be single-line.
-  const resolvedDescription = description?.replace(/\s+/g, ' ').trim() || DEFAULT_DESCRIPTION
+  const resolvedDescription =
+    (description ?? settings?.seoDescription ?? '').replace(/\s+/g, ' ').trim()
 
   // Fall back to the site-wide default OG image when no specific image is provided.
   let ogImage = image
   let ogImageAlt = imageAlt
-  if (!ogImage) {
-    const settings = await getSiteSettings()
-    if (settings?.ogImage) {
-      ogImage = settings.ogImage
-      ogImageAlt = imageAlt ?? settings.ogImage.alt
-    }
+  if (!ogImage && settings?.ogImage) {
+    ogImage = settings.ogImage
+    ogImageAlt = imageAlt ?? settings.ogImage.alt
   }
 
   const images = ogImage
@@ -94,7 +89,7 @@ export async function buildMetadata({
           url: urlFor(ogImage).width(1200).height(630).fit('crop').url(),
           width: 1200,
           height: 630,
-          alt: ogImageAlt ?? title ?? SITE_NAME,
+          alt: ogImageAlt ?? title ?? brandName,
         },
       ]
     : undefined

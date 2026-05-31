@@ -110,8 +110,17 @@ export type SiteSettings = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  siteTitle?: string;
-  seoDescription?: string;
+  brandName: string;
+  siteTitle: string;
+  seoDescription: string;
+  logo: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
   ogImage?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -670,10 +679,19 @@ export type SeriesQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: siteSettingsQuery
-// Query: *[_type == "siteSettings" && _id == "siteSettings"][0] {    siteTitle,    seoDescription,    ogImage,    contact,    social,    footer  }
+// Query: *[_type == "siteSettings" && _id == "siteSettings"][0] {    brandName,    siteTitle,    seoDescription,    logo,    ogImage,    contact,    social,    footer  }
 export type SiteSettingsQueryResult = {
-  siteTitle: string | null;
-  seoDescription: string | null;
+  brandName: string;
+  siteTitle: string;
+  seoDescription: string;
+  logo: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
   ogImage: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -931,7 +949,7 @@ declare module "@sanity/client" {
     '\n  *[_type == "board" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    style,\n    tagline,\n    weight,\n    mainImage,\n    specs\n  }\n': BoardsQueryResult;
     '\n  *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    style,\n    tagline,\n    weight,\n    description,\n    mainImage,\n    specs,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': BoardBySlugQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    slug,\n    tagVariant,\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug,\n      style,\n      mainImage\n    }\n  }[count(boards) > 0]\n': SeriesQueryResult;
-    '\n  *[_type == "siteSettings" && _id == "siteSettings"][0] {\n    siteTitle,\n    seoDescription,\n    ogImage,\n    contact,\n    social,\n    footer\n  }\n': SiteSettingsQueryResult;
+    '\n  *[_type == "siteSettings" && _id == "siteSettings"][0] {\n    brandName,\n    siteTitle,\n    seoDescription,\n    logo,\n    ogImage,\n    contact,\n    social,\n    footer\n  }\n': SiteSettingsQueryResult;
     '\n  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {\n    "seoTitle": coalesce(\n      seoTitle[language == $locale][0].value,\n      seoTitle[language == "en"][0].value,\n      seoTitle[0].value\n    ),\n    "seoDescription": coalesce(\n      seoDescription[language == $locale][0].value,\n      seoDescription[language == "en"][0].value,\n      seoDescription[0].value\n    ),\n    ogImage\n  }\n': BoardsPageSettingsQueryResult;
     '\n  *[_type == "board" && defined(slug.current) && !(_id in path("drafts.**"))] | order(_updatedAt desc) {\n    "slug": slug.current,\n    language,\n    _updatedAt,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': SitemapBoardsQueryResult;
     '\n  *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {\n    language,\n    _updatedAt\n  }\n': SitemapHomePagesQueryResult;
