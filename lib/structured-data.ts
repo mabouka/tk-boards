@@ -1,4 +1,4 @@
-import type { SiteSettingsQueryResult } from '@/sanity.types'
+import type { BoardBySlugQueryResult, SiteSettingsQueryResult } from '@/sanity.types'
 import { routing } from '@/i18n/routing'
 import { urlFor } from '@/sanity/lib/image'
 import { siteUrl } from './metadata'
@@ -61,5 +61,81 @@ export function organizationGraph(settings: SiteSettingsQueryResult): Record<str
   return {
     '@context': 'https://schema.org',
     '@graph': [organization, website],
+  }
+}
+
+/** Map a currency code to its Schema.org availability URL. */
+const AVAILABILITY_IN_STOCK = 'https://schema.org/InStock'
+
+type BreadcrumbLabels = { home: string; boards: string }
+
+/**
+ * Product + BreadcrumbList graph for a board detail page.
+ * The Product references the sitewide Organization (#organization) as its brand,
+ * so it must be rendered on a page that also includes organizationGraph().
+ */
+export function productGraph(
+  board: NonNullable<BoardBySlugQueryResult>,
+  locale: string,
+  labels: BreadcrumbLabels
+): Record<string, unknown> {
+  const boardUrl = `${siteUrl}/${locale}/boards/${board.slug?.current ?? ''}`
+  const productId = `${boardUrl}#product`
+
+  const images = board.mainImage
+    ? [urlFor(board.mainImage).width(1200).height(900).fit('crop').url()]
+    : undefined
+
+  // Map free-form specs into structured PropertyValue entries.
+  const specProps = (board.specs ?? [])
+    .filter((s): s is { label: string; value: string; _key: string } => Boolean(s?.label && s?.value))
+    .map((s) => ({ '@type': 'PropertyValue', name: s.label, value: s.value }))
+  if (typeof board.weight === 'number') {
+    specProps.push({ '@type': 'PropertyValue', name: 'Weight', value: `${board.weight} kg` })
+  }
+
+  const description =
+    board.seoDescription?.replace(/\s+/g, ' ').trim() ||
+    board.tagline?.replace(/\s+/g, ' ').trim() ||
+    undefined
+
+  const product: Record<string, unknown> = {
+    '@type': 'Product',
+    '@id': productId,
+    name: board.name,
+    url: boardUrl,
+    brand: { '@id': ORG_ID },
+    ...(images ? { image: images } : {}),
+    ...(description ? { description } : {}),
+    ...(board.style ? { category: board.style } : {}),
+    ...(specProps.length > 0 ? { additionalProperty: specProps } : {}),
+    ...(typeof board.price === 'number'
+      ? {
+          offers: {
+            '@type': 'Offer',
+            url: boardUrl,
+            price: board.price.toFixed(2),
+            priceCurrency: board.currency ?? 'EUR',
+            availability: AVAILABILITY_IN_STOCK,
+            itemCondition: 'https://schema.org/NewCondition',
+            seller: { '@id': ORG_ID },
+          },
+        }
+      : {}),
+  }
+
+  const breadcrumb = {
+    '@type': 'BreadcrumbList',
+    '@id': `${boardUrl}#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: labels.home, item: `${siteUrl}/${locale}` },
+      { '@type': 'ListItem', position: 2, name: labels.boards, item: `${siteUrl}/${locale}/boards` },
+      { '@type': 'ListItem', position: 3, name: board.name },
+    ],
+  }
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [product, breadcrumb],
   }
 }

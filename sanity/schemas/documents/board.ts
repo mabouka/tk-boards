@@ -96,6 +96,29 @@ export const board = defineType({
       group: 'content',
     }),
     defineField({
+      name: 'price',
+      title: 'Price',
+      type: 'number',
+      description: 'Public price. Leave empty to omit price from search-engine product data.',
+      validation: (r) => r.min(0).precision(2),
+      group: 'content',
+    }),
+    defineField({
+      name: 'currency',
+      title: 'Currency',
+      type: 'string',
+      initialValue: 'EUR',
+      options: {
+        list: [
+          { title: 'Euro (€)', value: 'EUR' },
+          { title: 'US Dollar ($)', value: 'USD' },
+          { title: 'British Pound (£)', value: 'GBP' },
+        ],
+        layout: 'radio',
+      },
+      group: 'content',
+    }),
+    defineField({
       name: 'order',
       title: 'Display Order',
       type: 'number',

@@ -6,6 +6,8 @@ import { client } from '@/sanity/lib/client'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
+import { productGraph } from '@/lib/structured-data'
+import JsonLd from '@/components/json-ld/JsonLd'
 import { Link } from '@/i18n/navigation'
 import Image from 'next/image'
 import styles from './board.module.css'
@@ -47,7 +49,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BoardPage({ params }: Props) {
   const { locale, slug } = await params
-  const t = await getTranslations('boards')
+  const [t, tNav] = await Promise.all([
+    getTranslations('boards'),
+    getTranslations('nav'),
+  ])
 
   const board = await getBoard(locale, slug)
 
@@ -55,6 +60,9 @@ export default async function BoardPage({ params }: Props) {
 
   return (
     <div className={styles.board}>
+      <JsonLd
+        data={productGraph(board, locale, { home: tNav('home'), boards: t('title') })}
+      />
       <div className={styles.board__back}>
         <Link href="/boards" className={styles.board__back_link}>
           ← {t('back')}

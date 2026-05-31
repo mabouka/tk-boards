@@ -23,6 +23,8 @@ export const boardBySlugQuery = defineQuery(`
     style,
     tagline,
     weight,
+    price,
+    currency,
     description,
     mainImage,
     specs,
