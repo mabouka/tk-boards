@@ -159,6 +159,7 @@ export const board = defineType({
       type: 'string',
       readOnly: true,
       hidden: true,
+      validation: (r) => r.required(),
     }),
   ],
   orderings: [

@@ -153,6 +153,7 @@ export const accessory = defineType({
       type: 'string',
       readOnly: true,
       hidden: true,
+      validation: (r) => r.required(),
     }),
   ],
   orderings: [

@@ -93,6 +93,7 @@ export const page = defineType({
       type: 'string',
       readOnly: true,
       hidden: true,
+      validation: (r) => r.required(),
     }),
   ],
   preview: {

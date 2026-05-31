@@ -173,4 +173,13 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
+  document: {
+    // Translated types must be created from the language-specific structure panes
+    // (which set the language). Remove them from the global "+" button, which would
+    // otherwise create them with no language.
+    newDocumentOptions: (prev, { creationContext }) =>
+      creationContext.type === 'global'
+        ? prev.filter((item) => !TRANSLATABLE_TYPES.includes(item.templateId))
+        : prev,
+  },
 })
