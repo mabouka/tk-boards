@@ -356,7 +356,7 @@ export type Accessory = {
     alt?: string;
     _type: "image";
   };
-  language?: string;
+  language: string;
 };
 
 export type AccessoryCategory = {
@@ -434,7 +434,7 @@ export type Board = {
     alt?: string;
     _type: "image";
   };
-  language?: string;
+  language: string;
 };
 
 export type Series = {
@@ -452,6 +452,7 @@ export type Series = {
     | "red"
     | "outline-light"
     | "outline-muted";
+  order?: number;
 };
 
 export type Link = {
@@ -509,7 +510,7 @@ export type Page = {
     alt?: string;
     _type: "image";
   };
-  language?: string;
+  language: string;
 };
 
 export type MediaTag = {
@@ -854,7 +855,7 @@ export type BoardsPageSettingsQueryResult = {
 // Query: *[_type == "board" && defined(slug.current) && !(_id in path("drafts.**"))] | order(_updatedAt desc) {    "slug": slug.current,    language,    _updatedAt,    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
 export type SitemapBoardsQueryResult = Array<{
   slug: string;
-  language: string | null;
+  language: string;
   _updatedAt: string;
   translations: Array<{
     lang: string | null;
@@ -866,7 +867,7 @@ export type SitemapBoardsQueryResult = Array<{
 // Variable: sitemapHomePagesQuery
 // Query: *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {    language,    _updatedAt  }
 export type SitemapHomePagesQueryResult = Array<{
-  language: string | null;
+  language: string;
   _updatedAt: string;
 }>;
 

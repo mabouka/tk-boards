@@ -14,7 +14,7 @@ export const sectionAboutPreview = defineType({
     defineField({
       name: 'title',
       title: 'Title',
-      description: 'Entrée pour les sauts de ligne',
+      description: 'Use line breaks (Enter) to control wrapping.',
       type: 'text',
       rows: 4,
     }),

@@ -20,6 +20,13 @@ export const navigation = defineType({
         defineArrayMember({
           type: 'object',
           name: 'navItem',
+          validation: (r) =>
+            r.custom((item?: { internalLink?: unknown; externalUrl?: unknown }) => {
+              if (item?.internalLink && item?.externalUrl) {
+                return 'Use either an internal page or an external URL, not both.'
+              }
+              return true
+            }),
           fields: [
             defineField({
               name: 'label',

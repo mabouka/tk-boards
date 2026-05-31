@@ -35,6 +35,18 @@ export const series = defineType({
       },
       initialValue: 'dark',
     }),
+    defineField({
+      name: 'order',
+      title: 'Display Order',
+      type: 'number',
+    }),
+  ],
+  orderings: [
+    {
+      title: 'Display Order',
+      name: 'orderAsc',
+      by: [{ field: 'order', direction: 'asc' }],
+    },
   ],
   preview: {
     select: { name: 'name' },
