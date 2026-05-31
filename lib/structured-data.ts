@@ -11,7 +11,8 @@ export const WEBSITE_ID = `${siteUrl}/#website`
  * Emitted on every public page; Google de-duplicates by @id.
  */
 export function organizationGraph(settings: SiteSettingsQueryResult): Record<string, unknown> {
-  const name = settings?.siteTitle || SITE_NAME
+  // Use the canonical brand name for the entity — not the longer site title/tagline.
+  const name = SITE_NAME
   const social = settings?.social ?? {}
   const sameAs = Object.values(social).filter((v): v is string => Boolean(v))
   const email = settings?.contact?.email
