@@ -9,7 +9,10 @@ import { media } from 'sanity-plugin-media'
 import { linkField } from 'sanity-plugin-link-field'
 import { schemaTypes } from './sanity/schemas'
 import { MenuIcon, CogIcon, TagIcon } from '@sanity/icons'
+import type { ComponentType } from 'react'
 import { TkIcon } from './sanity/components/TkIcon'
+import { PerformanceIcon } from './sanity/components/PerformanceIcon'
+import { TikiIcon } from './sanity/components/TikiIcon'
 
 const SUPPORTED_LANGUAGES = [
   { id: 'fr', title: 'Français' },
@@ -26,7 +29,14 @@ const studioClient = createClient({
   apiVersion: '2024-01-01',
 })
 
-type SeriesEntry = { _id: string; name: string }
+type SeriesEntry = { _id: string; name: string; slug: string | null }
+
+/** Pick a series icon from its slug; falls back to the TK mark. */
+function seriesIcon(slug: string | null): ComponentType {
+  if (slug === 'series-carbone') return PerformanceIcon
+  if (slug === 'tiki-series') return TikiIcon
+  return TkIcon
+}
 
 const structure = (S: StructureBuilder) =>
   S.list()
@@ -38,7 +48,7 @@ const structure = (S: StructureBuilder) =>
         .child(() =>
           studioClient
             .fetch<SeriesEntry[]>(
-              '*[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) { _id, "name": coalesce(name[language == "en"][0].value, name[0].value) }'
+              '*[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) { _id, "name": coalesce(name[language == "en"][0].value, name[0].value), "slug": slug.current }'
             )
             .then((series) =>
               S.list()
@@ -48,7 +58,7 @@ const structure = (S: StructureBuilder) =>
                     S.listItem()
                       .title(s.name ?? s._id)
                       .id(s._id)
-                      .icon(TkIcon)
+                      .icon(seriesIcon(s.slug))
                       .child(
                         S.documentTypeList('board')
                           .title(s.name ?? s._id)
