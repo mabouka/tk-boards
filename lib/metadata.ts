@@ -23,6 +23,13 @@ const OG_LOCALE: Record<string, string> = {
 /** Site-wide settings (brandName, siteTitle, seoDescription, logo, ogImage…). Memoized per request. */
 export const getSiteSettings = cache(() => client.fetch(siteSettingsQuery))
 
+/** Extract a Twitter/X handle (e.g. "@tkboards") from an x.com/twitter.com profile URL. */
+export function twitterHandle(xUrl?: string | null): string | undefined {
+  if (!xUrl) return undefined
+  const m = xUrl.match(/(?:twitter|x)\.com\/@?([A-Za-z0-9_]{1,15})/)
+  return m ? `@${m[1]}` : undefined
+}
+
 type BuildMetadataArgs = {
   /** Page-specific title, without the site name. Omit/null to fall back to the default. */
   title?: string | null
@@ -64,6 +71,7 @@ export async function buildMetadata({
   const url = `/${locale}${path}`
   const settings = await getSiteSettings()
   const brandName = settings?.brandName ?? ''
+  const twitterSite = twitterHandle(settings?.social?.x)
 
   const resolvedTitle = title
     ? absoluteTitle
@@ -116,6 +124,7 @@ export async function buildMetadata({
       ...(languages ? { languages } : {}),
     },
     openGraph: {
+      type: 'website',
       title: resolvedTitle,
       description: resolvedDescription,
       url,
@@ -124,6 +133,7 @@ export async function buildMetadata({
     },
     twitter: {
       card: ogImage ? 'summary_large_image' : 'summary',
+      ...(twitterSite ? { site: twitterSite, creator: twitterSite } : {}),
       title: resolvedTitle,
       description: resolvedDescription,
       ...(images ? { images: images.map((i) => i.url) } : {}),

@@ -41,6 +41,17 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s — ${brandName}`,
     },
     description: defaultDescription,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
+    },
     openGraph: {
       siteName: brandName,
       type: 'website',
