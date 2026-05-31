@@ -18,6 +18,9 @@ const SUPPORTED_LANGUAGES = [
 
 export const TRANSLATABLE_TYPES = ['page', 'board', 'accessory']
 
+// Singletons: exactly one document, edited from a fixed structure pane.
+export const SINGLETON_TYPES = ['siteSettings', 'boardsPageSettings', 'accessoriesPageSettings']
+
 const structure = (S: StructureBuilder) =>
   S.list()
     .title('Content')
@@ -152,7 +155,17 @@ export default defineConfig({
     // per-language templates ("accessory-en", "board-fr", …) that set it; the
     // bare template ("accessory", "board", "page") would create a doc with no
     // language. Remove the bare ones everywhere (global "+" AND pane "+").
+    // Singletons are never created from "+" either — they live in a fixed pane.
     newDocumentOptions: (prev) =>
-      prev.filter((item) => !TRANSLATABLE_TYPES.includes(item.templateId)),
+      prev.filter(
+        (item) =>
+          !TRANSLATABLE_TYPES.includes(item.templateId) &&
+          !SINGLETON_TYPES.includes(item.templateId)
+      ),
+    // Singletons can't be duplicated or deleted — only edited/published.
+    actions: (prev, { schemaType }) =>
+      SINGLETON_TYPES.includes(schemaType)
+        ? prev.filter((action) => !['duplicate', 'delete', 'unpublish'].includes(action.action ?? ''))
+        : prev,
   },
 })
