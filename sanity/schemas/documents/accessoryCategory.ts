@@ -36,7 +36,7 @@ export const accessoryCategory = defineType({
     select: { name: 'name' },
     prepare({ name }) {
       const title =
-        name?.find((n: { _key: string; value: string }) => n._key === 'en')?.value ??
+        name?.find((n: { language: string; value: string }) => n.language === 'en')?.value ??
         name?.[0]?.value ??
         'Unnamed'
       return { title }

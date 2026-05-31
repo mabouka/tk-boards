@@ -177,7 +177,7 @@ export const board = defineType({
     },
     prepare({ title, seriesName, media }) {
       const subtitle = Array.isArray(seriesName)
-        ? (seriesName.find((n: { _key: string; value: string }) => n._key === 'en')?.value ?? seriesName[0]?.value ?? '')
+        ? (seriesName.find((n: { language: string; value: string }) => n.language === 'en')?.value ?? seriesName[0]?.value ?? '')
         : (seriesName ?? '')
       return { title, subtitle, media }
     },

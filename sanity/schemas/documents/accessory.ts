@@ -171,7 +171,7 @@ export const accessory = defineType({
     },
     prepare({ title, categoryName, media }) {
       const subtitle = Array.isArray(categoryName)
-        ? (categoryName.find((n: { _key: string; value: string }) => n._key === 'en')?.value ?? categoryName[0]?.value ?? '')
+        ? (categoryName.find((n: { language: string; value: string }) => n.language === 'en')?.value ?? categoryName[0]?.value ?? '')
         : (categoryName ?? '')
       return { title, subtitle, media }
     },
