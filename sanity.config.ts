@@ -16,7 +16,7 @@ const SUPPORTED_LANGUAGES = [
   { id: 'es', title: 'Español' },
 ]
 
-export const TRANSLATABLE_TYPES = ['page', 'board', 'accessory']
+export const TRANSLATABLE_TYPES = ['page', 'board', 'accessory', 'navigation']
 
 // Singletons: exactly one document, edited from a fixed structure pane.
 export const SINGLETON_TYPES = ['siteSettings', 'boardsPageSettings', 'accessoriesPageSettings']
@@ -103,7 +103,22 @@ const structure = (S: StructureBuilder) =>
         .title('Menus')
         .icon(MenuIcon)
         .child(
-          S.documentTypeList('navigation').title('Menu')
+          S.list()
+            .title('Menus')
+            .items(
+              SUPPORTED_LANGUAGES.map((lang) =>
+                S.listItem()
+                  .title(lang.title)
+                  .id(`menus-${lang.id}`)
+                  .icon(TranslateIcon)
+                  .child(
+                    S.documentTypeList('navigation')
+                      .title(`Menus — ${lang.title}`)
+                      .filter('_type == "navigation" && language == $lang')
+                      .params({ lang: lang.id })
+                  )
+              )
+            )
         ),
       S.divider(),
       S.listItem()

@@ -57,11 +57,18 @@ export const navigation = defineType({
           preview: {
             select: { title: 'label', subtitle: 'externalUrl' },
             prepare({ title, subtitle }) {
-              return { title, subtitle: subtitle ?? '→ internal page' }
+              return { title: title ?? 'Untitled', subtitle: subtitle ?? '→ internal page' }
             },
           },
         }),
       ],
+    }),
+    defineField({
+      name: 'language',
+      type: 'string',
+      readOnly: true,
+      hidden: true,
+      validation: (r) => r.required(),
     }),
   ],
   preview: {

@@ -31,10 +31,14 @@ export default async function Footer({ locale }: Props) {
   const [series, settings, nav] = await Promise.all([
     client.fetch(footerSeriesQuery, { locale }),
     getSiteSettings(),
-    client.fetch(navigationQuery, { title: 'Footer Sitemap' }),
+    client.fetch(navigationQuery, { title: 'Footer Sitemap', locale }),
   ])
 
-  const navItems: NavItem[] = nav?.items ?? []
+  // Keep only items that have a label and a destination (guards against
+  // half-filled nav documents — e.g. labels not yet translated).
+  const navItems: NavItem[] = (nav?.items ?? []).filter(
+    (item: NavItem) => item.label && (item.slug || item.externalUrl)
+  )
 
   const social = settings?.social ?? {}
 

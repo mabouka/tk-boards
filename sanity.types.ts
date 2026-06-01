@@ -174,30 +174,6 @@ export type SanityImageHotspot = {
   width: number;
 };
 
-export type PageReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "page";
-};
-
-export type Navigation = {
-  _id: string;
-  _type: "navigation";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title: string;
-  items?: Array<{
-    label: string;
-    internalLink?: PageReference;
-    externalUrl?: string;
-    openInNewTab?: boolean;
-    _type: "navItem";
-    _key: string;
-  }>;
-};
-
 export type BoardsPageSettings = {
   _id: string;
   _type: "boardsPageSettings";
@@ -274,6 +250,13 @@ export type InternationalizedArrayReference = Array<
   } & InternationalizedArrayReferenceValue
 >;
 
+export type PageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "page";
+};
+
 export type BoardReference = {
   _ref: string;
   _type: "reference";
@@ -288,9 +271,38 @@ export type AccessoryReference = {
   [internalGroqTypeReferenceTo]?: "accessory";
 };
 
+export type NavigationReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "navigation";
+};
+
 export type InternationalizedArrayReferenceValue = {
   _type: "internationalizedArrayReferenceValue";
-  value?: PageReference | BoardReference | AccessoryReference;
+  value?:
+    | PageReference
+    | BoardReference
+    | AccessoryReference
+    | NavigationReference;
+  language: string;
+};
+
+export type Navigation = {
+  _id: string;
+  _type: "navigation";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  items?: Array<{
+    label: string;
+    internalLink?: PageReference;
+    externalUrl?: string;
+    openInNewTab?: boolean;
+    _type: "navItem";
+    _key: string;
+  }>;
   language: string;
 };
 
@@ -629,8 +641,6 @@ export type AllSanitySchemaTypes =
   | Slug
   | SanityImageCrop
   | SanityImageHotspot
-  | PageReference
-  | Navigation
   | BoardsPageSettings
   | InternationalizedArrayText
   | InternationalizedArrayString
@@ -639,9 +649,12 @@ export type AllSanitySchemaTypes =
   | InternationalizedArrayStringValue
   | TranslationMetadata
   | InternationalizedArrayReference
+  | PageReference
   | BoardReference
   | AccessoryReference
+  | NavigationReference
   | InternationalizedArrayReferenceValue
+  | Navigation
   | AccessoryCategoryReference
   | Accessory
   | AccessoryCategory
@@ -873,7 +886,7 @@ export type SitemapHomePagesQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: navigationQuery
-// Query: *[_type == "navigation" && title == $title][0] {    items[] {      label,      openInNewTab,      "slug": internalLink->slug.current,      "externalUrl": externalUrl,    }  }
+// Query: *[_type == "navigation" && title == $title && language == $locale][0] {    items[] {      label,      openInNewTab,      "slug": internalLink->slug.current,      "externalUrl": externalUrl,    }  }
 export type NavigationQueryResult = {
   items: Array<{
     label: string;
@@ -1064,7 +1077,7 @@ declare module "@sanity/client" {
     '\n  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {\n    "seoTitle": coalesce(\n      seoTitle[language == $locale][0].value,\n      seoTitle[language == "en"][0].value,\n      seoTitle[0].value\n    ),\n    "seoDescription": coalesce(\n      seoDescription[language == $locale][0].value,\n      seoDescription[language == "en"][0].value,\n      seoDescription[0].value\n    ),\n    ogImage\n  }\n': BoardsPageSettingsQueryResult;
     '\n  *[_type == "board" && defined(slug.current) && !(_id in path("drafts.**"))] | order(_updatedAt desc) {\n    "slug": slug.current,\n    language,\n    _updatedAt,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': SitemapBoardsQueryResult;
     '\n  *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {\n    language,\n    _updatedAt\n  }\n': SitemapHomePagesQueryResult;
-    '\n  *[_type == "navigation" && title == $title][0] {\n    items[] {\n      label,\n      openInNewTab,\n      "slug": internalLink->slug.current,\n      "externalUrl": externalUrl,\n    }\n  }\n': NavigationQueryResult;
+    '\n  *[_type == "navigation" && title == $title && language == $locale][0] {\n    items[] {\n      label,\n      openInNewTab,\n      "slug": internalLink->slug.current,\n      "externalUrl": externalUrl,\n    }\n  }\n': NavigationQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) [0..1] {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug\n    }\n  }\n': FooterSeriesQueryResult;
     '\n  coalesce(\n    *[_type == "page" && slug.current == $slug && language == $locale][0],\n    *[_type == "page" && slug.current == $slug && language == "fr"][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    slug,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      imagePosition,\n      layout,\n      theme,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    }\n  }\n': PageBySlugQueryResult;
   }

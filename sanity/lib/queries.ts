@@ -108,7 +108,7 @@ export const sitemapHomePagesQuery = defineQuery(`
 `)
 
 export const navigationQuery = defineQuery(`
-  *[_type == "navigation" && title == $title][0] {
+  *[_type == "navigation" && title == $title && language == $locale][0] {
     items[] {
       label,
       openInNewTab,
