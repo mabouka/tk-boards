@@ -12,3 +12,7 @@
   height: auto;
   color: var(--color-cream, #f5f4f0);
 }
+
+body{
+  margin: 0;
+}
