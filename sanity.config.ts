@@ -124,8 +124,22 @@ const structure = (S: StructureBuilder) =>
       S.listItem()
         .title('Pages')
         .child(
-          S.documentTypeList('page')
+          S.list()
             .title('Pages')
+            .items(
+              SUPPORTED_LANGUAGES.map((lang) =>
+                S.listItem()
+                  .title(lang.title)
+                  .id(`pages-${lang.id}`)
+                  .icon(TranslateIcon)
+                  .child(
+                    S.documentTypeList('page')
+                      .title(`Pages — ${lang.title}`)
+                      .filter('_type == "page" && language == $lang')
+                      .params({ lang: lang.id })
+                  )
+              )
+            )
         ),
       S.divider(),
       S.listItem()
