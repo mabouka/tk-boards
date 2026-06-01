@@ -39,7 +39,14 @@ export const navigation = defineType({
               title: 'Internal page',
               type: 'reference',
               to: [{ type: 'page' }],
-              description: 'Link to a page — slug updates automatically',
+              description: 'Link to a page — slug updates automatically. Only pages in this menu’s language are shown.',
+              options: {
+                // Only offer pages in the same language as this menu document.
+                filter: ({ document }) => ({
+                  filter: 'language == $lang',
+                  params: { lang: (document as { language?: string }).language ?? null },
+                }),
+              },
             }),
             defineField({
               name: 'externalUrl',
