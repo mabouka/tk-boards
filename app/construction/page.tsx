@@ -7,10 +7,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
+
 export default function ConstructionPage() {
   return (
     <main className={styles.screen}>
       <LogoTK className={styles.logo} aria-label="TK Boards" />
+      <h1 className={styles.title}>Coming soon</h1>
     </main>
   )
 }
