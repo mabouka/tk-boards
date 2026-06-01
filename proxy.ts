@@ -5,7 +5,8 @@ import { routing } from './i18n/routing'
 const intlMiddleware = createMiddleware(routing)
 
 // Flip to false (or remove) to take the site live.
-const UNDER_CONSTRUCTION = true;
+const UNDER_CONSTRUCTION = process.env.NODE_ENV === 'production'
+
 export default function proxy(request: NextRequest) {
   if (UNDER_CONSTRUCTION) {
     // Serve the holding page for every public route, but keep the page itself
