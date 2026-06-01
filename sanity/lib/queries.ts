@@ -10,7 +10,7 @@ export const boardsQuery = defineQuery(`
     tagline,
     weight,
     mainImage,
-    specs
+    specifications
   }
 `)
 
@@ -27,7 +27,7 @@ export const boardBySlugQuery = defineQuery(`
     currency,
     description,
     mainImage,
-    specs,
+    specifications,
     seoTitle,
     seoDescription,
     ogImage,

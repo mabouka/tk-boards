@@ -93,13 +93,13 @@ export default async function BoardPage({ params }: Props) {
             <p className={styles.board__tagline}>{board.tagline}</p>
           )}
 
-          {board.specs && board.specs.length > 0 && (
+          {board.specifications && board.specifications.length > 0 && (
             <div className={styles.board__specs}>
               <h2 className={styles.board__specs_title}>{t('specs')}</h2>
               <dl className={styles.board__specs_list}>
-                {board.specs.map((spec, i) => (
+                {board.specifications.map((spec, i) => (
                   <div key={i} className={styles.board__spec}>
-                    <dt className={styles.board__spec_label}>{spec.label}</dt>
+                    <dt className={styles.board__spec_label}>{spec.name}</dt>
                     <dd className={styles.board__spec_value}>{spec.value}</dd>
                   </div>
                 ))}

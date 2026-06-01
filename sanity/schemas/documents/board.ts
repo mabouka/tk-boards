@@ -75,17 +75,21 @@ export const board = defineType({
       ],
     }),
     defineField({
-      name: 'specs',
-      title: 'Specs',
+      name: 'specifications',
+      title: 'Specifications',
       type: 'array',
+      description: 'Name/value pairs, e.g. Weight → 2.2 kg.',
       group: 'content',
       of: [
         {
           type: 'object',
           fields: [
-            defineField({ name: 'label', type: 'string', title: 'Label' }),
+            defineField({ name: 'name', type: 'string', title: 'Name' }),
             defineField({ name: 'value', type: 'string', title: 'Value' }),
           ],
+          preview: {
+            select: { title: 'name', subtitle: 'value' },
+          },
         },
       ],
     }),
