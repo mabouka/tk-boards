@@ -1,0 +1,14 @@
+.screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-dark, #0d0f14);
+}
+
+.logo {
+  width: clamp(120px, 18vw, 200px);
+  height: auto;
+  color: var(--color-cream, #f5f4f0);
+}
