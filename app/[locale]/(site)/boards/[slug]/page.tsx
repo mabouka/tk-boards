@@ -4,13 +4,12 @@ import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
-import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { productGraph } from '@/lib/structured-data'
 import JsonLd from '@/components/json-ld/JsonLd'
-import { Link } from '@/i18n/navigation'
-import Image from 'next/image'
-import styles from './board.module.css'
+import HeroBoard from '@/components/hero-board/HeroBoard'
+import BoardPresentation from '@/components/board-presentation/BoardPresentation'
+import PageBuilder from '@/components/page-builder/PageBuilder'
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>
@@ -40,9 +39,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     path: `/boards/${slug}`,
     title: board.seoTitle ?? board.name,
     absoluteTitle: Boolean(board.seoTitle),
-    description: board.seoDescription ?? board.tagline ?? settings?.seoDescription ?? undefined,
+    description: board.seoDescription ?? settings?.seoDescription ?? undefined,
     image: board.ogImage ?? board.mainImage ?? undefined,
-    imageAlt: board.ogImage?.alt ?? board.mainImage?.alt ?? board.seoTitle ?? board.name,
+    imageAlt: board.ogImage?.alt ?? board.name,
     languageAlternates,
   })
 }
@@ -54,72 +53,46 @@ export default async function BoardPage({ params }: Props) {
     getTranslations('nav'),
   ])
 
+
   const board = await getBoard(locale, slug)
 
   if (!board) notFound()
 
+  // Gallery: dedicated images or mainImage repeated as fallback
+  type GalleryImage = { alt?: string | null;[k: string]: unknown }
+  const gallery: GalleryImage[] =
+    board.gallery && board.gallery.length > 0
+      ? board.gallery.slice(0, 3)
+      : board.mainImage
+        ? [board.mainImage, board.mainImage, board.mainImage]
+        : []
+
   return (
-    <div className={styles.board}>
+    <div>
       <JsonLd
         data={productGraph(board, locale, { home: tNav('home'), boards: t('title') })}
       />
-      <div className={styles.board__back}>
-        <Link href="/boards" className={styles.board__back_link}>
-          ← {t('back')}
-        </Link>
-      </div>
 
-      <div className={styles.board__layout}>
-        <div className={styles.board__media}>
-          {board.mainImage && (
-            <div className={styles.board__image}>
-              <Image
-                src={urlFor(board.mainImage).width(1200).height(900).url()}
-                alt={board.name}
-                fill
-                priority
-                sizes="(min-width: 1024px) 55vw, 100vw"
-              />
-            </div>
-          )}
-        </div>
+      <HeroBoard
+        title={board.heroTitle ?? board.name}
+        tagline={board.heroTagline}
+        backgroundImage={board.heroImage}
+      />
 
-        <div className={styles.board__content}>
-          {board.series?.name && (
-            <span className={styles.board__series}>{board.series.name}</span>
-          )}
-          <h1 className={styles.board__name}>{board.name}</h1>
-          {board.tagline && (
-            <p className={styles.board__tagline}>{board.tagline}</p>
-          )}
+      <BoardPresentation
+        sectionLabel={t('section_presentation')}
+        title={board.presentationTitle}
+        text={board.presentationText}
+        numbers={board.presentationNumbers ?? []}
+        tags={board.presentationTags ?? []}
+        buyLabel={t('buy_now')}
+        cartLabel={t('add_to_cart')}
+        perks={[t('perk_shipping'), t('perk_warranty'), t('perk_payment')]}
+        gallery={gallery}
+        boardName={board.name}
+      />
 
-          {board.specifications && board.specifications.length > 0 && (
-            <div className={styles.board__specs}>
-              <h2 className={styles.board__specs_title}>{t('specs')}</h2>
-              <dl className={styles.board__specs_list}>
-                {board.specifications.map((spec, i) => (
-                  <div key={i} className={styles.board__spec}>
-                    <dt className={styles.board__spec_label}>{spec.name}</dt>
-                    <dd className={styles.board__spec_value}>{spec.value}</dd>
-                  </div>
-                ))}
-                {board.weight && (
-                  <div className={styles.board__spec}>
-                    <dt className={styles.board__spec_label}>{t('weight')}</dt>
-                    <dd className={styles.board__spec_value}>{board.weight} kg</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-          )}
-
-          <div className={styles.board__cta}>
-            <button className={styles.board__order_btn} type="button">
-              {t('order')}
-            </button>
-          </div>
-        </div>
-      </div>
+      <PageBuilder sections={board.sections ?? []} locale={locale} />
     </div>
   )
 }

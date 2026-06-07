@@ -9,18 +9,18 @@ import IconCart from '@/components/icons/IconCart'
 import IconAccount from '@/components/icons/IconAccount'
 import styles from './Header.module.css'
 
-const COMPACT_HEIGHT = 80 // hauteur du header compact en mode fixed
+const COMPACT_HEIGHT = 60 // hauteur du header compact en mode fixed
 
 const LOCALES = ['fr', 'en', 'es'] as const
 
 export default function Header({ locale }: { locale: string }) {
   const t = useTranslations('nav')
-  const headerRef      = useRef<HTMLElement>(null)
-  const prevY          = useRef(0)
-  const offsetY        = useRef(0)
-  const isFixedRef     = useRef(false)
+  const headerRef = useRef<HTMLElement>(null)
+  const prevY = useRef(0)
+  const offsetY = useRef(0)
+  const isFixedRef = useRef(false)
   const pendingExitRef = useRef(false)
-  const exitTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     prevY.current = window.scrollY
@@ -40,7 +40,7 @@ export default function Header({ locale }: { locale: string }) {
     }
 
     const onScroll = () => {
-      const y     = window.scrollY
+      const y = window.scrollY
       const delta = y - prevY.current
       prevY.current = y
 
@@ -51,17 +51,17 @@ export default function Header({ locale }: { locale: string }) {
           pendingExitRef.current = true
           if (headerRef.current) {
             headerRef.current.style.transition = 'transform 0.35s ease'
-            headerRef.current.style.transform  = `translateY(${-COMPACT_HEIGHT}px)`
+            headerRef.current.style.transform = `translateY(${-COMPACT_HEIGHT}px)`
           }
           offsetY.current = -COMPACT_HEIGHT
 
           exitTimerRef.current = setTimeout(() => {
             pendingExitRef.current = false
-            exitTimerRef.current   = null
+            exitTimerRef.current = null
             setFixed(false)
             if (headerRef.current) {
               headerRef.current.style.transition = ''
-              headerRef.current.style.transform  = ''
+              headerRef.current.style.transform = ''
             }
             offsetY.current = 0
           }, 350)
@@ -83,7 +83,7 @@ export default function Header({ locale }: { locale: string }) {
         offsetY.current = -COMPACT_HEIGHT
         if (headerRef.current) {
           headerRef.current.style.transition = ''
-          headerRef.current.style.transform  = `translateY(${-COMPACT_HEIGHT}px)`
+          headerRef.current.style.transform = `translateY(${-COMPACT_HEIGHT}px)`
         }
         return
       }

@@ -63,8 +63,8 @@ export default async function BoardsPage({ params }: Props) {
                   <span className={styles.board_card__series}>{board.series.name}</span>
                 )}
                 <h2 className={styles.board_card__name}>{board.name}</h2>
-                {board.tagline && (
-                  <p className={styles.board_card__tagline}>{board.tagline}</p>
+                {board.style && (
+                  <p className={styles.board_card__tagline}>{board.style}</p>
                 )}
                 {board.weight && (
                   <p className={styles.board_card__weight}>

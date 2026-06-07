@@ -1,0 +1,85 @@
+.bigQuote {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 0 var(--gutter);
+  margin: var(--space-4xl) 0;
+  text-align: center;
+}
+
+/* ── Quote ── */
+.bigQuote__text {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 4.5vw, 3rem); /* 28px → 48px */
+  line-height: 1.02;
+  text-transform: uppercase;
+  color: var(--color-white);
+  max-width: 60rem;
+  white-space: pre-line;
+}
+
+.bigQuote__text::before {
+  content: '“ ';
+}
+
+.bigQuote__text::after {
+  content: ' ”';
+}
+
+/* ── Rule ── */
+.bigQuote__rule {
+  width: 82px;
+  height: 1px;
+  background: var(--color-white-50);
+}
+
+/* ── Author ── */
+.bigQuote__author {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-style: normal; /* <cite> defaults to italic */
+}
+
+.bigQuote__name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 20px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.bigQuote__role {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-white-72);
+}
+
+/* ── Light theme ── */
+.bigQuote--light .bigQuote__text {
+  color: var(--color-black);
+}
+
+.bigQuote--light .bigQuote__rule {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.bigQuote--light .bigQuote__name {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.bigQuote--light .bigQuote__role {
+  color: var(--color-black-72);
+}
+
+@media (max-width: 1023px) {
+  .bigQuote {
+    gap: var(--space-md);
+    padding-block: var(--space-2xl);
+  }
+}

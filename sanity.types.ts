@@ -22,6 +22,106 @@ export type SanityImageAssetReference = {
   [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
 };
 
+export type MediaItemImage = {
+  asset?: SanityImageAssetReference;
+  media?: unknown; // Unable to locate the referenced type "mediaItem.image.media" in schema
+  hotspot?: SanityImageHotspot;
+  crop?: SanityImageCrop;
+  alt: string;
+  _type: "image";
+};
+
+export type VideoPoster = {
+  asset?: SanityImageAssetReference;
+  media?: unknown; // Unable to locate the referenced type "mediaItem.videoPoster.media" in schema
+  hotspot?: SanityImageHotspot;
+  crop?: SanityImageCrop;
+  _type: "image";
+};
+
+export type SectionMediaLine = {
+  _type: "sectionMediaLine";
+  media?: Array<{
+    mediaType?: "image" | "video";
+    image?: MediaItemImage;
+    videoUrl?: string;
+    videoPoster?: VideoPoster;
+    controls?: boolean;
+    _type: "mediaItem";
+    _key: string;
+  }>;
+  aspectRatio?: "4 / 3" | "3 / 2" | "1 / 1" | "4 / 5" | "16 / 9";
+  size?: "in-grid" | "full";
+};
+
+export type SectionBigQuote = {
+  _type: "sectionBigQuote";
+  quote: string;
+  authorName?: string;
+  authorRole?: string;
+  theme?: "dark" | "light";
+};
+
+export type SectionFullMedia = {
+  _type: "sectionFullMedia";
+  mediaType?: "image" | "video";
+  size?: "full" | "in-grid";
+  image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  videoUrl?: string;
+  videoPoster?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  videoWidth?: number;
+  videoHeight?: number;
+  controls?: boolean;
+};
+
+export type SectionTextGallery = {
+  _type: "sectionTextGallery";
+  label?: string;
+  title: string;
+  body?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  gallery?: Array<{
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+    _key: string;
+  }>;
+  theme?: "light" | "dark";
+  imagePosition?: "left" | "right";
+};
+
 export type SectionTextImage = {
   _type: "sectionTextImage";
   layout?: "full" | "contained";
@@ -398,24 +498,55 @@ export type Board = {
   name: string;
   slug: Slug;
   series: SeriesReference;
-  style?: string;
-  tagline?: string;
-  description?: Array<{
+  heroTitle?: string;
+  heroTagline?: string;
+  heroImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  };
+  presentationTitle?: string;
+  presentationText?: Array<{
     children?: Array<{
       marks?: Array<string>;
       text?: string;
       _type: "span";
       _key: string;
     }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
+    style?: "normal";
+    listItem?: never;
+    markDefs?: null;
     level?: number;
     _type: "block";
+    _key: string;
+  }>;
+  presentationNumbers?: Array<{
+    value: string;
+    unit?: string;
+    label: string;
+    _key: string;
+  }>;
+  presentationTags?: Array<{
+    text: string;
+    style?:
+      | "cream"
+      | "dark"
+      | "amber"
+      | "red"
+      | "outline-light"
+      | "outline-muted";
+    _key: string;
+  }>;
+  gallery?: Array<{
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
     _key: string;
   }>;
   mainImage?: {
@@ -424,14 +555,35 @@ export type Board = {
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     alt: string;
-    description?: string;
     _type: "image";
   };
-  specifications?: Array<{
-    name?: string;
-    value?: string;
-    _key: string;
-  }>;
+  style?: string;
+  sections?: Array<
+    | ({
+        _key: string;
+      } & SectionAboutPreview)
+    | ({
+        _key: string;
+      } & SectionBoards)
+    | ({
+        _key: string;
+      } & SectionMarquee)
+    | ({
+        _key: string;
+      } & SectionTextImage)
+    | ({
+        _key: string;
+      } & SectionTextGallery)
+    | ({
+        _key: string;
+      } & SectionFullMedia)
+    | ({
+        _key: string;
+      } & SectionBigQuote)
+    | ({
+        _key: string;
+      } & SectionMediaLine)
+  >;
   weight?: number;
   price?: number;
   currency?: "EUR" | "USD" | "GBP";
@@ -511,6 +663,18 @@ export type Page = {
     | ({
         _key: string;
       } & SectionTextImage)
+    | ({
+        _key: string;
+      } & SectionTextGallery)
+    | ({
+        _key: string;
+      } & SectionFullMedia)
+    | ({
+        _key: string;
+      } & SectionBigQuote)
+    | ({
+        _key: string;
+      } & SectionMediaLine)
   >;
   seoTitle?: string;
   seoDescription?: string;
@@ -633,6 +797,12 @@ export type Geopoint = {
 
 export type AllSanitySchemaTypes =
   | SanityImageAssetReference
+  | MediaItemImage
+  | VideoPoster
+  | SectionMediaLine
+  | SectionBigQuote
+  | SectionFullMedia
+  | SectionTextGallery
   | SectionTextImage
   | SectionMarquee
   | SectionBoards
@@ -675,7 +845,7 @@ export type AllSanitySchemaTypes =
 
 // Source: sanity/lib/queries.ts
 // Variable: boardsQuery
-// Query: *[_type == "board" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {    _id,    name,    slug,    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },    style,    tagline,    weight,    mainImage,    specifications  }
+// Query: *[_type == "board" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {    _id,    name,    slug,    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },    style,    weight,    mainImage  }
 export type BoardsQueryResult = Array<{
   _id: string;
   name: string;
@@ -686,7 +856,6 @@ export type BoardsQueryResult = Array<{
     slug: Slug;
   };
   style: string | null;
-  tagline: string | null;
   weight: number | null;
   mainImage: {
     asset?: SanityImageAssetReference;
@@ -694,19 +863,13 @@ export type BoardsQueryResult = Array<{
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     alt: string;
-    description?: string;
     _type: "image";
   } | null;
-  specifications: Array<{
-    name?: string;
-    value?: string;
-    _key: string;
-  }> | null;
 }>;
 
 // Source: sanity/lib/queries.ts
 // Variable: boardBySlugQuery
-// Query: *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {    _id,    name,    slug,    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },    style,    tagline,    weight,    price,    currency,    description,    mainImage,    specifications,    seoTitle,    seoDescription,    ogImage,    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
+// Query: *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {    _id,    name,    slug,    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },    heroTitle,    heroTagline,    heroImage,    presentationTitle,    presentationText,    presentationNumbers[]{ value, unit, label },    presentationTags[]{ text, style },    gallery[]{      asset,      alt,      hotspot,      crop    },    mainImage,    style,    weight,    price,    currency,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      }    },    seoTitle,    seoDescription,    ogImage,    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
 export type BoardBySlugQueryResult = {
   _id: string;
   name: string;
@@ -716,28 +879,52 @@ export type BoardBySlugQueryResult = {
     name: string | null;
     slug: Slug;
   };
-  style: string | null;
-  tagline: string | null;
-  weight: number | null;
-  price: number | null;
-  currency: "EUR" | "GBP" | "USD" | null;
-  description: Array<{
+  heroTitle: string | null;
+  heroTagline: string | null;
+  heroImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  } | null;
+  presentationTitle: string | null;
+  presentationText: Array<{
     children?: Array<{
       marks?: Array<string>;
       text?: string;
       _type: "span";
       _key: string;
     }>;
-    style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
+    style?: "normal";
+    listItem?: never;
+    markDefs?: null;
     level?: number;
     _type: "block";
     _key: string;
+  }> | null;
+  presentationNumbers: Array<{
+    value: string;
+    unit: string | null;
+    label: string;
+  }> | null;
+  presentationTags: Array<{
+    text: string;
+    style:
+      | "amber"
+      | "cream"
+      | "dark"
+      | "outline-light"
+      | "outline-muted"
+      | "red"
+      | null;
+  }> | null;
+  gallery: Array<{
+    asset: SanityImageAssetReference | null;
+    alt: string;
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
   }> | null;
   mainImage: {
     asset?: SanityImageAssetReference;
@@ -745,14 +932,363 @@ export type BoardBySlugQueryResult = {
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     alt: string;
-    description?: string;
     _type: "image";
   } | null;
-  specifications: Array<{
-    name?: string;
-    value?: string;
-    _key: string;
-  }> | null;
+  style: string | null;
+  weight: number | null;
+  price: number | null;
+  currency: "EUR" | "GBP" | "USD" | null;
+  sections: Array<
+    | {
+        _type: "sectionAboutPreview";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?: "normal";
+          listItem?: never;
+          markDefs?: null;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: {
+          text: string | null;
+          openInNewTab: null;
+          href: string | null;
+        } | null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionBigQuote";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        quote: string;
+        authorName: string | null;
+        authorRole: string | null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionBoards";
+        _key: string;
+        title: string | null;
+        showFilters: boolean | null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionFullMedia";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: "image" | "video" | null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: string | null;
+        videoPoster: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        videoWidth: number | null;
+        videoHeight: number | null;
+        controls: boolean | null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionMarquee";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: Array<{
+          text?: string;
+          accent?: boolean;
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionMediaLine";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
+        media: Array<{
+          mediaType?: "image" | "video";
+          image?: MediaItemImage;
+          videoUrl?: string;
+          videoPoster?: VideoPoster;
+          controls?: boolean;
+          _type: "mediaItem";
+          _key: string;
+        }> | null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionTextGallery";
+        _key: string;
+        title: string;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: string | null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: null;
+        gallery: Array<{
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+          _key: string;
+        }> | null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: "left" | "right" | null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionTextImage";
+        _key: string;
+        title: string;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: string | null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        };
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: "left" | "right" | null;
+        layout: "contained" | "full" | null;
+        theme: "dark" | "light" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: Array<{
+          _key: string;
+          text: string | null;
+          openInNewTab: null;
+          href: string | null;
+        }> | null;
+      }
+  > | null;
   seoTitle: string | null;
   seoDescription: string | null;
   ogImage: {
@@ -795,7 +1331,6 @@ export type SeriesQueryResult = Array<{
       hotspot?: SanityImageHotspot;
       crop?: SanityImageCrop;
       alt: string;
-      description?: string;
       _type: "image";
     } | null;
   }>;
@@ -911,7 +1446,7 @@ export type FooterSeriesQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: pageBySlugQuery
-// Query: coalesce(    *[_type == "page" && slug.current == $slug && language == $locale][0],    *[_type == "page" && slug.current == $slug && language == "fr"][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    slug,    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      imagePosition,      layout,      theme,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      }    }  }
+// Query: coalesce(    *[_type == "page" && slug.current == $slug && language == $locale][0],    *[_type == "page" && slug.current == $slug && language == "fr"][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    slug,    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      }    }  }
 export type PageBySlugQueryResult = {
   _id: string;
   title: string;
@@ -965,14 +1500,56 @@ export type PageBySlugQueryResult = {
           crop?: SanityImageCrop;
           _type: "image";
         } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
         imagePosition: null;
         layout: null;
         theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
         cta: {
           text: string | null;
           openInNewTab: null;
           href: string | null;
         } | null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionBigQuote";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        quote: string;
+        authorName: string | null;
+        authorRole: string | null;
+        cta: null;
         ctas: null;
       }
     | {
@@ -985,9 +1562,64 @@ export type PageBySlugQueryResult = {
         label: null;
         body: null;
         image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
         imagePosition: null;
         layout: null;
         theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionFullMedia";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: "image" | "video" | null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: string | null;
+        videoPoster: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        videoWidth: number | null;
+        videoHeight: number | null;
+        controls: boolean | null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
         cta: null;
         ctas: null;
       }
@@ -1005,9 +1637,121 @@ export type PageBySlugQueryResult = {
         label: null;
         body: null;
         image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
         imagePosition: null;
         layout: null;
         theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionMediaLine";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
+        media: Array<{
+          mediaType?: "image" | "video";
+          image?: MediaItemImage;
+          videoUrl?: string;
+          videoPoster?: VideoPoster;
+          controls?: boolean;
+          _type: "mediaItem";
+          _key: string;
+        }> | null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionTextGallery";
+        _key: string;
+        title: string;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: string | null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: null;
+        gallery: Array<{
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+          _key: string;
+        }> | null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: "left" | "right" | null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
         cta: null;
         ctas: null;
       }
@@ -1052,9 +1796,22 @@ export type PageBySlugQueryResult = {
           crop?: SanityImageCrop;
           _type: "image";
         };
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
         imagePosition: "left" | "right" | null;
         layout: "contained" | "full" | null;
         theme: "dark" | "light" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
         cta: null;
         ctas: Array<{
           _key: string;
@@ -1070,8 +1827,8 @@ export type PageBySlugQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '\n  *[_type == "board" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    style,\n    tagline,\n    weight,\n    mainImage,\n    specifications\n  }\n': BoardsQueryResult;
-    '\n  *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    style,\n    tagline,\n    weight,\n    price,\n    currency,\n    description,\n    mainImage,\n    specifications,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': BoardBySlugQueryResult;
+    '\n  *[_type == "board" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    style,\n    weight,\n    mainImage\n  }\n': BoardsQueryResult;
+    '\n  *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    heroTitle,\n    heroTagline,\n    heroImage,\n    presentationTitle,\n    presentationText,\n    presentationNumbers[]{ value, unit, label },\n    presentationTags[]{ text, style },\n    gallery[]{\n      asset,\n      alt,\n      hotspot,\n      crop\n    },\n    mainImage,\n    style,\n    weight,\n    price,\n    currency,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    },\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': BoardBySlugQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    slug,\n    tagVariant,\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug,\n      style,\n      mainImage\n    }\n  }[count(boards) > 0]\n': SeriesQueryResult;
     '\n  *[_type == "siteSettings" && _id == "siteSettings"][0] {\n    brandName,\n    siteTitle,\n    seoDescription,\n    logo,\n    ogImage,\n    contact,\n    social,\n    footer\n  }\n': SiteSettingsQueryResult;
     '\n  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {\n    "seoTitle": coalesce(\n      seoTitle[language == $locale][0].value,\n      seoTitle[language == "en"][0].value,\n      seoTitle[0].value\n    ),\n    "seoDescription": coalesce(\n      seoDescription[language == $locale][0].value,\n      seoDescription[language == "en"][0].value,\n      seoDescription[0].value\n    ),\n    ogImage\n  }\n': BoardsPageSettingsQueryResult;
@@ -1079,6 +1836,6 @@ declare module "@sanity/client" {
     '\n  *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {\n    language,\n    _updatedAt\n  }\n': SitemapHomePagesQueryResult;
     '\n  *[_type == "navigation" && title == $title && language == $locale][0] {\n    items[] {\n      label,\n      openInNewTab,\n      "slug": internalLink->slug.current,\n      "externalUrl": externalUrl,\n    }\n  }\n': NavigationQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) [0..1] {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug\n    }\n  }\n': FooterSeriesQueryResult;
-    '\n  coalesce(\n    *[_type == "page" && slug.current == $slug && language == $locale][0],\n    *[_type == "page" && slug.current == $slug && language == "fr"][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    slug,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      imagePosition,\n      layout,\n      theme,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    }\n  }\n': PageBySlugQueryResult;
+    '\n  coalesce(\n    *[_type == "page" && slug.current == $slug && language == $locale][0],\n    *[_type == "page" && slug.current == $slug && language == "fr"][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    slug,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    }\n  }\n': PageBySlugQueryResult;
   }
 }

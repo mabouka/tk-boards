@@ -86,17 +86,21 @@ export function productGraph(
     ? [urlFor(board.mainImage).width(1200).height(900).fit('crop').url()]
     : undefined
 
-  // Map free-form specifications into structured PropertyValue entries.
-  const specProps = (board.specifications ?? [])
-    .filter((s): s is { name: string; value: string; _key: string } => Boolean(s?.name && s?.value))
-    .map((s) => ({ '@type': 'PropertyValue', name: s.name, value: s.value }))
+  // Map presentation numbers into structured PropertyValue entries.
+  const specProps = (board.presentationNumbers ?? [])
+    .filter((n) => Boolean(n?.value && n?.label))
+    .map((n) => ({
+      '@type': 'PropertyValue',
+      name: n.label as string,
+      value: n.unit ? `${n.value} ${n.unit}` : (n.value as string),
+    }))
   if (typeof board.weight === 'number') {
     specProps.push({ '@type': 'PropertyValue', name: 'Weight', value: `${board.weight} kg` })
   }
 
   const description =
     board.seoDescription?.replace(/\s+/g, ' ').trim() ||
-    board.tagline?.replace(/\s+/g, ' ').trim() ||
+    board.presentationTitle?.replace(/\s+/g, ' ').trim() ||
     undefined
 
   const product: Record<string, unknown> = {

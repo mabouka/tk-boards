@@ -1,28 +1,15 @@
 import { defineField, defineType } from 'sanity'
 
-export const sectionTextImage = defineType({
-  name: 'sectionTextImage',
-  title: 'Text + Image',
+export const sectionTextGallery = defineType({
+  name: 'sectionTextGallery',
+  title: 'Text + Gallery',
   type: 'object',
   fields: [
-    defineField({
-      name: 'layout',
-      title: 'Layout',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Full — image bleed to edge', value: 'full' },
-          { title: 'Contained — image inset', value: 'contained' },
-        ],
-        layout: 'radio',
-      },
-      initialValue: 'full',
-    }),
     defineField({
       name: 'label',
       title: 'Label',
       type: 'string',
-      description: 'Small uppercase label above the title — ex: TECHNOLOGY',
+      description: 'Small uppercase label above the title — ex: CORE',
     }),
     defineField({
       name: 'title',
@@ -39,17 +26,25 @@ export const sectionTextImage = defineType({
       of: [{ type: 'block' }],
     }),
     defineField({
-      name: 'image',
-      title: 'Image',
-      type: 'image',
-      options: { hotspot: true },
-      validation: (r) => r.required(),
-    }),
-    defineField({
-      name: 'ctas',
-      title: 'CTAs',
+      name: 'gallery',
+      title: 'Gallery',
       type: 'array',
-      of: [{ type: 'link', options: { enableText: true } }],
+      description: 'Images shown in the large frame. Clicking a thumbnail swaps the main image — the text stays the same.',
+      validation: (r) => r.min(1),
+      of: [
+        {
+          type: 'image',
+          options: { hotspot: true },
+          fields: [
+            defineField({
+              name: 'alt',
+              title: 'Alt Text',
+              type: 'string',
+              validation: (r) => r.required(),
+            }),
+          ],
+        },
+      ],
     }),
     defineField({
       name: 'theme',
@@ -79,10 +74,13 @@ export const sectionTextImage = defineType({
     }),
   ],
   preview: {
-    select: { title: 'title', media: 'image', layout: 'layout' },
-    prepare: ({ title, media, layout }) => ({
-      title: title ?? 'Text + Image',
-      subtitle: layout === 'contained' ? 'Contained' : 'Full',
+    select: { title: 'title', media: 'gallery.0', position: 'imagePosition', theme: 'theme' },
+    prepare: ({ title, media, position, theme }) => ({
+      title: title ?? 'Text + Gallery',
+      subtitle: [
+        position === 'right' ? 'Image right' : 'Image left',
+        theme === 'dark' ? 'Dark' : 'Light',
+      ].join(' · '),
       media,
     }),
   },

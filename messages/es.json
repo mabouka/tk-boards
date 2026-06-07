@@ -20,7 +20,17 @@
     "specs": "Especificaciones",
     "weight": "Peso",
     "order": "Pedir este board",
-    "back": "Todos los boards"
+    "back": "Todos los boards",
+    "section_presentation": "Presentación",
+    "section_weight": "Peso",
+    "section_length": "Longitud",
+    "section_thickness": "Grosor",
+    "buy_now": "Comprar ahora",
+    "add_to_cart": "Añadir al carrito",
+    "perk_shipping": "Envío gratuito en la UE",
+    "perk_warranty": "Garantía 3 años · programa de reparación",
+    "perk_payment": "Pago en 3× · sin comisiones",
+    "scroll": "scroll"
   },
   "footer": {
     "legal": {

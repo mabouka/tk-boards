@@ -11,11 +11,13 @@
 
 .header--fixed {
   position: fixed;   /* scrubbing après 100vh */
-  height: 80px;
+  height: 60px;
   background-color: var(--color-dark);
   /* transform géré par JS */
 }
-
+.header--fixed .header__logo{
+  max-width: 32px;
+}
 .header__inner {
   display: grid;
   grid-template-columns: 1fr auto 1fr;

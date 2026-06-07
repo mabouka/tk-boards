@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   transpilePackages: ['sanity-plugin-media', 'filesize', 'copy-to-clipboard'],
   images: {
     qualities: [75, 85, 90],
+    // Global Sanity loader → every <Image> is served straight from the Sanity
+    // CDN at the right size; no per-image loader prop needed (components stay
+    // server components). See sanity/lib/imageLoader.ts.
+    loader: 'custom',
+    loaderFile: './sanity/lib/imageLoader.ts',
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     remotePatterns: [
       {
         protocol: 'https',

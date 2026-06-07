@@ -23,7 +23,8 @@
     "sanity-plugin-internationalized-array": "^5.1.2",
     "sanity-plugin-link-field": "^1.5.1",
     "sanity-plugin-media": "^4.3.0",
-    "styled-components": "^6.4.2"
+    "styled-components": "^6.4.2",
+    "yet-another-react-lightbox": "^3.32.0"
   },
   "devDependencies": {
     "@sanity/vision": "^5.26.0",

@@ -1,0 +1,231 @@
+.boardPresentation {
+  position: relative;
+  
+  margin: var(--space-2xl) 0 var(--space-4xl);
+  composes: u-grid from global;
+}
+
+@media (max-width: 1023px) {
+  .boardPresentation {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Left panel (sticky) ── */
+
+.boardPresentation__left {
+  composes: u-span-6 from global;
+  padding-left: calc(var(--col-gutter) + var(--col-width));
+  position: sticky;
+  top:0;
+  min-height: 100vh;
+  align-self: start;
+  
+  /* padding: var(--space-2xl) var(--space-lg) var(--space-2xl) var(--gutter); */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 1023px) {
+  .boardPresentation__left {
+    position: static;
+    padding: var(--space-lg) var(--gutter);
+  }
+}
+
+/* ── Section label + rule ── */
+
+.boardPresentation__label {
+  display: block;
+  font-size: 14px;
+  font-family: var(--font-mono);
+  color: var(--color-white-80);
+  text-transform: uppercase;
+}
+
+.boardPresentation__rule {
+  margin-top: 6px;
+  margin-bottom: 4px;
+  width: 26px;
+  height: 1px;
+  background: var(--color-paulownia);
+}
+
+/* ── Headline ── */
+
+.boardPresentation__headline {
+  font-family: var(--font-display);
+  font-size: clamp(1.625rem, 2.4vw, 2.25rem);
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--color-white);
+  line-height: 1.2;
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* ── Tags ── */
+
+.boardPresentation__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  margin-top: 15px;
+}
+
+/* ── Description ── */
+
+.boardPresentation__description {
+  margin-top: 24px;
+  margin-bottom: 24px;
+  composes: u-body from global;
+  color: var(--color-white-80);
+  max-width: col(4);
+}
+
+.boardPresentation__description p {
+  margin: 0 0 7px;
+}
+
+.boardPresentation__description p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Specs ── */
+
+.boardPresentation__specs {
+  display: flex;
+  justify-content: space-between;
+  max-width: 500px;
+
+}
+
+@media (max-width: 479px) {
+  .boardPresentation__specs {
+    gap: var(--space-md);
+  }
+}
+
+.boardPresentation__spec {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.boardPresentation__specValue {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.4vw, 2.25rem);
+  font-weight: 500;
+  color: var(--color-white);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.boardPresentation__specUnit {
+  font-size: clamp(0.875rem, 1.2vw, 1.125rem);
+  color: var(--color-white-80);
+}
+
+.boardPresentation__specLabel {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-white-80);
+  margin-top: 6px;
+}
+
+/* ── CTAs ── */
+
+.boardPresentation__ctas {
+  margin-top: 48px;
+  display: flex;
+  gap: var(--space-sm);
+}
+
+@media (max-width: 479px) {
+  .boardPresentation__ctas {
+    flex-direction: column;
+  }
+}
+
+.boardPresentation__btn {
+  composes: u-cta from global;
+}
+
+.boardPresentation__btn:hover {
+  opacity: 0.82;
+}
+
+.boardPresentation__btn--buy {
+  background: var(--color-white);
+  color: var(--color-dark);
+  border-color: var(--color-white);
+}
+
+.boardPresentation__btn--cart {
+  background: transparent;
+  color: var(--color-white);
+  border-color: var(--color-white);
+}
+
+/* ── Perks ── */
+
+.boardPresentation__perks {
+  margin-top: 24px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.boardPresentation__perk {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.0625em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boardPresentation__perk::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Right panel (gallery) ── */
+
+.boardPresentation__right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 24px;
+  composes: u-span-6 from global;
+
+}
+
+.boardPresentation__galleryItem {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: zoom-in;
+}
+
+.boardPresentation__galleryItem img {
+  object-fit: cover;
+}

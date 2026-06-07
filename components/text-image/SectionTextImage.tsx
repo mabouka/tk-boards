@@ -4,6 +4,13 @@ import { urlFor } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue, Cta } from '@/sanity/lib/types'
 import styles from './SectionTextImage.module.css'
 
+// Natural W×H encoded in the Sanity asset ref: image-<id>-<w>x<h>-<ext>
+function refRatio(src?: SanityImage): string | undefined {
+  const ref = (src as unknown as { asset?: { _ref?: string } })?.asset?._ref ?? ''
+  const m = ref.match(/-(\d+)x(\d+)-/)
+  return m ? `${m[1]} / ${m[2]}` : undefined
+}
+
 type Props = {
   label?: string
   title: string
@@ -26,52 +33,48 @@ export default function SectionTextImage({
   layout = 'full',
 }: Props) {
   const isDark = theme === 'dark'
-  const isReverse = imagePosition === 'right'
   const isContained = layout === 'contained'
 
   const classList = [
     styles.textImage,
+    styles[`textImage--${layout}`],
     isDark ? styles['textImage--dark'] : '',
-    isReverse ? styles['textImage--reverse'] : '',
-    isContained ? styles['textImage--contained'] : '',
-  ].filter(Boolean).join(' ')
+    imagePosition === 'right' ? styles['textImage--reverse'] : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
-  const ctaVariant = isDark ? 'u-cta--white-outline' : 'u-cta--black-outline'
-
-  const imageEl = image && (
-    <div className={styles.textImage__image}>
-      {isContained ? (
-        <Image
-          src={urlFor(image).width(1200).quality(85).url()}
-          alt={title}
-          sizes="390px"
-          width={664}
-          height={534}
-        />
-      ) : (
-        <Image
-          src={urlFor(image).width(1200).quality(85).url()}
-          alt={title}
-          fill
-          sizes="390px"
-        />
-      )}
-    </div>
-  )
+  // First CTA is the primary (filled), the rest are outlined.
+  const ctaFill = isDark ? 'u-cta--white-fill' : 'u-cta--black-fill'
+  const ctaOutline = isDark ? 'u-cta--white-outline' : 'u-cta--black-outline'
 
   return (
     <section
       className={classList}
-      {...(isDark ? {
-        'data-halo': '',
-        'data-halo-rgb': '212, 172, 251',
-        'data-halo-opacity': '0.28',
-        'data-halo-w': '61vw',
-        'data-halo-h': '39vh',
-        'data-halo-spread': '29%',
-      } : {})}
+      {...(isDark
+        ? {
+          'data-halo': '',
+          'data-halo-rgb': '212, 172, 251',
+          'data-halo-opacity': '0.28',
+          'data-halo-w': '61vw',
+          'data-halo-h': '39vh',
+          'data-halo-spread': '29%',
+        }
+        : {})}
     >
-      {imageEl}
+      {image && (
+        <div
+          className={styles.textImage__image}
+          style={isContained ? { aspectRatio: refRatio(image) } : undefined}
+        >
+          <Image
+            src={urlFor(image).width(1200).quality(85).url()}
+            alt={title}
+            fill
+            sizes="(min-width: 1024px) 50vw, 100vw"
+          />
+        </div>
+      )}
 
       <div className={styles.textImage__content}>
         {label && <span className={styles.textImage__eyebrow}>{label}</span>}
@@ -83,16 +86,20 @@ export default function SectionTextImage({
         )}
         {ctas && ctas.length > 0 && (
           <div className={styles.textImage__ctas}>
-            {ctas.map((cta, i) => cta.href && cta.text && (
-              <a
-                key={cta._key ?? i}
-                href={cta.href}
-                className={`${styles.textImage__cta} u-cta ${ctaVariant}`}
-                {...(cta.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-              >
-                {cta.text}
-              </a>
-            ))}
+            {ctas.map((cta, i) =>
+              cta.href && cta.text ? (
+                <a
+                  key={cta._key ?? i}
+                  href={cta.href}
+                  className={`u-cta ${i === 0 ? ctaFill : ctaOutline}`}
+                  {...(cta.openInNewTab
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {})}
+                >
+                  {cta.text}
+                </a>
+              ) : null
+            )}
           </div>
         )}
       </div>

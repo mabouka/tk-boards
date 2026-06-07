@@ -11,5 +11,9 @@ import { sectionAboutPreview } from './sections/sectionAboutPreview'
 import { sectionBoards } from './sections/sectionBoards'
 import { sectionMarquee } from './sections/sectionMarquee'
 import { sectionTextImage } from './sections/sectionTextImage'
+import { sectionTextGallery } from './sections/sectionTextGallery'
+import { sectionFullMedia } from './sections/sectionFullMedia'
+import { sectionBigQuote } from './sections/sectionBigQuote'
+import { sectionMediaLine } from './sections/sectionMediaLine'
 
-export const schemaTypes = [accessory, accessoryCategory, accessoriesPageSettings, board, boardsPageSettings, navigation, page, series, siteSettings, sectionAboutPreview, sectionBoards, sectionMarquee, sectionTextImage]
+export const schemaTypes = [accessory, accessoryCategory, accessoriesPageSettings, board, boardsPageSettings, navigation, page, series, siteSettings, sectionAboutPreview, sectionBoards, sectionMarquee, sectionTextImage, sectionTextGallery, sectionFullMedia, sectionBigQuote, sectionMediaLine]

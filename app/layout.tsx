@@ -7,7 +7,7 @@ import { getSiteSettings, siteUrl } from '@/lib/metadata'
 const spaceMono = Space_Mono({
   variable: '--font-space-mono',
   subsets: ['latin'],
-  weight: ['400', '700'],
+  weight: ['400'],
   display: 'swap',
 })
 
@@ -22,7 +22,6 @@ const integralCF = localFont({
   variable: '--font-integral',
   src: [
     { path: './fonts/IntegralCF-Medium.woff2', weight: '500', style: 'normal' },
-    { path: './fonts/IntegralCF-Bold.woff2', weight: '700', style: 'normal' },
   ],
   display: 'swap',
 })

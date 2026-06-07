@@ -1,0 +1,143 @@
+/* ── Block — reuses the 12-col grid (image 8 cols / content 4 cols) ── */
+.textGallery {
+  composes: u-grid from global;
+  align-items: center;
+  background: var(--color-cream);
+  padding-block: var(--space-3xl);
+  position: relative;
+}
+
+/* ── Modifier: dark ── */
+.textGallery--dark {
+  background: transparent;
+  padding-block: 0;
+  margin: var(--space-3xl) 0; 
+
+}
+
+/* ── Image (8 cols, ~1076px on a 1723px canvas) ── */
+.textGallery__image {
+  grid-column: span 8;
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+}
+
+.textGallery__image img {
+  object-fit: cover;
+}
+
+/* Stacked slides — crossfade on active change */
+.textGallery__slide {
+  opacity: 0;
+  transition: opacity 300ms linear;
+}
+
+.textGallery__slide--active {
+  opacity: 1;
+}
+
+/* ── Content (4 cols ≈ 528px) ── */
+.textGallery__content {
+  grid-column: span 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-xs);
+}
+
+/* ── Modifier: reverse (image right, text left) ── */
+.textGallery--reverse .textGallery__content {
+  order: 1;
+}
+
+.textGallery--reverse .textGallery__image {
+  order: 2;
+}
+
+/* ── Typography (reused globals) ── */
+.textGallery__eyebrow {
+  composes: u-eyebrow from global;
+}
+
+.textGallery__title {
+  composes: u-title u-title--36 from global;
+  color: var(--color-black);
+  margin-bottom: var(--space-sm);
+  white-space: pre-line;
+}
+
+.textGallery__body {
+  composes: u-body from global;
+}
+
+/* Dark overrides */
+.textGallery--dark .textGallery__eyebrow {
+  color: var(--color-white-72);
+}
+
+.textGallery--dark .textGallery__eyebrow::after {
+  background: var(--color-white-72);
+}
+
+.textGallery--dark .textGallery__title {
+  color: var(--color-white);
+}
+
+.textGallery--dark .textGallery__body {
+  color: var(--color-white-80);
+}
+
+/* ── Thumbnails (100×100, gap 10px) ── */
+.textGallery__thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: var(--space-md);
+}
+
+.textGallery__thumb {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid transparent;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+
+.textGallery__thumb:hover {
+  opacity: 0.85;
+}
+
+.textGallery__thumb--active {
+  opacity: 1;
+  border-color: var(--color-paulownia);
+}
+
+.textGallery__thumb:focus-visible {
+  outline: 2px solid var(--color-paulownia);
+  outline-offset: 2px;
+}
+
+.textGallery__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Responsive — stack under 1024px ── */
+@media (max-width: 1023px) {
+  .textGallery {
+    row-gap: var(--space-lg);
+  }
+
+  .textGallery__image,
+  .textGallery__content {
+    grid-column: span 12;
+    order: 0;
+  }
+}

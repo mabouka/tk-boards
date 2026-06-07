@@ -20,7 +20,17 @@
     "specs": "Specs",
     "weight": "Weight",
     "order": "Order this board",
-    "back": "All boards"
+    "back": "All boards",
+    "section_presentation": "Presentation",
+    "section_weight": "Weight",
+    "section_length": "Length",
+    "section_thickness": "Thickness",
+    "buy_now": "Buy now",
+    "add_to_cart": "Add to cart",
+    "perk_shipping": "Free shipping in EU",
+    "perk_warranty": "3-year warranty · hand-repair program",
+    "perk_payment": "Pay in 3× · no fees",
+    "scroll": "scroll"
   },
   "footer": {
     "legal": {

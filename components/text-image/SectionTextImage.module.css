@@ -1,19 +1,46 @@
-/* ── Block ── */
+/* ── Block — mobile-first: stacked ── */
 .textImage {
-  display: grid;
-  grid-template-columns: 50vw 1fr;
+  display: flex;
+  flex-direction: column;
   background: var(--color-cream);
-  overflow: hidden;  
 }
 
-.textImage--contained{
-    padding: var(--space-3xl) 0;
-    grid-template-columns:  calc((6 * (var(--col-width) + var(--col-gutter)) - var(--col-gutter)) + (var(--col-gutter) + var(--gutter)) ) 1fr;
-}
-
-/* ── Modifier dark ── */
 .textImage--dark {
   background: transparent;
+}
+
+/* ── Image ── */
+.textImage__image {
+  position: relative;
+  overflow: hidden;
+}
+
+.textImage__image img {
+  object-fit: cover;
+}
+
+/* ── Content ── */
+.textImage__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-xl) var(--gutter);
+}
+
+/* ── Typography (reused globals) ── */
+.textImage__eyebrow {
+  composes: u-eyebrow from global;
+}
+
+.textImage__title {
+  composes: u-title u-title--36 from global;
+  color: var(--color-black);
+  margin-bottom: var(--space-sm);
+  white-space: pre-line;
+}
+
+.textImage__body {
+  composes: u-body from global;
 }
 
 .textImage--dark .textImage__eyebrow {
@@ -32,103 +59,7 @@
   color: var(--color-white-80);
 }
 
-/* ── Modifier reverse ── */
-.textImage--reverse {
-  grid-template-columns: 1fr 50vw;
-}
-
-/* In reverse, image column (imageOuter or image) goes last */
-.textImage--reverse .textImage__image,
-.textImage--reverse .textImage__imageOuter {
-  order: 2;
-}
-
-.textImage--reverse .textImage__content {
-  order: 1;
-  padding-left: var(--gutter);
-  padding-right: col(1);
-}
-
-/* ── Full layout — image bleeds to edge ── */
-.textImage__image {
-  position: relative;
-}
-
-.textImage__image img {
-  object-fit: cover;
-}
-
-/* ── Contained layout — image inset with rounded corners ── */
-.textImage--contained {
-  overflow: visible;
-  align-items: center;
-}
-
-
-.textImage--contained .textImage__image {
-  width: col(5);
-}
-
-.textImage--contained .textImage__image img {
-  height: auto;
-  position: relative;
-}
-
-/* ── Content column ── */
-.textImage__content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding:
-    var(--space-3xl)
-    calc(var(--gutter) + var(--col-gutter) + var(--col-width))
-    var(--space-3xl)
-    calc((var(--col-gutter) * 1.5) + var(--col-width));
-  gap: var(--space-xs);
-}
-
-.textImage--reverse .textImage__content {
-  padding:
-    var(--space-3xl)
-    calc((var(--col-gutter) * 1.5) + var(--col-width))
-    var(--space-3xl)
-    calc(var(--gutter) + var(--col-gutter) + var(--col-width));
-}
-
-.textImage--full .textImage__content {
-  padding: var(--space-3xl) var(--gutter);
-}
-
-.textImage--contained:not(.textImage--reverse) .textImage__content{
-  padding-left:  calc((var(--col-gutter) * 2) + var(--col-width));
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.textImage--contained.textImage--reverse .textImage__content{
-  padding-right:  calc((var(--col-gutter) * 2) + var(--col-width));
-}
-
-
-/* ── Typography ── */
-.textImage__eyebrow {
-  composes: u-eyebrow from global;
-}
-
-.textImage__title {
-  composes: u-title u-title--36 from global;
-  color: var(--color-black);
-  margin-bottom: var(--space-sm);
-}
-
-.textImage--dark .textImage__title {
-  color: var(--color-white);
-}
-
-.textImage__body {
-  composes: u-body from global;
-}
-
+/* ── CTAs ── */
 .textImage__ctas {
   display: flex;
   flex-wrap: wrap;
@@ -136,6 +67,65 @@
   margin-top: var(--space-md);
 }
 
-.textImage__cta {
-  align-self: flex-start;
+/* ── Desktop: 12-col grid ── */
+@media (min-width: 1024px) {
+  .textImage {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--col-gutter);
+    padding-inline: var(--gutter);
+    align-items: center;
+  }
+
+  .textImage--contained {
+    padding-block: var(--space-3xl);
+  }
+
+  .textImage--full .textImage__content {
+    padding-block: var(--space-4xl);
+  }
+
+  /* Force image + content onto the same row. The image is first in the DOM, so
+     when it's positioned on the right the grid would otherwise push the content
+     to row 2 (sparse auto-flow). */
+  .textImage__image,
+  .textImage__content {
+    grid-row: 1;
+  }
+
+  /* Content — 4 cols, opposite the image */
+  .textImage__content {
+    padding: 0;
+    grid-column: 8 / span 4;
+  }
+
+  .textImage--reverse .textImage__content {
+    grid-column: 2 / span 4;
+  }
+
+  /* CONTAINED — inset image, 5 cols */
+  .textImage--contained .textImage__image {
+    grid-column: 2 / span 5;
+  }
+
+  .textImage--contained.textImage--reverse .textImage__image {
+    grid-column: 7 / span 5;
+  }
+
+  /* FULL — image bleeds to the viewport edge (~50vw), fills the row height */
+  .textImage--full .textImage__image {
+    grid-column: 1 / 7;
+    aspect-ratio: auto;
+    align-self: stretch;
+    min-height: 480px;
+    margin-left: calc(-1 * var(--gutter));
+    margin-right: calc(-0.5 * var(--col-gutter)) /* negate the grid gap on the left side */;
+    width: calc(100% + var(--gutter) + (var(--col-gutter)*0.5)); /* full bleed width: 100% of the grid column + the negative margins on either side */
+  }
+
+  .textImage--full.textImage--reverse .textImage__image {
+    grid-column: 7 / 13;
+    margin-left: calc(-0.5 * var(--col-gutter)) /* negate the grid gap on the left side */;
+    margin-right: calc(-1 * var(--gutter));
+  }
 }
