@@ -10,6 +10,9 @@ import styles from './auth.module.css'
 
 type Step = 'email' | 'signin' | 'signup'
 
+// Stricter than HTML5 type="email" (which accepts "a@b"): require a dotted domain.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
 export default function AuthFlow() {
   const t = useTranslations('auth')
   const locale = useLocale()
@@ -18,6 +21,7 @@ export default function AuthFlow() {
   const [email, setEmail] = useState('')
   const [checking, setChecking] = useState(false)
   const [checkError, setCheckError] = useState(false)
+  const [emailError, setEmailError] = useState(false)
 
   const [loginState, loginAction, loginPending] = useActionState(login, null)
   const [signupState, signupAction, signupPending] = useActionState(signup, null)
@@ -25,7 +29,10 @@ export default function AuthFlow() {
   async function onContinue(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const value = email.trim()
-    if (!value) return
+    if (!EMAIL_RE.test(value)) {
+      setEmailError(true)
+      return
+    }
     setChecking(true)
     setCheckError(false)
     try {
@@ -84,13 +91,18 @@ export default function AuthFlow() {
               <input
                 className={styles.field}
                 type="email"
+                inputMode="email"
                 autoComplete="email"
                 placeholder={t('email_placeholder')}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setEmailError(false)
+                }}
                 required
               />
             </label>
+            {emailError && <p className={styles.fieldError}>{t('error_email')}</p>}
             {checkError && <p className={styles.fieldError}>{t('error_generic')}</p>}
             <div className={styles.actions}>
               <button

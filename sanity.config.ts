@@ -19,7 +19,7 @@ const SUPPORTED_LANGUAGES = [
 export const TRANSLATABLE_TYPES = ['page', 'board', 'accessory', 'navigation']
 
 // Singletons: exactly one document, edited from a fixed structure pane.
-export const SINGLETON_TYPES = ['siteSettings', 'boardsPageSettings', 'accessoriesPageSettings']
+export const SINGLETON_TYPES = ['seoSettings', 'contactSettings', 'footerSettings', 'authPage', 'boardsPageSettings', 'accessoriesPageSettings']
 
 const structure = (S: StructureBuilder) =>
   S.list()
@@ -143,13 +143,29 @@ const structure = (S: StructureBuilder) =>
         ),
       S.divider(),
       S.listItem()
-        .title('Site Settings')
+        .title('Settings')
         .icon(CogIcon)
         .child(
-          S.document()
-            .schemaType('siteSettings')
-            .documentId('siteSettings')
-            .title('Site Settings')
+          S.list()
+            .title('Settings')
+            .items([
+              S.listItem()
+                .title('SEO')
+                .icon(CogIcon)
+                .child(S.document().schemaType('seoSettings').documentId('seoSettings').title('SEO')),
+              S.listItem()
+                .title('Contact')
+                .icon(CogIcon)
+                .child(S.document().schemaType('contactSettings').documentId('contactSettings').title('Contact')),
+              S.listItem()
+                .title('Footer')
+                .icon(CogIcon)
+                .child(S.document().schemaType('footerSettings').documentId('footerSettings').title('Footer')),
+              S.listItem()
+                .title('Login')
+                .icon(CogIcon)
+                .child(S.document().schemaType('authPage').documentId('authPage').title('Login')),
+            ])
         ),
     ])
 

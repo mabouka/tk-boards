@@ -13,6 +13,8 @@ function safeLocale(value: FormDataEntryValue | null): Locale {
 
 export type AuthState = { error?: string; notice?: string } | null
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
 /** Absolute origin of the current request (works in dev and prod). */
 async function getOrigin(): Promise<string> {
   const h = await headers()
@@ -43,7 +45,7 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   const firstName = String(formData.get('first_name') ?? '').trim()
   const lastName = String(formData.get('last_name') ?? '').trim()
 
-  if (password.length < 8 || password !== password2) {
+  if (!EMAIL_RE.test(email) || password.length < 8 || password !== password2) {
     return { error: 'signup' }
   }
 

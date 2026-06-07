@@ -222,7 +222,8 @@
   left: 14px;
   width: 18px;
   height: 18px;
-  color: var(--color-white-50);
+  color: var(--color-white);
+  opacity: 0.5;
   pointer-events: none;
 }
 
@@ -276,14 +277,15 @@
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: var(--color-white-50);
+  color: var(--color-white);
+  opacity: 0.5;
   cursor: pointer;
   padding: 8px;
   display: inline-flex;
 }
 
 .eyeBtn:hover {
-  color: var(--color-white);
+  opacity: 1;
 }
 
 .eyeBtn svg {

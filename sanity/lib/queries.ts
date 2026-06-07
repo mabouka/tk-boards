@@ -115,16 +115,36 @@ export const seriesQuery = defineQuery(`
 `)
 
 
-export const siteSettingsQuery = defineQuery(`
-  *[_type == "siteSettings" && _id == "siteSettings"][0] {
-    brandName,
-    siteTitle,
-    seoDescription,
-    logo,
-    ogImage,
-    contact,
-    social,
-    footer
+// Flat shape (kept identical to the old single-document result) sourced from the
+// three split singletons: seoSettings / contactSettings / footerSettings.
+// SEO title + description are resolved per $locale (internationalized arrays).
+export const siteSettingsQuery = defineQuery(`{
+  "brandName": *[_type == "seoSettings"][0].brandName,
+  "siteTitle": coalesce(
+    *[_type == "seoSettings"][0].defaultTitle[language == $locale][0].value,
+    *[_type == "seoSettings"][0].defaultTitle[language == "en"][0].value,
+    *[_type == "seoSettings"][0].defaultTitle[0].value
+  ),
+  "seoDescription": coalesce(
+    *[_type == "seoSettings"][0].defaultDescription[language == $locale][0].value,
+    *[_type == "seoSettings"][0].defaultDescription[language == "en"][0].value,
+    *[_type == "seoSettings"][0].defaultDescription[0].value
+  ),
+  "logo": *[_type == "seoSettings"][0].logo,
+  "ogImage": *[_type == "seoSettings"][0].ogImage,
+  "contact": *[_type == "contactSettings"][0]{ email, phone, address },
+  "social": *[_type == "footerSettings"][0].social,
+  "footer": *[_type == "footerSettings"][0]{ copyright, privacyPolicyUrl, cookiePolicyUrl }
+}`)
+
+export const authPageQuery = defineQuery(`
+  *[_type == "authPage"][0]{
+    "tagline": coalesce(tagline[language == $locale][0].value, tagline[language == "en"][0].value, tagline[0].value),
+    "paragraph": coalesce(paragraph[language == $locale][0].value, paragraph[language == "en"][0].value, paragraph[0].value),
+    "seoTitle": coalesce(seoTitle[language == $locale][0].value, seoTitle[language == "en"][0].value, seoTitle[0].value),
+    "seoDescription": coalesce(seoDescription[language == $locale][0].value, seoDescription[language == "en"][0].value, seoDescription[0].value),
+    backgroundImage,
+    ogImage
   }
 `)
 

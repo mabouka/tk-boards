@@ -53,6 +53,7 @@
     "continue": "Continuer",
     "checking": "Vérification…",
     "error_generic": "Une erreur est survenue. Réessaie.",
+    "error_email": "Saisis une adresse email valide.",
     "legal": "En continuant, tu acceptes nos <terms>Conditions d'utilisation</terms> et notre <privacy>Politique de confidentialité</privacy>.",
     "welcome_back": "Bon retour",
     "password": "Mot de passe",

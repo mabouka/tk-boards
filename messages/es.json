@@ -53,6 +53,7 @@
     "continue": "Continuar",
     "checking": "Comprobando…",
     "error_generic": "Algo salió mal. Inténtalo de nuevo.",
+    "error_email": "Introduce un email válido.",
     "legal": "Al continuar, aceptas nuestros <terms>Términos del servicio</terms> y la <privacy>Política de privacidad</privacy>.",
     "welcome_back": "Bienvenido de nuevo",
     "password": "Contraseña",

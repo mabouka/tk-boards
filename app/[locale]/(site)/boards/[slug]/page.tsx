@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!board) return {}
 
-  const settings = await getSiteSettings()
+  const settings = await getSiteSettings(locale)
 
   const translations: { lang: string | null; slug: string | null }[] = Array.isArray(board.translations)
     ? board.translations

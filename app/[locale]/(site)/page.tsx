@@ -17,7 +17,7 @@ const getHomePage = cache((locale: string) =>
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
-  const [page, settings] = await Promise.all([getHomePage(locale), getSiteSettings()])
+  const [page, settings] = await Promise.all([getHomePage(locale), getSiteSettings(locale)])
 
   return buildMetadata({
     locale,

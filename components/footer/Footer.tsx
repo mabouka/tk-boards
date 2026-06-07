@@ -30,7 +30,7 @@ const SITEMAP_FALLBACK = [
 export default async function Footer({ locale }: Props) {
   const [series, settings, nav] = await Promise.all([
     client.fetch(footerSeriesQuery, { locale }),
-    getSiteSettings(),
+    getSiteSettings(locale),
     client.fetch(navigationQuery, { title: 'Footer Sitemap', locale }),
   ])
 
