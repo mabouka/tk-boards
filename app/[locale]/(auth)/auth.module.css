@@ -1,0 +1,439 @@
+/* ── Split layout ── */
+.split {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Left-half background photo (full-bleed). Drop a file at /public/auth-hero.jpg. */
+.photoBg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 50vw;
+  height: 100%;
+  background-image:
+    linear-gradient(to bottom, rgba(13, 15, 20, 0.35), rgba(13, 15, 20, 0.8)),
+    url('/auth-hero.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Right-half readable surface */
+.surface {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 50vw;
+  height: 100%;
+  background: rgba(13, 15, 20, 0.72);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(2px);
+}
+
+/* ── Brand panel (left) ── */
+.brand {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-2xl);
+  padding: var(--gutter);
+}
+
+.logo {
+  color: var(--color-white);
+  display: inline-flex;
+  width: fit-content;
+  filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.25));
+}
+
+.logo svg {
+  width: 42px;
+  height: 30px;
+  display: block;
+}
+
+.brandBottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.brandTagline {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.25rem, 4.5vw, 3.75rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--color-white);
+  white-space: pre-line;
+}
+
+.brandText {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-white-72);
+  max-width: 44ch;
+}
+
+.back {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-white-72);
+  text-decoration: none;
+  width: fit-content;
+}
+
+.back:hover {
+  color: var(--color-white);
+}
+
+.back::before {
+  content: '← ';
+}
+
+/* ── Form panel (right) ── */
+.formPanel {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--gutter);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: var(--color-white);
+}
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-white-72);
+}
+
+/* steps */
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  animation: authFade 0.3s ease both;
+}
+
+@keyframes authFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.changeEmail {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: var(--color-white-72);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.changeEmail:hover {
+  color: var(--color-white);
+}
+
+.social {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-white-50);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-white-50);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.formLabel {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--color-white-72);
+}
+
+.inputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputWrap > svg {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-white-50);
+  pointer-events: none;
+}
+
+.field {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--color-white-50);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 16px;
+  padding: 12px 14px;
+}
+
+.inputWrap .field {
+  padding-left: 44px;
+}
+
+.inputWrap:has(.eyeBtn) .field {
+  padding-right: 44px;
+}
+
+.field::placeholder {
+  color: var(--color-white-50);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--color-white);
+}
+
+/* kill browser autofill blue/yellow background */
+.field:-webkit-autofill,
+.field:-webkit-autofill:hover,
+.field:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-white);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-dark) inset;
+  caret-color: var(--color-white);
+  border: 1px solid var(--color-white-50);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--color-white-50);
+  cursor: pointer;
+  padding: 8px;
+  display: inline-flex;
+}
+
+.eyeBtn:hover {
+  color: var(--color-white);
+}
+
+.eyeBtn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.eyeBtn .icOff {
+  display: none;
+}
+
+.eyeBtn.on .icOn {
+  display: none;
+}
+
+.eyeBtn.on .icOff {
+  display: block;
+}
+
+.forgot {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-white-72);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.forgot:hover {
+  color: var(--color-white);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+
+.linklike {
+  background: transparent;
+  border: none;
+  color: var(--color-white-72);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.linklike:hover {
+  color: var(--color-white);
+}
+
+.legal {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-white-50);
+}
+
+.legal a {
+  color: var(--color-white-72);
+  text-underline-offset: 3px;
+}
+
+.legal a:hover {
+  color: var(--color-white);
+}
+
+.error,
+.notice {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 10px 12px;
+  border: 1px solid;
+}
+
+.error {
+  color: var(--color-red);
+  border-color: var(--color-red);
+}
+
+.notice {
+  color: var(--color-white);
+  border-color: var(--color-white-50);
+}
+
+.fieldError {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-red);
+}
+
+/* full-width button rows with icons */
+.btnRow {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btnRow svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1023px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+
+  .photoBg,
+  .surface {
+    display: none;
+  }
+
+  .brand {
+    min-height: auto;
+    padding: var(--space-lg) var(--gutter) 0;
+    gap: var(--space-md);
+  }
+
+  .brandBottom {
+    display: none;
+  }
+
+  .formPanel {
+    min-height: auto;
+    align-items: stretch;
+    padding: var(--space-md) var(--gutter) var(--space-2xl);
+  }
+
+  .card {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step {
+    animation: none;
+  }
+}

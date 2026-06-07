@@ -96,7 +96,7 @@ export default async function Footer({ locale }: Props) {
 
         {/* ── Col 4 : Sitemap ── */}
         <nav className={styles.footer__sitemap} aria-label="Sitemap">
-          <p className={styles.footer__series_label}>Sitemap</p>
+          <h2 className={styles.footer__series_label}>Sitemap</h2>
           <ul>
             {navItems.length > 0
               ? navItems.map((item) => {

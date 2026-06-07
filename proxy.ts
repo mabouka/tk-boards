@@ -1,6 +1,7 @@
 import createMiddleware from 'next-intl/middleware'
 import { NextResponse, type NextRequest } from 'next/server'
 import { routing } from './i18n/routing'
+import { updateSession } from './lib/supabase/middleware'
 
 const intlMiddleware = createMiddleware(routing)
 
@@ -12,7 +13,7 @@ const UNDER_CONSTRUCTION = process.env.NODE_ENV === 'production'
 const PREVIEW_SECRET = process.env.PREVIEW_SECRET
 const BYPASS_COOKIE = 'preview-bypass'
 
-export default function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   if (UNDER_CONSTRUCTION) {
     const { pathname, searchParams } = request.nextUrl
 
@@ -29,20 +30,22 @@ export default function proxy(request: NextRequest) {
       return res
     }
 
-    // 2. Holders of a valid bypass cookie see the real, localized site.
-    if (PREVIEW_SECRET && request.cookies.get(BYPASS_COOKIE)?.value === PREVIEW_SECRET) {
-      return intlMiddleware(request)
+    // 2. Without a valid bypass cookie, everyone gets the holding page
+    //    (matcher already excludes /studio, /api and assets).
+    const bypassed =
+      PREVIEW_SECRET && request.cookies.get(BYPASS_COOKIE)?.value === PREVIEW_SECRET
+    if (!bypassed) {
+      if (pathname !== '/construction') {
+        return NextResponse.rewrite(new URL('/construction', request.url))
+      }
+      return NextResponse.next()
     }
-
-    // 3. Everyone else gets the holding page (matcher already excludes
-    //    /studio, /api and assets).
-    if (pathname !== '/construction') {
-      return NextResponse.rewrite(new URL('/construction', request.url))
-    }
-    return NextResponse.next()
+    // 3. Bypassed → fall through to the normal (live) handling below.
   }
 
-  return intlMiddleware(request)
+  // i18n routing first, then refresh the Supabase session onto that response.
+  const response = intlMiddleware(request)
+  return updateSession(request, response)
 }
 
 export const config = {
