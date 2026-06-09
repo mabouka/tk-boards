@@ -1,13 +1,16 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
-import { createClient } from '@/lib/supabase/server'
+import { auth } from '@/auth'
 import { buildMetadata } from '@/lib/metadata'
 import { client } from '@/sanity/lib/client'
 import { authPageQuery } from '@/sanity/lib/queries'
 import AuthFlow from '../AuthFlow'
 
-type Props = { params: Promise<{ locale: string }> }
+type Props = {
+  params: Promise<{ locale: string }>
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
@@ -26,23 +29,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   })
 }
 
-export default async function LoginPage({ params }: Props) {
+export default async function LoginPage({ params, searchParams }: Props) {
   const { locale } = await params
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const session = await auth()
+  if (session?.user?.id) redirect(`/${locale}/account`)
 
-  // Already signed in → skip the form.
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarded')
-      .eq('id', user.id)
-      .maybeSingle()
-    redirect(profile?.onboarded ? `/${locale}/account` : `/${locale}/onboarding`)
-  }
+  const sp = searchParams ? await searchParams : {}
+  const flash = sp.verified === '1' ? 'verified' : sp.reset === '1' ? 'reset' : undefined
 
-  return <AuthFlow />
+  return <AuthFlow flash={flash} />
 }

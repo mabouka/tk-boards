@@ -1,7 +1,6 @@
 import createMiddleware from 'next-intl/middleware'
 import { NextResponse, type NextRequest } from 'next/server'
 import { routing } from './i18n/routing'
-import { updateSession } from './lib/supabase/middleware'
 
 const intlMiddleware = createMiddleware(routing)
 
@@ -43,11 +42,12 @@ export default async function proxy(request: NextRequest) {
     // 3. Bypassed → fall through to the normal (live) handling below.
   }
 
-  // i18n routing first, then refresh the Supabase session onto that response.
-  const response = intlMiddleware(request)
-  return updateSession(request, response)
+  // i18n routing (Auth.js uses JWT cookies — no middleware session refresh needed).
+  return intlMiddleware(request)
 }
 
 export const config = {
-  matcher: ['/((?!_next|studio|api|.*\\..*).*)'],
+  // /admin is excluded: it runs on its own (no i18n, no holding-page rewrite)
+  // and is gated by NextAuth instead.
+  matcher: ['/((?!_next|studio|api|admin|.*\\..*).*)'],
 }

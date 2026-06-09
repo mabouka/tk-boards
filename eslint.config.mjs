@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored shadcn/ui primitives (managed by the shadcn CLI — not hand-edited).
+    "components/admin/ui/**",
+    "components/admin/hooks/**",
   ]),
 ]);
 

@@ -1,22 +1,28 @@
 import { getTranslations } from 'next-intl/server'
-import { createClient } from '@/lib/supabase/server'
+import { eq } from 'drizzle-orm'
+import { auth } from '@/auth'
+import { db } from '@/db'
+import { users } from '@/db/schema'
 import styles from '../account.module.css'
 
 export default async function AccountDashboard() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // The layout guarantees a session, but stay null-safe for TS.
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('first_name, full_name')
-    .eq('id', user?.id ?? '')
-    .maybeSingle()
-
+  const session = await auth()
   const t = await getTranslations('account')
-  const name = profile?.first_name || profile?.full_name || user?.email || ''
+
+  let name = session?.user?.email ?? ''
+  let email = session?.user?.email ?? ''
+
+  if (session?.user?.id) {
+    const [u] = await db
+      .select({ firstName: users.firstName, name: users.name, email: users.email })
+      .from(users)
+      .where(eq(users.id, session.user.id))
+      .limit(1)
+    if (u) {
+      name = u.firstName || u.name || u.email
+      email = u.email
+    }
+  }
 
   return (
     <section className={styles.dashboard}>
@@ -25,7 +31,7 @@ export default async function AccountDashboard() {
       <dl className={styles.meta}>
         <div>
           <dt>{t('email_label')}</dt>
-          <dd>{user?.email}</dd>
+          <dd>{email}</dd>
         </div>
       </dl>
     </section>

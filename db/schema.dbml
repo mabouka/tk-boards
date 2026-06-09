@@ -1,0 +1,261 @@
+// ───────────────────────────────────────────────
+//  TK Boards — schéma commerce (Neon / Postgres)
+//  Cible d'architecture — voir db/ARCHITECTURE.md
+//  Visualiser : copier-coller dans https://dbdiagram.io
+//
+//  Le contenu (pages produit, nav, catégories) vit dans Sanity,
+//  relié à Neon par le SKU. Neon = commerce, interrogé par SKU.
+// ───────────────────────────────────────────────
+
+Enum product_kind {
+  board
+  accessory
+}
+
+Enum attribute_input {
+  swatch
+  select
+}
+
+Enum link_type {
+  achat_conjoint
+  cross_sell
+  accessoire
+}
+
+Enum unit_status {
+  minted
+  provisioned
+  registered
+  stolen
+  transferred
+}
+
+Enum registration_status {
+  active
+  stolen
+  transferred
+}
+
+Enum claim_type {
+  theft
+  warranty
+}
+
+Enum claim_status {
+  open
+  in_review
+  resolved
+  rejected
+}
+
+Enum user_role {
+  customer
+  admin
+}
+
+// ── Catalogue ──────────────────────────────────
+
+Table product {
+  id          text [pk]
+  sku         text [unique, not null, note: 'SKU parent — clé vers la page Sanity']
+  name        text [not null, note: 'nom interne admin (marketing dans Sanity)']
+  kind        product_kind [note: 'filtre admin Boards/Accessoires']
+  active      boolean [not null, default: true]
+  created_at  timestamp [not null, default: `now()`]
+  updated_at  timestamp [not null, default: `now()`]
+}
+
+Table product_attribute {
+  id          text [pk]
+  product_id  text [not null, ref: > product.id]
+  code        text [not null, note: 'SIZE, COLOR…']
+  name_i18n   jsonb [not null, note: '{fr,en,es}']
+  input_type  attribute_input [not null, default: 'select']
+  sort_order  integer [not null, default: 0]
+}
+
+Table product_attribute_value {
+  id            text [pk]
+  attribute_id  text [not null, ref: > product_attribute.id]
+  code          text [not null, note: '138, BLU…']
+  label_i18n    jsonb [not null, note: '{fr,en,es}']
+  swatch_hex    text [note: '#3d6ea5 pour les couleurs']
+  sort_order    integer [not null, default: 0]
+}
+
+Table variant {
+  id             text [pk]
+  product_id     text [not null, ref: > product.id]
+  sku            text [unique, not null, note: 'SKU enfant — TK-RKT-BLU-138']
+  price_eur      decimal(10,2) [not null, note: 'prix de base']
+  sale_price_eur decimal(10,2) [note: 'prix promo — NULL = pas de promo']
+  stock          integer [not null, default: 0]
+  active         boolean [not null, default: true]
+  sort_order     integer [not null, default: 0]
+  created_at     timestamp [not null, default: `now()`]
+  updated_at     timestamp [not null, default: `now()`]
+}
+
+Table variant_value {
+  variant_id    text [not null, ref: > variant.id]
+  attribute_id  text [not null, ref: > product_attribute.id]
+  value_id      text [not null, ref: > product_attribute_value.id]
+  indexes {
+    (variant_id, attribute_id) [pk] // 1 valeur par axe et par variante
+  }
+}
+
+Table product_option {
+  id               text [pk]
+  product_id       text [not null, ref: > product.id]
+  name_i18n        jsonb [not null, note: 'Ailerons carbone']
+  group_label_i18n jsonb
+  price_delta_eur  decimal(10,2) [not null, note: '+75.00']
+  sku              text [unique]
+  stock            integer [note: 'NULL = non suivi']
+  active           boolean [not null, default: true]
+  sort_order       integer [not null, default: 0]
+  created_at       timestamp [not null, default: `now()`]
+  updated_at       timestamp [not null, default: `now()`]
+}
+
+Table product_link {
+  id                text [pk]
+  product_id        text [not null, ref: > product.id]
+  linked_product_id text [not null, ref: > product.id]
+  type              link_type [not null]
+  sort_order        integer [not null, default: 0]
+  indexes {
+    (product_id, linked_product_id, type) [unique]
+  }
+}
+
+// ── Production / anti-vol ──────────────────────
+
+Table unit {
+  id          text [pk]
+  token       text [unique, not null, note: 'token opaque du tag NFC']
+  variant_id  text [ref: > variant.id, note: 'SET NULL si variante supprimée']
+  serial      text [unique]
+  status      unit_status [not null, default: 'minted']
+  created_at  timestamp [not null, default: `now()`]
+  updated_at  timestamp [not null, default: `now()`]
+}
+
+// ── Comptes / garantie ─────────────────────────
+
+Table user {
+  id             text [pk]
+  name           text
+  email          text [unique, not null]
+  email_verified timestamp
+  image          text
+  password_hash  text
+  role           user_role [not null, default: 'customer']
+  first_name     text
+  last_name      text
+  phone          text
+  onboarded      boolean [not null, default: false]
+  locale         text [not null, default: 'fr']
+  created_at     timestamp [not null, default: `now()`]
+}
+
+Table account {
+  user_id             text [not null, ref: > user.id]
+  type                text [not null]
+  provider            text [not null]
+  provider_account_id text [not null]
+  refresh_token       text
+  access_token        text
+  expires_at          integer
+  token_type          text
+  scope               text
+  id_token            text
+  session_state       text
+  indexes {
+    (provider, provider_account_id) [pk]
+  }
+}
+
+Table session {
+  session_token text [pk]
+  user_id       text [not null, ref: > user.id]
+  expires       timestamp [not null]
+  Note: 'requis par l adapter Auth.js — inutilise en strategie JWT'
+}
+
+Table verification_token {
+  identifier text [not null]
+  token      text [not null]
+  expires    timestamp [not null]
+  indexes {
+    (identifier, token) [pk]
+  }
+}
+
+Table registration {
+  id             text [pk]
+  user_id        text [not null, ref: > user.id]
+  unit_id        text [not null, ref: > unit.id]
+  purchased_at   timestamp
+  purchase_proof text [note: 'clé de stockage R2/UploadThing']
+  warranty_until timestamp
+  status         registration_status [not null, default: 'active']
+  contact_public boolean [not null, default: false]
+  created_at     timestamp [not null, default: `now()`]
+  updated_at     timestamp [not null, default: `now()`]
+}
+
+Table claim {
+  id              text [pk]
+  registration_id text [not null, ref: > registration.id]
+  user_id         text [not null, ref: > user.id]
+  type            claim_type [not null]
+  description     text
+  photo_paths     "text[]" [not null, default: `'{}'`]
+  status          claim_status [not null, default: 'open']
+  created_at      timestamp [not null, default: `now()`]
+  updated_at      timestamp [not null, default: `now()`]
+}
+
+Table address {
+  id          text [pk]
+  user_id     text [not null, ref: > user.id]
+  line1       text [not null]
+  line2       text
+  postal_code text
+  city        text
+  country     text
+  phone       text
+  is_default  boolean [not null, default: true]
+  created_at  timestamp [not null, default: `now()`]
+  updated_at  timestamp [not null, default: `now()`]
+}
+
+TableGroup catalogue {
+  product
+  product_attribute
+  product_attribute_value
+  variant
+  variant_value
+  product_option
+  product_link
+}
+TableGroup production { unit }
+TableGroup comptes {
+  user
+  account
+  session
+  verification_token
+  registration
+  claim
+  address
+}
+
+// ── Extensions additives (plus tard, ne cassent pas le cœur) ──
+// order / order_item   → commandes (fige le prix payé)
+// promotion            → promos programmées (dates auto)
+// bundle_item          → packs vendus en 1 SKU
+// variant_price        → multi-devises (variant × currency)
+// variant_stock        → stock multi-entrepôt

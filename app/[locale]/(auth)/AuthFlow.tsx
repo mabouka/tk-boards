@@ -3,17 +3,17 @@
 import { useActionState, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
-import { login, signup, signInWithGoogle, signInWithFacebook } from './actions'
+import { login, signup, signInWithGoogle, signInWithFacebook, resendVerification } from './actions'
 import PasswordField from './PasswordField'
 import { AtIcon, GoogleIcon, FacebookIcon } from '@/components/auth/icons'
 import styles from './auth.module.css'
 
-type Step = 'email' | 'signin' | 'signup'
+type Step = 'email' | 'signin' | 'signup' | 'oauth'
 
 // Stricter than HTML5 type="email" (which accepts "a@b"): require a dotted domain.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
-export default function AuthFlow() {
+export default function AuthFlow({ flash }: { flash?: 'verified' | 'reset' }) {
   const t = useTranslations('auth')
   const locale = useLocale()
 
@@ -22,9 +22,11 @@ export default function AuthFlow() {
   const [checking, setChecking] = useState(false)
   const [checkError, setCheckError] = useState(false)
   const [emailError, setEmailError] = useState(false)
+  const [providers, setProviders] = useState<string[]>([])
 
   const [loginState, loginAction, loginPending] = useActionState(login, null)
   const [signupState, signupAction, signupPending] = useActionState(signup, null)
+  const [resendState, resendAction, resendPending] = useActionState(resendVerification, null)
 
   async function onContinue(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -36,13 +38,25 @@ export default function AuthFlow() {
     setChecking(true)
     setCheckError(false)
     try {
-      const res = await fetch('/api/auth/check-email', {
+      const res = await fetch('/api/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: value }),
       })
+      if (!res.ok) {
+        setCheckError(true)
+        return
+      }
       const data = await res.json()
-      setStep(data.exists ? 'signin' : 'signup')
+      if (!data.exists) {
+        setStep('signup')
+      } else if (data.hasPassword) {
+        setStep('signin')
+      } else {
+        // Account exists but has no password (signed up via Google/Facebook).
+        setProviders(Array.isArray(data.providers) ? data.providers : [])
+        setStep('oauth')
+      }
     } catch {
       setCheckError(true)
     } finally {
@@ -63,6 +77,11 @@ export default function AuthFlow() {
         <p className={styles.subtitle}>{t('subtitle')}</p>
 
         <div className={styles.step}>
+          {flash && (
+            <p className={styles.notice}>
+              {flash === 'verified' ? t('verified_notice') : t('reset_done')}
+            </p>
+          )}
           <div className={styles.social}>
             <form action={signInWithGoogle}>
               <input type="hidden" name="locale" value={locale} />
@@ -121,8 +140,49 @@ export default function AuthFlow() {
     )
   }
 
+  // ── STEP: returning user with no password (signed up via a social provider) ──
+  if (step === 'oauth') {
+    const showGoogle = providers.length === 0 || providers.includes('google')
+    const showFacebook = providers.includes('facebook')
+    return (
+      <div className={styles.card}>
+        <h1 className={styles.title}>{t('welcome_back')}</h1>
+        <div className={styles.step}>
+          <button type="button" className={styles.changeEmail} onClick={() => setStep('email')}>
+            ← {email}
+          </button>
+          <p className={styles.subtitle}>{t('oauth_only')}</p>
+          <div className={styles.social}>
+            {showGoogle && (
+              <form action={signInWithGoogle}>
+                <input type="hidden" name="locale" value={locale} />
+                <button className={`u-cta u-cta--white-outline ${styles.btnRow}`} type="submit">
+                  <GoogleIcon />
+                  {t('continue_google')}
+                </button>
+              </form>
+            )}
+            {showFacebook && (
+              <form action={signInWithFacebook}>
+                <input type="hidden" name="locale" value={locale} />
+                <button className={`u-cta u-cta--white-outline ${styles.btnRow}`} type="submit">
+                  <FacebookIcon />
+                  {t('continue_facebook')}
+                </button>
+              </form>
+            )}
+          </div>
+          <Link href={`/${locale}/forgot-password`} className={styles.changeEmail}>
+            {t('set_password_link')}
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   // ── STEP: returning user (password only) ──
   if (step === 'signin') {
+    const unverified = loginState?.error === 'unverified'
     return (
       <div className={styles.card}>
         <h1 className={styles.title}>{t('welcome_back')}</h1>
@@ -140,10 +200,15 @@ export default function AuthFlow() {
               showLabel={t('show_password')}
               hideLabel={t('hide_password')}
             />
-            <Link className={styles.forgot} href={`/${locale}/forgot-password`}>
-              {t('forgot_password')}
-            </Link>
-            {loginState?.error && <p className={styles.error}>{t('error_invalid')}</p>}
+            {loginState?.error && (
+              <p className={styles.error}>
+                {loginState.error === 'unverified'
+                  ? t('error_unverified')
+                  : loginState.error === 'rate'
+                    ? t('error_rate')
+                    : t('error_invalid')}
+              </p>
+            )}
             <div className={styles.actions}>
               <button
                 className={`u-cta u-cta--white-fill ${styles.btnRow}`}
@@ -154,6 +219,38 @@ export default function AuthFlow() {
               </button>
             </div>
           </form>
+
+          {unverified &&
+            (resendState?.notice === 'check-email' ? (
+              <p className={styles.notice}>{t('check_email')}</p>
+            ) : (
+              <form action={resendAction}>
+                <input type="hidden" name="locale" value={locale} />
+                <input type="hidden" name="email" value={email} />
+                <button type="submit" className={styles.changeEmail} disabled={resendPending}>
+                  {t('resend_verification')}
+                </button>
+              </form>
+            ))}
+
+          <Link href={`/${locale}/forgot-password`} className={styles.changeEmail}>
+            {t('forgot_password')}
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // ── STEP: sign-up succeeded → confirmation (replaces the form) ──
+  if (signupState?.notice === 'check-email') {
+    return (
+      <div className={styles.card}>
+        <h1 className={styles.title}>{t('check_email_title')}</h1>
+        <div className={styles.step}>
+          <p className={styles.subtitle}>{t('check_email')}</p>
+          <button type="button" className={styles.changeEmail} onClick={() => setStep('email')}>
+            ← {email}
+          </button>
         </div>
       </div>
     )
@@ -205,9 +302,6 @@ export default function AuthFlow() {
             hideLabel={t('hide_password')}
           />
           {signupState?.error && <p className={styles.error}>{t('error_signup')}</p>}
-          {signupState?.notice === 'check-email' && (
-            <p className={styles.notice}>{t('check_email')}</p>
-          )}
           <div className={styles.actions}>
             <button
               className={`u-cta u-cta--white-fill ${styles.btnRow}`}

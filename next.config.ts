@@ -4,7 +4,7 @@ import createNextIntlPlugin from 'next-intl/plugin'
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['sanity-plugin-media', 'filesize', 'copy-to-clipboard'],
+  transpilePackages: ['sanity-plugin-media', 'filesize', 'copy-to-clipboard', 'lucide-react'],
   images: {
     qualities: [75, 85, 90],
     // Global Sanity loader → every <Image> is served straight from the Sanity

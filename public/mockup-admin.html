@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TK Boards — Dashboard vendeur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  @font-face { font-family:'Integral CF'; src:url('/fonts/IntegralCF-Medium.woff2') format('woff2'); font-weight:500; font-display:swap; }
+  :root{
+    --bg:#08090c; --panel:#0f1116; --panel2:#161922; --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.055);
+    --white:#fff; --w72:rgba(255,255,255,.72); --w50:rgba(255,255,255,.5); --w36:rgba(255,255,255,.34);
+    --gold:#c9a478; --goldL:#e2c9a2; --green:#3a7d44; --greenT:#9fe0ab; --red:#8b1a1a; --redT:#e8a1a1; --blue:#3d6ea5; --blueT:#a9c8e8; --amber:#c9a02a; --amberT:#e8cf8a;
+    --display:'Integral CF',sans-serif; --mono:'Space Mono',monospace; --body:'Space Grotesk',sans-serif;
+    --r:10px; --r-sm:7px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--white);font-family:var(--body);display:flex;min-height:100vh}
+
+  /* ── Sidebar ── */
+  .side{width:248px;flex:none;background:var(--bg);border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .side__brand{display:flex;align-items:center;gap:14px;padding:22px 22px 22px;border-bottom:1px solid var(--line2)}
+  .side__brand .tk{font-family:var(--display);font-weight:500;font-size:24px;letter-spacing:.02em}
+  .side__brand span{font-family:var(--mono);font-size:10px;color:var(--w50);text-transform:uppercase;letter-spacing:.14em;line-height:1.4}
+  .nav{display:flex;flex-direction:column;padding:14px 12px;gap:2px;flex:1;overflow:auto}
+  .nav button{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:none;color:var(--w72);font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:13px 14px;cursor:pointer;border-radius:var(--r-sm)}
+  .nav button:hover{color:var(--white)}
+  .nav button.active{color:var(--white);border:1px solid var(--line)}
+  .nav button .g{width:16px;text-align:center;color:var(--w50)}
+  .nav button.active .g{color:var(--gold)}
+  .nav .pair{background:var(--gold);color:#15100a;border-radius:var(--r-sm);margin:8px 0;font-family:var(--body);font-weight:700;letter-spacing:.02em}
+  .nav .pair .g{color:#15100a}
+  .nav .pair:hover{background:var(--goldL);color:#15100a}
+
+  /* ── Main ── */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--line)}
+  .topbar .crumb{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--w50)}
+  .btn{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:9px 16px;border:1px solid var(--line);background:transparent;color:var(--white);cursor:pointer;border-radius:var(--r-sm)}
+  .btn:hover{border-color:var(--white)}
+  .btn--gold{background:var(--gold);color:#15100a;border-color:var(--gold);font-family:var(--body);font-weight:700}
+  .btn--gold:hover{background:var(--goldL)}
+  .btn--sm{padding:6px 12px}
+  .content{padding:52px;display:flex;flex-direction:column;gap:48px;max-width:1300px}
+  .h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,4vw,3rem);text-transform:uppercase;letter-spacing:.01em}
+
+  /* ── KPI cards ── */
+  .kcards{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  .kcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:30px 32px;display:flex;flex-direction:column;gap:20px}
+  .kcard .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--w50)}
+  .kcard .v{font-family:var(--display);font-weight:500;font-size:34px}
+  .kcard .s{font-family:var(--mono);font-size:11px;color:var(--gold)}
+  .kcard .s.red{color:var(--redT)}
+
+  /* ── Panels ── */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+  .panel__head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 30px;border-bottom:1px solid var(--gold)}
+  .panel__head h2{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--w72)}
+  .panel__head .meta{font-family:var(--mono);font-size:12px;color:var(--w50)}
+  .panel__head .meta b{color:var(--white)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+
+  /* ── Tables ── */
+  table{width:100%;border-collapse:collapse}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--w50);text-align:left;padding:18px 30px;border-bottom:1px solid var(--gold);font-weight:400}
+  th.num,td.num{text-align:right}
+  td{font-size:14px;color:var(--w72);padding:24px 30px;border-bottom:1px solid var(--line2);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--panel2)}
+  td.mono,th.mono{font-family:var(--mono)} td .name{color:var(--white);font-weight:600;font-size:15px} .eur{color:var(--gold)} .strong{color:var(--white);font-weight:600}
+  .thumb{width:38px;height:54px;border-radius:6px;background:linear-gradient(165deg,#222b3a,#10131a);border:1px solid var(--line)}
+  .badge{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border:1px solid;border-radius:999px;white-space:nowrap}
+  .b-reg{color:var(--greenT);border-color:var(--green)} .b-stock{color:var(--blueT);border-color:var(--blue)} .b-minted{color:var(--w50);border-color:var(--w36)} .b-stolen{color:var(--redT);border-color:var(--red)} .b-low{color:var(--amberT);border-color:var(--amber)}
+  .swatch{display:inline-flex;align-items:center;gap:8px} .swatch i{width:14px;height:14px;border:1px solid var(--line);border-radius:4px}
+
+  /* ── Charts (pure CSS) ── */
+  .barchart{display:flex;align-items:flex-end;gap:18px;height:250px;padding:32px}
+  .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+  .bar .v{font-family:var(--mono);font-size:11px;color:var(--w50)}
+  .bar .b{width:100%;background:var(--panel2);border:1px solid var(--line2);border-radius:4px 4px 0 0}
+  .bar.hl .b{background:var(--goldL);border-color:var(--goldL)} .bar.hl .v{color:var(--goldL)}
+  .bar .x{font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--w50)}
+  .hbars{display:flex;flex-direction:column;gap:30px;padding:32px}
+  .hbar .top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
+  .hbar .top .pct{font-family:var(--mono);color:var(--white)}
+  .hbar .track{height:6px;background:var(--panel2);border-radius:99px}
+  .hbar .fill{height:6px;background:var(--gold);border-radius:99px}
+  .grouped{display:flex;align-items:flex-end;gap:10px;height:150px;padding:6px 24px 0}
+  .gcol{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:3px;height:100%}
+  .gcol .g1,.gcol .g2{width:9px;border-radius:2px 2px 0 0}.gcol .g1{background:#39414e}.gcol .g2{background:var(--gold)}
+  .glabels{display:flex;gap:10px;padding:6px 24px 0}.glabels span{flex:1;text-align:center;font-family:var(--mono);font-size:10px;color:var(--w50)}
+  .legend{display:flex;gap:18px;padding:14px 24px;font-family:var(--mono);font-size:11px;color:var(--w50)}
+  .legend i{display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .ranked{display:flex;flex-direction:column}
+  .rrow{display:flex;align-items:center;gap:16px;padding:24px 30px;border-bottom:1px solid var(--line2)}
+  .rrow:last-child{border-bottom:none}
+  .rrow .rk{font-family:var(--mono);font-size:12px;color:var(--w50);width:24px}
+  .rrow .ri{flex:1}.rrow .ri .t{color:var(--white);font-weight:600}.rrow .ri .s{font-family:var(--mono);font-size:11px;color:var(--w50)}
+  .rrow .rv{text-align:right;font-family:var(--mono);font-size:13px;color:var(--w72)}.rrow .rv .e{color:var(--gold);font-size:15px}
+
+  /* segmented control */
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+  .seg button{font-family:var(--mono);font-size:12px;padding:9px 18px;background:transparent;color:var(--w72);border:none;cursor:pointer}
+  .seg button.active{background:var(--gold);color:#15100a}
+
+  /* ── Pair (mobile hero) ── */
+  .pairwrap{display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap}
+  .phone{width:380px;max-width:100%;flex:none;background:#050608;border:1px solid var(--line);border-radius:32px;padding:14px;box-shadow:0 40px 90px rgba(0,0,0,.6)}
+  .phone__screen{background:var(--bg);border-radius:22px;padding:24px 20px;min-height:640px;display:flex;flex-direction:column;gap:18px}
+  .phone__notch{width:120px;height:5px;background:#23282f;border-radius:99px;margin:2px auto 8px}
+  .pf-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  .pf-title{font-family:var(--display);font-weight:500;font-size:24px;text-transform:uppercase;line-height:1.05}
+  .pf-tap{font-family:var(--mono);font-size:11px;color:var(--w50);line-height:1.6}
+  .pf-step .lab{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--w50);margin-bottom:10px}
+  .modelgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .mcard{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;display:flex;flex-direction:column;gap:8px;cursor:pointer;background:var(--panel)}
+  .mcard:hover{border-color:var(--w50)} .mcard.sel{border-color:var(--gold);background:#1a150d}
+  .mcard .mt{font-family:var(--display);font-weight:500;font-size:15px;text-transform:uppercase}.mcard .ms{font-family:var(--mono);font-size:10px;color:var(--w50)}.mcard .thumb{width:100%;height:78px}
+  .opt{display:flex;flex-wrap:wrap;gap:8px}
+  .opt button{font-family:var(--mono);font-size:14px;border:1px solid var(--line);background:var(--panel);color:var(--white);padding:12px 16px;border-radius:var(--r-sm);cursor:pointer;min-width:54px}
+  .opt button:hover{border-color:var(--w50)} .opt button.sel{border-color:var(--gold);background:#1a150d;color:var(--gold)}
+  .opt .sw{display:inline-flex;align-items:center;gap:8px}.opt .sw i{width:14px;height:14px;border-radius:4px;border:1px solid var(--line)}
+  .serial{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+  .serial .v{font-family:var(--mono);font-size:16px}.serial .t{font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--w50)}
+  .pf-cta{margin-top:auto}.pf-cta .btn{width:100%;justify-content:center;padding:15px;text-align:center}
+  .success{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;justify-content:center;flex:1}
+  .success .ck{width:64px;height:64px;border-radius:50%;border:2px solid var(--green);color:var(--greenT);display:flex;align-items:center;justify-content:center}.success .ck svg{width:32px;height:32px}
+  .pairnote{flex:1;min-width:240px}.pairnote h3{font-family:var(--display);font-weight:500;font-size:18px;text-transform:uppercase;margin-bottom:14px}
+  .pairnote ol{list-style:none;display:flex;flex-direction:column;gap:14px;counter-reset:s}
+  .pairnote li{display:flex;gap:12px;font-size:14px;color:var(--w72);line-height:1.5}
+  .pairnote li::before{counter-increment:s;content:counter(s);flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--gold);color:var(--gold);font-family:var(--mono);font-size:12px;display:flex;align-items:center;justify-content:center}
+  .hint{font-family:var(--mono);font-size:11px;line-height:1.6;color:var(--w50)}
+  .alerts{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .alert{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--w36);border-radius:var(--r);padding:28px 30px;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+  .alert:hover{background:var(--panel2)} .alert.red{border-left-color:var(--red)}.alert.amber{border-left-color:var(--amber)}.alert.blue{border-left-color:var(--blue)}
+  .alert .n{font-family:var(--display);font-weight:500;font-size:30px}.alert .l{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--w50)}.alert .go{font-family:var(--mono);font-size:11px;color:var(--w72)}
+  .alert.red .n{color:var(--redT)}.alert.amber .n{color:var(--amberT)}.alert.blue .n{color:var(--blueT)}
+
+  .field{background:var(--bg);border:1px solid var(--line);color:var(--white);font-family:var(--body);font-size:14px;padding:10px 12px;border-radius:var(--r-sm)}
+  .field--num{width:84px;text-align:center;font-family:var(--mono)}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap}.tabs button{font-family:var(--mono);font-size:12px;text-transform:uppercase;padding:8px 14px;border:1px solid var(--line);background:transparent;color:var(--w72);cursor:pointer;border-radius:999px}.tabs button.active{background:var(--white);color:var(--bg);border-color:var(--white)}
+  .opt-label{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--w50);margin-bottom:10px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);padding:6px 11px;background:var(--panel2);border-radius:999px}.chip i{width:12px;height:12px;border:1px solid var(--line);border-radius:3px}.chip .x{background:none;border:none;color:var(--w50);cursor:pointer}.chip--add{background:transparent;border-style:dashed;color:var(--w72);cursor:pointer}
+
+  .screen[hidden]{display:none}
+  @media(max-width:980px){ .kcards{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} .alerts{grid-template-columns:1fr} .side{width:60px}.side__brand span,.nav button span,.nav .pair{font-size:0} }
+</style>
+</head>
+<body>
+  <aside class="side">
+    <div class="side__brand"><span class="tk">TK</span><span>Dashboard<br>vendeur</span></div>
+    <nav class="nav">
+      <button data-go="overview" class="active"><span class="g">◆</span><span>Vue d'ensemble</span></button>
+      <button data-go="pair" class="pair"><span class="g">◎</span><span>Appairer une planche</span></button>
+      <button data-go="catalogue"><span class="g">⊞</span><span>Catalogue</span></button>
+      <button data-go="nfc"><span class="g">◇</span><span>Registre NFC</span></button>
+      <button data-go="commandes"><span class="g">≡</span><span>Commandes</span></button>
+      <button data-go="clients"><span class="g">○</span><span>Clients</span></button>
+      <button data-go="declarations"><span class="g">△</span><span>Déclarations</span></button>
+      <button data-go="stats"><span class="g">∿</span><span>Statistiques</span></button>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar"><span class="crumb" id="crumb">Vue d'ensemble</span><button class="btn btn--sm">← Retour au site</button></div>
+    <div class="content">
+
+      <!-- ░ VUE D'ENSEMBLE ░ -->
+      <section class="screen" id="overview">
+        <h1 class="h1">Vue d'ensemble</h1>
+        <div class="alerts">
+          <div class="alert red" onclick="go('declarations')"><span class="n">2</span><span class="l">Déclarations de vol</span><span class="go">Traiter →</span></div>
+          <div class="alert amber" onclick="go('catalogue')"><span class="n">3</span><span class="l">Stock bas / rupture</span><span class="go">Réapprovisionner →</span></div>
+          <div class="alert blue" onclick="go('nfc')"><span class="n">12</span><span class="l">Tags prêts à appairer</span><span class="go">Voir →</span></div>
+        </div>
+        <div class="kcards">
+          <div class="kcard"><span class="k">Panier moyen</span><span class="v">1 142 €</span><span class="s">sur 12 mois</span></div>
+          <div class="kcard"><span class="k">Taux de rétention</span><span class="v">38 %</span><span class="s">clients 2 cmd+</span></div>
+          <div class="kcard"><span class="k">Activation NFC</span><span class="v">79 %</span><span class="s">planches enregistrées</span></div>
+          <div class="kcard"><span class="k">Taux SAV garantie</span><span class="v">4 %</span><span class="s red">planches déclarées</span></div>
+        </div>
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel__head"><h2>Enregistrements NFC — 2026</h2><span class="meta"><b>122</b> total · taux <b>79%</b></span></div>
+            <div class="barchart">
+              <div class="bar"><span class="v">18</span><div class="b" style="height:48%"></div><span class="x">Jan</span></div>
+              <div class="bar"><span class="v">22</span><div class="b" style="height:60%"></div><span class="x">Fév</span></div>
+              <div class="bar"><span class="v">14</span><div class="b" style="height:38%"></div><span class="x">Mar</span></div>
+              <div class="bar"><span class="v">31</span><div class="b" style="height:85%"></div><span class="x">Avr</span></div>
+              <div class="bar"><span class="v">28</span><div class="b" style="height:76%"></div><span class="x">Mai</span></div>
+              <div class="bar hl"><span class="v">9</span><div class="b" style="height:26%"></div><span class="x">Juin</span></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel__head"><h2>Répartition géographique</h2></div>
+            <div class="hbars">
+              <div class="hbar"><div class="top"><span class="strong">Bretagne</span><span class="pct">34 %</span></div><div class="track"><div class="fill" style="width:34%"></div></div></div>
+              <div class="hbar"><div class="top"><span class="strong">Nouvelle-Aquitaine</span><span class="pct">28 %</span></div><div class="track"><div class="fill" style="width:28%"></div></div></div>
+              <div class="hbar"><div class="top"><span class="strong">PACA</span><span class="pct">14 %</span></div><div class="track"><div class="fill" style="width:14%"></div></div></div>
+              <div class="hbar"><div class="top"><span class="strong">Île-de-France</span><span class="pct">11 %</span></div><div class="track"><div class="fill" style="width:11%"></div></div></div>
+              <div class="hbar"><div class="top"><span class="strong">Autres</span><span class="pct">13 %</span></div><div class="track"><div class="fill" style="width:13%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ░ APPAIRER ░ -->
+      <section class="screen" id="pair" hidden>
+        <h1 class="h1">Appairer une planche</h1>
+        <div class="pairwrap">
+          <div class="phone">
+            <div class="phone__notch"></div>
+            <div class="phone__screen" id="pf-form">
+              <div><div class="pf-eyebrow">Nouvelle planche · token a1b2c3…</div><div class="pf-title">Appairer cette planche</div><p class="pf-tap" style="margin-top:8px">Ouvert en tapant le tag NFC de la planche.</p></div>
+              <div class="pf-step"><div class="lab">1 · Modèle</div><div class="modelgrid" id="pf-models"><div class="mcard sel" data-m="Rocket" data-sku="TK-RKT"><div class="thumb"></div><div><div class="mt">Rocket</div><div class="ms">Strapless</div></div></div><div class="mcard" data-m="TK01" data-sku="TK-TK01"><div class="thumb"></div><div><div class="mt">TK01</div><div class="ms">Twin-tip</div></div></div></div></div>
+              <div class="pf-step"><div class="lab">2 · Taille</div><div class="opt" id="pf-sizes"><button>135</button><button class="sel">138</button><button>142</button></div></div>
+              <div class="pf-step"><div class="lab">3 · Couleur</div><div class="opt" id="pf-colors"><button class="sel"><span class="sw"><i style="background:#357"></i>Bleu</span></button><button><span class="sw"><i style="background:#111;border-color:#444"></i>Noir</span></button><button>Sans couleur</button></div></div>
+              <div class="pf-step"><div class="lab">4 · N° de série (auto)</div><div class="serial"><span class="v" id="pf-serial">TK-RKT-00483</span><span class="t">suivant · modifier</span></div></div>
+              <div class="pf-cta"><button class="btn btn--gold" onclick="pairDone()">Appairer à cette planche</button></div>
+            </div>
+            <div class="phone__screen" id="pf-success" hidden>
+              <div class="success"><div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div class="pf-title">Appairée ✓</div><p class="pf-tap" id="pf-recap" style="font-size:13px"></p><button class="btn" onclick="pairReset()">Appairer une autre</button></div>
+            </div>
+          </div>
+          <div class="pairnote">
+            <h3>Comment ça marche</h3>
+            <ol><li>Insère un tag NFC encodé dans la planche finie.</li><li>Tape-le avec ton téléphone → cet écran s'ouvre.</li><li>Choisis modèle · taille · couleur. Le n° de série est suggéré.</li><li>Confirme → la planche est provisionnée, prête à expédier.</li></ol>
+            <p class="hint" style="margin-top:18px">Le client n'aura plus qu'à taper le même tag pour l'enregistrer à son TK ID.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ░ CATALOGUE ░ -->
+      <section class="screen" id="catalogue" hidden>
+        <h1 class="h1">Catalogue</h1>
+        <div class="tabs"><button class="active">Modèles</button><button>Variantes</button><button>Stock</button></div>
+        <div class="panel">
+          <div class="panel__head"><h2>Modèles</h2><span class="meta">Contenu (récit, photos, specs) → Sanity Studio</span></div>
+          <table>
+            <thead><tr><th></th><th>Modèle</th><th class="mono">SKU</th><th>Type</th><th class="num">Variantes</th><th class="num">Stock</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><div class="thumb"></div></td><td class="name">Rocket</td><td class="mono">TK-RKT</td><td>Strapless</td><td class="num mono">6</td><td class="num mono">13</td><td><button class="btn btn--sm">Variantes</button></td></tr>
+              <tr><td><div class="thumb"></div></td><td class="name">TK01</td><td class="mono">TK-TK01</td><td>Twin-tip</td><td class="num mono">8</td><td class="num mono">40</td><td><button class="btn btn--sm">Variantes</button></td></tr>
+              <tr><td><div class="thumb"></div></td><td class="name">TK02</td><td class="mono">TK-TK02</td><td>Twin-tip</td><td class="num mono">4</td><td class="num mono">12</td><td><button class="btn btn--sm">Variantes</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <div class="panel__head"><h2>Options — Rocket</h2></div>
+          <div style="padding:24px;display:flex;flex-direction:column;gap:18px">
+            <div><div class="opt-label">Tailles (obligatoire · 1+)</div><div class="chips"><span class="chip">135 <button class="x">×</button></span><span class="chip">138 <button class="x">×</button></span><button class="chip chip--add">+ Taille</button></div></div>
+            <div><div class="opt-label">Couleurs (optionnel)</div><div class="chips"><span class="chip"><i style="background:#357"></i>Bleu · BLU <button class="x">×</button></span><span class="chip"><i style="background:#111;border-color:#444"></i>Noir · BLK <button class="x">×</button></span><button class="chip chip--add">+ Couleur</button></div><p class="hint" style="margin-top:8px">Vide = planche sans couleur → SKU <span style="color:var(--w72)">TK-RKT-138</span>.</p></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel__head"><h2>Variantes — Rocket · prix &amp; stock</h2></div>
+          <table>
+            <thead><tr><th>Taille</th><th>Couleur</th><th class="mono">SKU</th><th class="num">Prix</th><th class="num">Stock</th><th>Accessoire lié</th></tr></thead>
+            <tbody>
+              <tr><td class="strong mono">135</td><td><span class="swatch"><i style="background:#357"></i>Bleu</span></td><td class="mono">TK-RKT-BLU-135</td><td class="num"><input class="field field--num" value="1290"></td><td class="num"><input class="field field--num" value="7"></td><td class="hint">Board bag 135</td></tr>
+              <tr><td class="strong mono">138</td><td><span class="swatch"><i style="background:#111;border-color:#444"></i>Noir</span></td><td class="mono">TK-RKT-BLK-138</td><td class="num"><input class="field field--num" value="1290"></td><td class="num"><input class="field field--num" value="2"></td><td class="hint">Board bag 138</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ░ REGISTRE NFC ░ -->
+      <section class="screen" id="nfc" hidden>
+        <h1 class="h1">Registre NFC</h1>
+        <div class="kcards" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kcard"><span class="k">Tags prêts à appairer</span><span class="v">12</span><span class="s">encodés, en attente</span></div>
+          <div class="kcard"><span class="k">Appairées</span><span class="v">61</span><span class="s">planches provisionnées</span></div>
+          <div class="kcard"><span class="k">Total émis</span><span class="v">100</span><span class="s">lot du 24 avr.</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel__head"><h2>Générer un lot</h2><button class="btn btn--gold btn--sm">+ Générer &amp; télécharger CSV</button></div>
+          <div style="padding:24px"><p class="hint" style="line-height:1.8">1 · Choisis une quantité → <b style="color:#fff">Générer &amp; télécharger le CSV</b>. &nbsp; 2 · Encode les tags sur ordi (GoToTags + ACR122U), verrouille-les. &nbsp; 3 · Appaire chaque planche en la tapant (« Appairer une planche »).</p></div>
+        </div>
+        <div class="panel">
+          <div class="panel__head"><h2>Dernier lot · 100 tokens · 24 avr.</h2><button class="btn btn--sm">Export CSV</button></div>
+          <table>
+            <thead><tr><th class="mono">Token</th><th class="mono">URL</th><th>Statut</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">a1b2c3d4e5</td><td class="mono">tk-boards.com/tk-id/a1b2c3d4e5</td><td><span class="badge b-minted">Prêt</span></td></tr>
+              <tr><td class="mono">k1l2m3n4o5</td><td class="mono">tk-boards.com/tk-id/k1l2m3n4o5</td><td><span class="badge b-stock">Appairé</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ░ COMMANDES ░ -->
+      <section class="screen" id="commandes" hidden>
+        <h1 class="h1">Commandes</h1>
+        <div class="panel">
+          <div class="panel__head"><h2>Commandes récentes</h2><input class="field btn--sm" placeholder="Rechercher…" style="font-family:var(--mono);font-size:12px"></div>
+          <table>
+            <thead><tr><th class="mono">N°</th><th>Date</th><th>Client</th><th>Articles</th><th class="num">Total</th><th>Statut</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">#1042</td><td class="mono">07 juin</td><td class="name">Jane Rider</td><td>Rocket 138 Bleu</td><td class="num eur">1 290 €</td><td><span class="badge b-stock">Expédiée</span></td></tr>
+              <tr><td class="mono">#1041</td><td class="mono">05 juin</td><td class="name">Marco</td><td>Rocket 138 + Board bag</td><td class="num eur">1 380 €</td><td><span class="badge b-reg">Livrée</span></td></tr>
+              <tr><td class="mono">#1040</td><td class="mono">02 juin</td><td class="name">Léa M.</td><td>TK01 135 Blanc</td><td class="num eur">1 390 €</td><td><span class="badge b-minted">En prépa</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ░ CLIENTS ░ -->
+      <section class="screen" id="clients" hidden>
+        <h1 class="h1">Clients</h1>
+        <div class="panel">
+          <table>
+            <thead><tr><th>Nom</th><th>Email</th><th class="num">Planches</th><th class="num">Commandes</th><th class="num">CA total</th><th>Membre depuis</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="name">Maxime Dufour</td><td class="mono">maxime.dufour@gmail.com</td><td class="num mono">3</td><td class="num mono">2</td><td class="num eur mono">2 580 €</td><td class="mono">mars 2022</td><td><button class="btn btn--sm">Voir</button></td></tr>
+              <tr><td class="name">Léa Martin</td><td class="mono">lea.martin@icloud.com</td><td class="num mono">1</td><td class="num mono">1</td><td class="num eur mono">1 390 €</td><td class="mono">juin 2026</td><td><button class="btn btn--sm">Voir</button></td></tr>
+              <tr><td class="name">Pierre Morin</td><td class="mono">p.morin@gmail.com</td><td class="num mono">1</td><td class="num mono">1</td><td class="num eur mono">1 290 €</td><td class="mono">avr. 2024</td><td><button class="btn btn--sm">Voir</button></td></tr>
+              <tr><td class="name">Sophie Leroux</td><td class="mono">s.leroux@outlook.fr</td><td class="num mono">1</td><td class="num mono">1</td><td class="num eur mono">200 €</td><td class="mono">jan. 2024</td><td><button class="btn btn--sm">Voir</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ░ DÉCLARATIONS ░ -->
+      <section class="screen" id="declarations" hidden>
+        <h1 class="h1">Déclarations</h1>
+        <div class="panel">
+          <div class="panel__head"><h2>Vols déclarés · 2 — à traiter</h2></div>
+          <table>
+            <thead><tr><th>Planche</th><th class="mono">Série</th><th>Propriétaire</th><th>Déclarée</th><th>Contact</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>TK01 · 135 · Blanc</td><td class="mono">TK-TK01-00173</td><td class="name">Léa M.</td><td class="mono">04 juin</td><td><span class="badge b-reg">Public</span></td><td><button class="btn btn--sm">Contacter</button></td></tr>
+              <tr><td>Rocket · 135 · Blanc</td><td class="mono">TK-RKT-00310</td><td class="name">Tom B.</td><td class="mono">28 mai</td><td><span class="badge b-minted">Privé</span></td><td><button class="btn btn--sm">Contacter</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ░ STATISTIQUES ░ -->
+      <section class="screen" id="stats" hidden>
+        <h1 class="h1">Statistiques</h1>
+        <div class="seg"><button>3M</button><button>6M</button><button class="active">12M</button></div>
+        <div class="panel">
+          <div class="panel__head"><h2>Chiffre d'affaires mensuel</h2><span class="meta">Total <b>66 840 €</b> · Moy. <b>5 570 €/mois</b></span></div>
+          <div class="barchart" style="height:260px">
+            <div class="bar"><span class="v">4 200</span><div class="b" style="height:45%"></div><span class="x">Jun</span></div>
+            <div class="bar"><span class="v">6 800</span><div class="b" style="height:72%"></div><span class="x">Jul</span></div>
+            <div class="bar"><span class="v">9 400</span><div class="b" style="height:100%"></div><span class="x">Aoû</span></div>
+            <div class="bar"><span class="v">5 100</span><div class="b" style="height:54%"></div><span class="x">Sep</span></div>
+            <div class="bar"><span class="v">3 800</span><div class="b" style="height:40%"></div><span class="x">Oct</span></div>
+            <div class="bar"><span class="v">4 600</span><div class="b" style="height:49%"></div><span class="x">Nov</span></div>
+            <div class="bar"><span class="v">7 200</span><div class="b" style="height:77%"></div><span class="x">Déc</span></div>
+            <div class="bar"><span class="v">3 400</span><div class="b" style="height:36%"></div><span class="x">Jan</span></div>
+            <div class="bar"><span class="v">2 900</span><div class="b" style="height:31%"></div><span class="x">Fév</span></div>
+            <div class="bar"><span class="v">5 500</span><div class="b" style="height:59%"></div><span class="x">Mar</span></div>
+            <div class="bar"><span class="v">6 100</span><div class="b" style="height:65%"></div><span class="x">Avr</span></div>
+            <div class="bar hl"><span class="v">7 840</span><div class="b" style="height:83%"></div><span class="x">Mai</span></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="panel">
+            <div class="panel__head"><h2>Planches les plus vendues</h2></div>
+            <div class="ranked">
+              <div class="rrow"><span class="rk">#1</span><div class="ri"><div class="t">TK Rocket 138</div><div class="s">TK-RKT-138</div></div><div class="rv">38 vendues · <span class="e">45 220 €</span></div></div>
+              <div class="rrow"><span class="rk">#2</span><div class="ri"><div class="t">TK Cruiser 142</div><div class="s">TK-TK02-142</div></div><div class="rv">24 vendues · <span class="e">30 960 €</span></div></div>
+              <div class="rrow"><span class="rk">#3</span><div class="ri"><div class="t">TK Rocket 135</div><div class="s">TK-RKT-135</div></div><div class="rv">19 vendues · <span class="e">22 610 €</span></div></div>
+              <div class="rrow"><span class="rk">#4</span><div class="ri"><div class="t">Leash Pro 25m</div><div class="s">TKA-LP25</div></div><div class="rv">61 vendues · <span class="e">6 100 €</span></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel__head"><h2>Clients · dépenses cumulées</h2></div>
+            <div class="ranked">
+              <div class="rrow"><span class="rk">#1</span><div class="ri"><div class="t">Marc Dupont</div><div class="s">m.dupont@gmail.com</div></div><div class="rv">5 cmd · <span class="e">5 840 €</span></div></div>
+              <div class="rrow"><span class="rk">#2</span><div class="ri"><div class="t">Maxime Dufour</div><div class="s">maxime.dufour@gmail.com</div></div><div class="rv">2 cmd · <span class="e">2 580 €</span></div></div>
+              <div class="rrow"><span class="rk">#3</span><div class="ri"><div class="t">Léa Martin</div><div class="s">lea.martin@icloud.com</div></div><div class="rv">1 cmd · <span class="e">1 390 €</span></div></div>
+              <div class="rrow"><span class="rk">#4</span><div class="ri"><div class="t">Pierre Morin</div><div class="s">p.morin@gmail.com</div></div><div class="rv">1 cmd · <span class="e">1 290 €</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel__head"><h2>Saisonnalité · commandes par mois (2 ans)</h2></div>
+          <div class="grouped">
+            <div class="gcol"><span class="g1" style="height:18%"></span><span class="g2" style="height:24%"></span></div>
+            <div class="gcol"><span class="g1" style="height:14%"></span><span class="g2" style="height:20%"></span></div>
+            <div class="gcol"><span class="g1" style="height:30%"></span><span class="g2" style="height:36%"></span></div>
+            <div class="gcol"><span class="g1" style="height:42%"></span><span class="g2" style="height:50%"></span></div>
+            <div class="gcol"><span class="g1" style="height:56%"></span><span class="g2" style="height:64%"></span></div>
+            <div class="gcol"><span class="g1" style="height:70%"></span><span class="g2" style="height:80%"></span></div>
+            <div class="gcol"><span class="g1" style="height:82%"></span><span class="g2" style="height:95%"></span></div>
+            <div class="gcol"><span class="g1" style="height:76%"></span><span class="g2" style="height:88%"></span></div>
+            <div class="gcol"><span class="g1" style="height:54%"></span><span class="g2" style="height:62%"></span></div>
+            <div class="gcol"><span class="g1" style="height:38%"></span><span class="g2" style="height:44%"></span></div>
+            <div class="gcol"><span class="g1" style="height:30%"></span><span class="g2" style="height:34%"></span></div>
+            <div class="gcol"><span class="g1" style="height:40%"></span><span class="g2" style="height:48%"></span></div>
+          </div>
+          <div class="glabels"><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+          <div class="legend"><span><i style="background:#39414e"></i>2024</span><span><i style="background:var(--gold)"></i>2025</span></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    const CRUMB = { overview:"Vue d'ensemble", pair:'Appairer une planche', catalogue:'Catalogue', nfc:'Registre NFC', commandes:'Commandes', clients:'Clients', declarations:'Déclarations', stats:'Statistiques' }
+    const IDS = Object.keys(CRUMB)
+    function go(key){ IDS.forEach(id=>document.getElementById(id).hidden = id!==key); document.getElementById('crumb').textContent = CRUMB[key]; document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active', b.dataset.go===key)); window.scrollTo(0,0) }
+    document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)))
+
+    let serialN=483
+    function selOne(c,el){ c.querySelectorAll('.mcard,button').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); updateSerial() }
+    function updateSerial(){ const m=document.querySelector('#pf-models .mcard.sel'); const sku=m?m.dataset.sku:'TK-RKT'; document.getElementById('pf-serial').textContent=sku+'-'+String(serialN).padStart(5,'0') }
+    document.querySelectorAll('#pf-models .mcard').forEach(c=>c.addEventListener('click',()=>selOne(document.getElementById('pf-models'),c)))
+    document.querySelectorAll('#pf-sizes button').forEach(c=>c.addEventListener('click',()=>selOne(document.getElementById('pf-sizes'),c)))
+    document.querySelectorAll('#pf-colors button').forEach(c=>c.addEventListener('click',()=>selOne(document.getElementById('pf-colors'),c)))
+    function pairDone(){ const m=document.querySelector('#pf-models .mcard.sel')?.dataset.m||'Rocket'; const s=document.querySelector('#pf-sizes button.sel')?.textContent||'138'; const c=document.querySelector('#pf-colors button.sel')?.innerText.trim()||'Bleu'; document.getElementById('pf-recap').innerHTML=m+' · '+s+' · '+c+'<br><b style="color:#fff">'+document.getElementById('pf-serial').textContent+'</b><br>Prête à expédier.'; document.getElementById('pf-form').hidden=true; document.getElementById('pf-success').hidden=false }
+    function pairReset(){ serialN++; updateSerial(); document.getElementById('pf-success').hidden=true; document.getElementById('pf-form').hidden=false }
+  </script>
+</body>
+</html>

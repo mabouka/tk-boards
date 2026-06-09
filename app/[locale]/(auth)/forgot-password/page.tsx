@@ -1,60 +1,54 @@
+'use client'
+
+import { useActionState } from 'react'
 import Link from 'next/link'
-import { getTranslations } from 'next-intl/server'
-import { requestReset } from '../actions'
+import { useLocale, useTranslations } from 'next-intl'
+import { requestPasswordReset } from '../actions'
 import { AtIcon } from '@/components/auth/icons'
 import styles from '../auth.module.css'
 
-type Props = {
-  params: Promise<{ locale: string }>
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}
-
-export default async function ForgotPasswordPage({ params, searchParams }: Props) {
-  const { locale } = await params
-  const sent = (await searchParams).sent === '1'
-  const t = await getTranslations('auth')
-
-  if (sent) {
-    return (
-      <div className={styles.card}>
-        <h1 className={styles.title}>{t('check_email_title')}</h1>
-        <p className={styles.subtitle}>{t('reset_sent')}</p>
-        <div className={styles.actions}>
-          <Link className={`u-cta u-cta--white-outline ${styles.btnRow}`} href={`/${locale}/login`}>
-            {t('back_to_signin')}
-          </Link>
-        </div>
-      </div>
-    )
-  }
+export default function ForgotPasswordPage() {
+  const t = useTranslations('auth')
+  const locale = useLocale()
+  const [state, action, pending] = useActionState(requestPasswordReset, null)
+  const sent = state?.notice === 'reset-sent'
 
   return (
     <div className={styles.card}>
-      <h1 className={styles.title}>{t('reset_title')}</h1>
+      <h1 className={styles.title}>{sent ? t('check_email_title') : t('reset_title')}</h1>
+      <p className={styles.subtitle}>{sent ? t('reset_sent') : t('reset_label')}</p>
+
       <div className={styles.step}>
-        <Link className={styles.changeEmail} href={`/${locale}/login`}>
+        {!sent && (
+          <form className={styles.form} action={action}>
+            <input type="hidden" name="locale" value={locale} />
+            <label className={styles.inputWrap}>
+              <AtIcon />
+              <input
+                className={styles.field}
+                name="email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder={t('email_placeholder')}
+                required
+              />
+            </label>
+            <div className={styles.actions}>
+              <button
+                className={`u-cta u-cta--white-fill ${styles.btnRow}`}
+                type="submit"
+                disabled={pending}
+              >
+                {pending ? t('checking') : t('reset_send')}
+              </button>
+            </div>
+          </form>
+        )}
+
+        <Link href={`/${locale}/login`} className={styles.changeEmail}>
           ← {t('back_to_signin')}
         </Link>
-        <form className={styles.form} action={requestReset}>
-          <input type="hidden" name="locale" value={locale} />
-          <p className={styles.formLabel}>{t('reset_label')}</p>
-          <label className={styles.inputWrap}>
-            <AtIcon />
-            <input
-              className={styles.field}
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder={t('email_placeholder')}
-              required
-            />
-          </label>
-          <div className={styles.actions}>
-            <button className={`u-cta u-cta--white-fill ${styles.btnRow}`} type="submit">
-              {t('reset_send')}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   )

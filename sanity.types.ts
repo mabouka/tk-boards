@@ -538,6 +538,7 @@ export type Board = {
   name: string;
   slug: Slug;
   series: SeriesReference;
+  skuCode: string;
   heroTitle?: string;
   heroTagline?: string;
   heroImage?: {

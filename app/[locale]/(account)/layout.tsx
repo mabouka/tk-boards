@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
-import { createClient } from '@/lib/supabase/server'
+import { eq } from 'drizzle-orm'
+import { auth } from '@/auth'
+import { db } from '@/db'
+import { users } from '@/db/schema'
 import { signOut } from './actions'
 import styles from './account.module.css'
 
@@ -13,21 +16,18 @@ type Props = {
 export default async function AccountLayout({ children, params }: Props) {
   const { locale } = await params
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const session = await auth()
+  if (!session?.user?.id) redirect(`/${locale}/login`)
 
-  // Security boundary: never render the member area without a session.
-  if (!user) redirect(`/${locale}/login`)
-
-  // Onboarding gate: send not-yet-onboarded accounts to complete their profile.
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('onboarded')
-    .eq('id', user.id)
-    .maybeSingle()
-  if (profile && !profile.onboarded) redirect(`/${locale}/onboarding`)
+  // Reject stale sessions (a password reset / logout-everywhere bumped the version).
+  const [u] = await db
+    .select({ tokenVersion: users.tokenVersion })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1)
+  if (!u || (u.tokenVersion ?? 0) !== (session.user.tokenVersion ?? 0)) {
+    redirect(`/${locale}/login`)
+  }
 
   const t = await getTranslations('account')
 

@@ -46,6 +46,19 @@ export const board = defineType({
       validation: (r) => r.required(),
       group: 'basic',
     }),
+    defineField({
+      name: 'skuCode',
+      title: 'Model SKU code',
+      type: 'string',
+      description:
+        'Short uppercase code identifying this model, e.g. TK-RKT or TK-TK01. It is the link to variants, physical units (NFC) and the e-shop. Keep it identical across languages.',
+      group: 'basic',
+      validation: (r) =>
+        r
+          .required()
+          .uppercase()
+          .regex(/^[A-Z0-9-]+$/, { name: 'uppercase letters, numbers and dashes' }),
+    }),
 
     // ── Hero ─────────────────────────────────────
     defineField({

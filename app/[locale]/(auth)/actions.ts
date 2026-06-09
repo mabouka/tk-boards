@@ -1,45 +1,57 @@
 'use server'
 
-import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { AuthError } from 'next-auth'
+import bcrypt from 'bcryptjs'
+import { eq, sql } from 'drizzle-orm'
+import { signIn } from '@/auth'
+import { db } from '@/db'
+import { users } from '@/db/schema'
+import { createEmailToken, consumeEmailToken } from '@/lib/auth-tokens'
+import { sendVerificationEmail, sendPasswordResetEmail } from '@/lib/email'
+import { rateLimit, clientIp } from '@/lib/rate-limit'
 
 const LOCALES = ['fr', 'en', 'es'] as const
 type Locale = (typeof LOCALES)[number]
-
 function safeLocale(value: FormDataEntryValue | null): Locale {
   return LOCALES.includes(value as Locale) ? (value as Locale) : 'en'
 }
-
-export type AuthState = { error?: string; notice?: string } | null
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
-/** Absolute origin of the current request (works in dev and prod). */
-async function getOrigin(): Promise<string> {
-  const h = await headers()
-  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000'
-  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https')
-  return `${proto}://${host}`
-}
+export type AuthState = { error?: string; notice?: string } | null
 
 // ── Email + password ────────────────────────────────────────────
 
 export async function login(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const locale = safeLocale(formData.get('locale'))
-  const email = String(formData.get('email') ?? '')
+  const email = String(formData.get('email') ?? '').toLowerCase().trim()
   const password = String(formData.get('password') ?? '')
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const ip = await clientIp()
+  if (!(await rateLimit('login-ip', ip, 10, 60)) || !(await rateLimit('login-email', email, 5, 60))) {
+    return { error: 'rate' }
+  }
 
-  if (error) return { error: 'invalid' }
-  redirect(`/${locale}/account`)
+  // Block password accounts that haven't verified their email yet.
+  const [u] = await db
+    .select({ passwordHash: users.passwordHash, emailVerified: users.emailVerified })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1)
+  if (u?.passwordHash && !u.emailVerified) return { error: 'unverified' }
+
+  try {
+    await signIn('credentials', { email, password, redirectTo: `/${locale}/account` })
+  } catch (error) {
+    if (error instanceof AuthError) return { error: 'invalid' }
+    throw error // re-throw the redirect (success)
+  }
+  return null
 }
 
 export async function signup(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const locale = safeLocale(formData.get('locale'))
-  const email = String(formData.get('email') ?? '')
+  const email = String(formData.get('email') ?? '').toLowerCase().trim()
   const password = String(formData.get('password') ?? '')
   const password2 = String(formData.get('password2') ?? '')
   const firstName = String(formData.get('first_name') ?? '').trim()
@@ -49,128 +61,115 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
     return { error: 'signup' }
   }
 
-  const origin = await getOrigin()
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        first_name: firstName,
-        last_name: lastName,
-        full_name: [firstName, lastName].filter(Boolean).join(' '),
-        locale,
-      },
-      emailRedirectTo: `${origin}/api/auth/callback?next=/${locale}/account`,
-    },
-  })
+  const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1)
+  if (existing) return { error: 'exists' }
 
-  if (error) return { error: 'signup' }
-  // Email confirmation OFF → session exists → straight into the (gated) account.
-  if (data.session) redirect(`/${locale}/account`)
-  // Email confirmation ON → ask the user to confirm first.
+  const passwordHash = await bcrypt.hash(password, 12)
+  const [created] = await db
+    .insert(users)
+    .values({
+      email,
+      passwordHash,
+      firstName: firstName || null,
+      lastName: lastName || null,
+      name: [firstName, lastName].filter(Boolean).join(' ') || null,
+      locale,
+    })
+    .returning({ id: users.id })
+
+  // No auto-login: send a verification email; the user verifies, then signs in.
+  const token = await createEmailToken(created.id, 'verify', 24 * 60)
+  await sendVerificationEmail({ to: email, locale, token })
   return { notice: 'check-email' }
 }
 
-// ── OAuth ───────────────────────────────────────────────────────
-
-async function oauth(provider: 'google' | 'facebook', locale: Locale) {
-  const origin = await getOrigin()
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: { redirectTo: `${origin}/api/auth/callback?next=/${locale}/account` },
-  })
-  if (error || !data?.url) redirect(`/${locale}/login?error=${provider}`)
-  redirect(data.url)
-}
-
-export async function signInWithGoogle(formData: FormData) {
-  await oauth('google', safeLocale(formData.get('locale')))
-}
-
-export async function signInWithFacebook(formData: FormData) {
-  await oauth('facebook', safeLocale(formData.get('locale')))
+// Re-send the verification email for an unverified password account.
+export async function resendVerification(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const locale = safeLocale(formData.get('locale'))
+  const email = String(formData.get('email') ?? '').toLowerCase().trim()
+  const ip = await clientIp()
+  const allowed =
+    (await rateLimit('resend-ip', ip, 5, 900)) && (await rateLimit('resend-email', email, 3, 900))
+  if (allowed) {
+    const [u] = await db
+      .select({ id: users.id, passwordHash: users.passwordHash, emailVerified: users.emailVerified })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1)
+    if (u?.id && u.passwordHash && !u.emailVerified) {
+      const token = await createEmailToken(u.id, 'verify', 24 * 60)
+      await sendVerificationEmail({ to: email, locale, token })
+    }
+  }
+  return { notice: 'check-email' }
 }
 
 // ── Password reset ──────────────────────────────────────────────
 
-export async function requestReset(formData: FormData) {
+export async function requestPasswordReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const locale = safeLocale(formData.get('locale'))
-  const email = String(formData.get('email') ?? '')
-  const origin = await getOrigin()
-
-  const supabase = await createClient()
-  // Always redirect to the "sent" state, even on error, to avoid leaking
-  // which emails exist.
-  await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/api/auth/callback?next=/${locale}/reset-password`,
-  })
-
-  redirect(`/${locale}/forgot-password?sent=1`)
+  const email = String(formData.get('email') ?? '').toLowerCase().trim()
+  const ip = await clientIp()
+  const allowed =
+    (await rateLimit('forgot-ip', ip, 5, 900)) && (await rateLimit('forgot-email', email, 3, 900))
+  if (allowed && EMAIL_RE.test(email)) {
+    const [u] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1)
+    // Any existing account can set/reset a password here — including a
+    // Google-only account that chooses to add password login.
+    if (u?.id) {
+      const token = await createEmailToken(u.id, 'reset', 60)
+      await sendPasswordResetEmail({ to: email, locale, token })
+    }
+  }
+  // Always report success to avoid leaking which emails have an account.
+  return { notice: 'reset-sent' }
 }
 
-export async function updatePassword(formData: FormData) {
+export async function resetPassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const locale = safeLocale(formData.get('locale'))
+  const token = String(formData.get('token') ?? '')
   const password = String(formData.get('password') ?? '')
   const password2 = String(formData.get('password2') ?? '')
 
-  if (password.length < 8 || password !== password2) {
-    redirect(`/${locale}/reset-password?error=1`)
-  }
+  if (password.length < 8 || password !== password2) return { error: 'reset' }
 
-  const supabase = await createClient()
-  const { error } = await supabase.auth.updateUser({ password })
-  if (error) redirect(`/${locale}/reset-password?error=1`)
-  redirect(`/${locale}/account`)
+  const userId = await consumeEmailToken(token, 'reset')
+  if (!userId) return { error: 'reset-invalid' }
+
+  const passwordHash = await bcrypt.hash(password, 12)
+  // A valid reset link proves email ownership → mark verified, and bump
+  // tokenVersion so any existing session is invalidated by the gates.
+  await db
+    .update(users)
+    .set({ passwordHash, emailVerified: new Date(), tokenVersion: sql`${users.tokenVersion} + 1` })
+    .where(eq(users.id, userId))
+
+  redirect(`/${locale}/login?reset=1`)
 }
 
-// ── Onboarding (default delivery address + phone) ───────────────
+// ── OAuth ───────────────────────────────────────────────────────
 
-export async function saveOnboarding(formData: FormData) {
+export async function signInWithGoogle(formData: FormData) {
   const locale = safeLocale(formData.get('locale'))
-  const line1 = String(formData.get('line1') ?? '').trim()
-  const line2 = String(formData.get('line2') ?? '').trim()
-  const postal = String(formData.get('postal_code') ?? '').trim()
-  const city = String(formData.get('city') ?? '').trim()
-  const country = String(formData.get('country') ?? '').trim()
-  const phone = String(formData.get('phone') ?? '').trim()
-
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect(`/${locale}/login`)
-
-  if (line1) {
-    await supabase.from('addresses').insert({
-      user_id: user.id,
-      line1,
-      line2: line2 || null,
-      postal_code: postal || null,
-      city: city || null,
-      country: country || null,
-      phone: phone || null,
-      is_default: true,
-    })
-  }
-
-  await supabase
-    .from('profiles')
-    .update({ phone: phone || null, onboarded: true })
-    .eq('id', user.id)
-
-  redirect(`/${locale}/account`)
+  await signIn('google', { redirectTo: `/${locale}/account` })
 }
 
-export async function skipOnboarding(formData: FormData) {
+export async function signInWithFacebook(formData: FormData) {
   const locale = safeLocale(formData.get('locale'))
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (user) {
-    await supabase.from('profiles').update({ onboarded: true }).eq('id', user.id)
-  }
-  redirect(`/${locale}/account`)
+  await signIn('facebook', { redirectTo: `/${locale}/account` })
+}
+
+// ── Email verification (confirmed via POST → scanner-safe) ──────
+
+export async function verifyEmail(formData: FormData) {
+  const locale = safeLocale(formData.get('locale'))
+  const token = String(formData.get('token') ?? '')
+  const userId = await consumeEmailToken(token, 'verify')
+  if (!userId) redirect(`/${locale}/verify?expired=1`)
+  await db.update(users).set({ emailVerified: new Date() }).where(eq(users.id, userId))
+  redirect(`/${locale}/login?verified=1`)
 }
