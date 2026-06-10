@@ -1,10 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
-import { eq } from 'drizzle-orm'
-import { auth } from '@/auth'
-import { db } from '@/db'
-import { users } from '@/db/schema'
+import { liveSession } from '@/lib/session'
 import { signOut } from './actions'
 import styles from './account.module.css'
 
@@ -16,18 +13,9 @@ type Props = {
 export default async function AccountLayout({ children, params }: Props) {
   const { locale } = await params
 
-  const session = await auth()
-  if (!session?.user?.id) redirect(`/${locale}/login`)
-
-  // Reject stale sessions (a password reset / logout-everywhere bumped the version).
-  const [u] = await db
-    .select({ tokenVersion: users.tokenVersion })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1)
-  if (!u || (u.tokenVersion ?? 0) !== (session.user.tokenVersion ?? 0)) {
-    redirect(`/${locale}/login`)
-  }
+  // Gate: a live session only (rejects no session, a deleted user, or a stale
+  // token after a password reset / logout-everywhere).
+  if (!(await liveSession())) redirect(`/${locale}/login`)
 
   const t = await getTranslations('account')
 

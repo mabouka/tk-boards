@@ -1,20 +1,9 @@
-import { eq } from 'drizzle-orm'
-import { auth } from '@/auth'
-import { db } from '@/db'
-import { users } from '@/db/schema'
+import { liveSession } from '@/lib/session'
 
-/** Throws unless the caller is a logged-in admin. Returns the user id. */
+/** Throws unless the caller is a logged-in admin with a live session. Returns the user id. */
 export async function requireAdmin(): Promise<string> {
-  const session = await auth()
-  if (!session?.user?.id) throw new Error('unauthorized')
-
-  const [u] = await db
-    .select({ role: users.role, tokenVersion: users.tokenVersion })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1)
-
-  if (u?.role !== 'admin') throw new Error('forbidden')
-  if ((u.tokenVersion ?? 0) !== (session.user.tokenVersion ?? 0)) throw new Error('stale-session')
-  return session.user.id
+  const s = await liveSession()
+  if (!s) throw new Error('unauthorized') // no session, deleted user, or stale token
+  if (s.role !== 'admin') throw new Error('forbidden')
+  return s.userId
 }

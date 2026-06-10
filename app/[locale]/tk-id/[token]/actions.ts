@@ -2,9 +2,9 @@
 
 import { redirect } from 'next/navigation'
 import { and, eq } from 'drizzle-orm'
-import { auth } from '@/auth'
 import { db } from '@/db'
-import { units, registrations, users } from '@/db/schema'
+import { units, registrations } from '@/db/schema'
+import { liveSession } from '@/lib/session'
 
 const LOCALES = ['fr', 'en', 'es']
 const loc = (v: FormDataEntryValue | null) =>
@@ -14,27 +14,13 @@ const loc = (v: FormDataEntryValue | null) =>
 const loginUrl = (locale: string, token: string) =>
   `/${locale}/login?callbackUrl=${encodeURIComponent(`/${locale}/tk-id/${token}`)}`
 
-// Current user id, but only if the session is still live: a password reset /
-// logout-everywhere bumps tokenVersion and must invalidate older JWTs here too.
-async function liveUserId(): Promise<string | null> {
-  const session = await auth()
-  if (!session?.user?.id) return null
-  const [u] = await db
-    .select({ tokenVersion: users.tokenVersion })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1)
-  if (!u || (u.tokenVersion ?? 0) !== (session.user.tokenVersion ?? 0)) return null
-  return session.user.id
-}
-
 // Register a provisioned board to the current user (first-tap-wins).
 export async function registerBoard(formData: FormData) {
   const locale = loc(formData.get('locale'))
   const token = String(formData.get('token') ?? '')
   if (!token) redirect(`/${locale}`)
-  const userId = await liveUserId()
-  if (!userId) redirect(loginUrl(locale, token))
+  const s = await liveSession()
+  if (!s) redirect(loginUrl(locale, token))
 
   const [u] = await db
     .select({ id: units.id, status: units.status, variantId: units.variantId })
@@ -45,7 +31,7 @@ export async function registerBoard(formData: FormData) {
   if (u && u.variantId && u.status === 'provisioned') {
     try {
       // The partial unique index (one active reg per unit) enforces first-tap-wins.
-      await db.insert(registrations).values({ userId, unitId: u.id, status: 'active' })
+      await db.insert(registrations).values({ userId: s.userId, unitId: u.id, status: 'active' })
       await db.update(units).set({ status: 'registered' }).where(eq(units.id, u.id))
     } catch {
       // Already registered by someone else — fall through and re-render the state.
@@ -72,10 +58,10 @@ async function ownerGuard(token: string, userId: string) {
 export async function declareStolen(formData: FormData) {
   const locale = loc(formData.get('locale'))
   const token = String(formData.get('token') ?? '')
-  const userId = await liveUserId()
-  if (!userId) redirect(loginUrl(locale, token))
+  const s = await liveSession()
+  if (!s) redirect(loginUrl(locale, token))
 
-  const unitId = await ownerGuard(token, userId)
+  const unitId = await ownerGuard(token, s.userId)
   if (unitId) await db.update(units).set({ status: 'stolen' }).where(eq(units.id, unitId))
   redirect(`/${locale}/tk-id/${token}`)
 }
@@ -83,10 +69,10 @@ export async function declareStolen(formData: FormData) {
 export async function markRecovered(formData: FormData) {
   const locale = loc(formData.get('locale'))
   const token = String(formData.get('token') ?? '')
-  const userId = await liveUserId()
-  if (!userId) redirect(loginUrl(locale, token))
+  const s = await liveSession()
+  if (!s) redirect(loginUrl(locale, token))
 
-  const unitId = await ownerGuard(token, userId)
+  const unitId = await ownerGuard(token, s.userId)
   if (unitId) await db.update(units).set({ status: 'registered' }).where(eq(units.id, unitId))
   redirect(`/${locale}/tk-id/${token}`)
 }
