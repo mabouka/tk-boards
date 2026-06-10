@@ -14,6 +14,7 @@ export type RoleResult = { ok: true } | { ok: false; error: string }
 type Result = { ok: true } | { ok: false; error: string }
 
 export type AddressInput = {
+  company: string
   line1: string
   line2: string
   postalCode: string
@@ -95,6 +96,7 @@ export async function updateAccount(
 // ── Addresses (admin CRUD) ──
 function addressValues(input: AddressInput) {
   return {
+    company: input.company.trim() || null,
     line1: input.line1.trim(),
     line2: input.line2.trim() || null,
     postalCode: input.postalCode.trim() || null,

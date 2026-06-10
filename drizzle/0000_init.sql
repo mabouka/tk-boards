@@ -16,6 +16,7 @@ CREATE TABLE "account" (
 CREATE TABLE "address" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
+	"company" text,
 	"line1" text NOT NULL,
 	"line2" text,
 	"postal_code" text,

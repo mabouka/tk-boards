@@ -18,6 +18,7 @@ import { Label } from '@/components/admin/ui/label'
 
 type Address = {
   id: string
+  company: string | null
   line1: string
   line2: string | null
   postalCode: string | null
@@ -28,6 +29,7 @@ type Address = {
 }
 
 const EMPTY: AddressInput = {
+  company: '',
   line1: '',
   line2: '',
   postalCode: '',
@@ -50,6 +52,7 @@ export function AddressManager({ userId, addresses }: { userId: string; addresse
   }
   function openEdit(a: Address) {
     setDraft({
+      company: a.company ?? '',
       line1: a.line1,
       line2: a.line2 ?? '',
       postalCode: a.postalCode ?? '',
@@ -125,6 +128,7 @@ export function AddressManager({ userId, addresses }: { userId: string; addresse
                     Par défaut
                   </Badge>
                 )}
+                {a.company && <div className="font-medium">{a.company}</div>}
                 <div>{a.line1}</div>
                 {a.line2 && <div>{a.line2}</div>}
                 <div className="text-muted-foreground">
@@ -178,6 +182,11 @@ function AddressForm({
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-md border p-3">
+      <Input
+        value={draft.company}
+        onChange={(e) => patch({ company: e.target.value })}
+        placeholder="Société (optionnel)"
+      />
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="a-line1">Adresse</Label>
         <Input

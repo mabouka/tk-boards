@@ -88,7 +88,10 @@ export function AccountInfoForm({ account }: { account: Account }) {
         <dl className="flex flex-col gap-2 border-t pt-3 text-sm">
           <Row k="Email" v={account.email} />
           <Row k="Méthode" v={account.method === 'password' ? 'Mot de passe' : 'Google'} />
-          <Row k="Email vérifié" v={account.emailVerified ? fmtDate(account.emailVerified) : 'Non'} />
+          {/* Email verification only applies to password accounts — OAuth providers vouch for it. */}
+          {account.method === 'password' && (
+            <Row k="Email vérifié" v={account.emailVerified ? fmtDate(account.emailVerified) : 'Non'} />
+          )}
           <Row k="Inscrit le" v={fmtDate(account.createdAt)} />
         </dl>
 

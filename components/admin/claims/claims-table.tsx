@@ -1,13 +1,22 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { setClaimStatus, type ClaimStatus } from '@/app/admin/(app)/claims/actions'
 import type { ClaimRow } from '@/lib/admin/claims'
 import { Badge } from '@/components/admin/ui/badge'
 import { Card } from '@/components/admin/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/admin/ui/dialog'
 import { Input } from '@/components/admin/ui/input'
+import { Label } from '@/components/admin/ui/label'
 import {
   Select,
   SelectContent,
@@ -33,12 +42,15 @@ const STATUS: Record<ClaimStatus, { label: string; variant: 'default' | 'seconda
 const STATUS_KEYS = Object.keys(STATUS) as ClaimStatus[]
 
 const fmtDate = (d: Date) => new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d)
+const statusOf = (s: string) => STATUS[s as ClaimStatus] ?? { label: s, variant: 'default' as const }
 
 type StatusFilter = 'all' | ClaimStatus
 
 export function ClaimsTable({ claims }: { claims: ClaimRow[] }) {
   const [q, setQ] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [selected, setSelected] = useState<ClaimRow | null>(null)
+  const [status, setStatus] = useState<ClaimStatus>('open')
   const [pending, startTransition] = useTransition()
 
   const needle = q.trim().toLowerCase()
@@ -52,11 +64,22 @@ export function ClaimsTable({ claims }: { claims: ClaimRow[] }) {
         (c.sku ?? '').toLowerCase().includes(needle))
   )
 
-  function changeStatus(id: string, status: ClaimStatus) {
+  function open(c: ClaimRow) {
+    setSelected(c)
+    setStatus(c.status as ClaimStatus)
+  }
+
+  function changeStatus(next: ClaimStatus) {
+    if (!selected) return
+    const prev = status
+    setStatus(next) // optimistic
     startTransition(async () => {
-      const res = await setClaimStatus(id, status)
+      const res = await setClaimStatus(selected.id, next)
       if (res.ok) toast.success('Statut mis à jour.')
-      else toast.error(res.error)
+      else {
+        setStatus(prev)
+        toast.error(res.error)
+      }
     })
   }
 
@@ -95,7 +118,7 @@ export function ClaimsTable({ claims }: { claims: ClaimRow[] }) {
               <TableHead>Board</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead className="w-44">Statut</TableHead>
+              <TableHead className="w-28">Statut</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -107,7 +130,7 @@ export function ClaimsTable({ claims }: { claims: ClaimRow[] }) {
               </TableRow>
             ) : (
               shown.map((c) => (
-                <TableRow key={c.id}>
+                <TableRow key={c.id} onClick={() => open(c)} className="cursor-pointer">
                   <TableCell>
                     <div className="font-medium">{c.ownerName}</div>
                     <div className="text-muted-foreground truncate text-xs">{c.ownerEmail}</div>
@@ -122,36 +145,12 @@ export function ClaimsTable({ claims }: { claims: ClaimRow[] }) {
                     <span className="text-muted-foreground line-clamp-2 text-sm">
                       {c.description || '—'}
                     </span>
-                    {c.photoCount > 0 && (
-                      <span className="text-muted-foreground text-xs">
-                        {c.photoCount} photo{c.photoCount > 1 ? 's' : ''}
-                      </span>
-                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                     {fmtDate(c.createdAt)}
                   </TableCell>
                   <TableCell>
-                    <Select
-                      value={c.status}
-                      onValueChange={(v) => changeStatus(c.id, v as ClaimStatus)}
-                      disabled={pending}
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue>
-                          <Badge variant={STATUS[c.status as ClaimStatus]?.variant ?? 'default'}>
-                            {STATUS[c.status as ClaimStatus]?.label ?? c.status}
-                          </Badge>
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STATUS_KEYS.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {STATUS[s].label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Badge variant={statusOf(c.status).variant}>{statusOf(c.status).label}</Badge>
                   </TableCell>
                 </TableRow>
               ))
@@ -159,6 +158,71 @@ export function ClaimsTable({ claims }: { claims: ClaimRow[] }) {
           </TableBody>
         </Table>
       </Card>
+
+      <Dialog open={selected !== null} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Réclamation</DialogTitle>
+            <DialogDescription>
+              {selected && `Ouverte le ${fmtDate(selected.createdAt)}`}
+            </DialogDescription>
+          </DialogHeader>
+          {selected && (
+            <div className="flex flex-col gap-4 text-sm">
+              <Field label="Client">
+                <Link
+                  href={`/admin/accounts/${selected.ownerId}`}
+                  className="font-medium hover:underline"
+                >
+                  {selected.ownerName}
+                </Link>
+                <div className="text-muted-foreground text-xs">{selected.ownerEmail}</div>
+              </Field>
+              <Field label="Board">
+                <div>{selected.productName ?? '—'}</div>
+                <div className="text-muted-foreground font-mono text-xs">
+                  {[selected.sku, selected.serial].filter(Boolean).join(' · ') || '—'}
+                </div>
+              </Field>
+              <Field label="Description">
+                <p className="whitespace-pre-wrap">{selected.description || '—'}</p>
+              </Field>
+              {selected.photoCount > 0 && (
+                <Field label="Photos">
+                  {selected.photoCount} photo{selected.photoCount > 1 ? 's' : ''} jointe
+                  {selected.photoCount > 1 ? 's' : ''}
+                </Field>
+              )}
+              <div className="grid gap-2">
+                <Label>Statut</Label>
+                <Select value={status} onValueChange={(v) => changeStatus(v as ClaimStatus)} disabled={pending}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue>
+                      <Badge variant={STATUS[status].variant}>{STATUS[status].label}</Badge>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_KEYS.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {STATUS[s].label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5 border-b pb-3 last:border-0">
+      <span className="text-muted-foreground text-xs">{label}</span>
+      {children}
     </div>
   )
 }

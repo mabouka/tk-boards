@@ -56,6 +56,7 @@ export type AccountDetail = {
   }[]
   addresses: {
     id: string
+    company: string | null
     line1: string
     line2: string | null
     postalCode: string | null
@@ -109,6 +110,7 @@ export async function getAccount(id: string): Promise<AccountDetail | null> {
   const userAddresses = await db
     .select({
       id: addresses.id,
+      company: addresses.company,
       line1: addresses.line1,
       line2: addresses.line2,
       postalCode: addresses.postalCode,

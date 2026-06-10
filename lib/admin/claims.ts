@@ -9,6 +9,7 @@ export type ClaimRow = {
   description: string | null
   photoCount: number
   createdAt: Date
+  ownerId: string
   ownerName: string
   ownerEmail: string
   productName: string | null
@@ -27,6 +28,7 @@ export async function getClaims(type?: 'theft' | 'warranty'): Promise<ClaimRow[]
       description: claims.description,
       photoPaths: claims.photoPaths,
       createdAt: claims.createdAt,
+      ownerId: claims.userId,
       firstName: users.firstName,
       lastName: users.lastName,
       name: users.name,
@@ -51,6 +53,7 @@ export async function getClaims(type?: 'theft' | 'warranty'): Promise<ClaimRow[]
     description: r.description,
     photoCount: r.photoPaths?.length ?? 0,
     createdAt: r.createdAt,
+    ownerId: r.ownerId,
     ownerName: [r.firstName, r.lastName].filter(Boolean).join(' ') || r.name || '—',
     ownerEmail: r.email,
     productName: r.productName,
