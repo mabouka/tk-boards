@@ -1,5 +1,5 @@
 {
-  "id": "6c4e2a2e-d46d-468d-b834-4568e4b29ab4",
+  "id": "58f0fff9-47b8-4b7f-894a-5f9f5ab933da",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -120,6 +120,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "company": {
+          "name": "company",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "line1": {
           "name": "line1",

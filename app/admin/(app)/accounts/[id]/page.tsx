@@ -18,6 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/admin/ui/table'
+import { AccountInfoForm } from '@/components/admin/accounts/account-info-form'
+import { AddressManager } from '@/components/admin/accounts/address-manager'
 
 const fmtDate = (d: Date | null) =>
   d ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d) : '—'
@@ -28,15 +30,6 @@ const UNIT_STATUS: Record<string, string> = {
   registered: 'Enregistrée',
   stolen: 'Volée',
   transferred: 'Transférée',
-}
-
-function Row({ k, v }: { k: string; v: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b py-2 last:border-0">
-      <span className="text-muted-foreground text-sm">{k}</span>
-      <span className="text-right text-sm">{v}</span>
-    </div>
-  )
 }
 
 export default async function AccountDetailPage({
@@ -66,48 +59,20 @@ export default async function AccountDetailPage({
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Compte</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Row k="Email" v={a.email} />
-            <Row k="Méthode" v={a.method === 'password' ? 'Mot de passe' : 'Google'} />
-            <Row k="Email vérifié" v={a.emailVerified ? fmtDate(a.emailVerified) : 'Non'} />
-            <Row k="Téléphone" v={a.phone ?? '—'} />
-            <Row k="Langue" v={a.locale.toUpperCase()} />
-            <Row k="Inscrit le" v={fmtDate(a.createdAt)} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Adresses</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {a.addresses.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Aucune adresse.</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {a.addresses.map((ad) => (
-                  <div key={ad.id} className="text-sm">
-                    {ad.isDefault && (
-                      <Badge variant="outline" className="mb-1">
-                        Par défaut
-                      </Badge>
-                    )}
-                    <div>{ad.line1}</div>
-                    {ad.line2 && <div>{ad.line2}</div>}
-                    <div className="text-muted-foreground">
-                      {[ad.postalCode, ad.city, ad.country].filter(Boolean).join(', ')}
-                    </div>
-                    {ad.phone && <div className="text-muted-foreground">{ad.phone}</div>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <AccountInfoForm
+          account={{
+            id: a.id,
+            firstName: a.firstName,
+            lastName: a.lastName,
+            phone: a.phone,
+            locale: a.locale,
+            email: a.email,
+            method: a.method,
+            emailVerified: a.emailVerified,
+            createdAt: a.createdAt,
+          }}
+        />
+        <AddressManager userId={a.id} addresses={a.addresses} />
       </div>
 
       <Card>

@@ -80,7 +80,9 @@ export async function addUnit(input: AddInput): Promise<AssignResult> {
   return { ok: true }
 }
 
-export async function assignUnit(
+// Assign or edit a unit's board variant + serial. A minted tag becomes provisioned
+// on its first assignment; an already-assigned/registered unit keeps its status.
+export async function updateUnit(
   unitId: string,
   variantId: string,
   serial: string
@@ -89,15 +91,17 @@ export async function assignUnit(
   const s = serial?.trim()
   if (!unitId || !variantId || !s) return { ok: false, error: 'Variante et série requises.' }
   if (!(await isBoardVariant(variantId))) return { ok: false, error: 'Variante non-board.' }
+
+  const [u] = await db.select({ status: units.status }).from(units).where(eq(units.id, unitId)).limit(1)
+  if (!u) return { ok: false, error: 'Unité introuvable.' }
+  const status = u.status === 'minted' ? 'provisioned' : u.status
+
   try {
-    await db
-      .update(units)
-      .set({ variantId, serial: s, status: 'provisioned' })
-      .where(eq(units.id, unitId))
+    await db.update(units).set({ variantId, serial: s, status }).where(eq(units.id, unitId))
   } catch (e) {
     const msg = e instanceof Error && /unique|duplicate/i.test(e.message)
       ? 'Cette série est déjà utilisée.'
-      : 'Échec de l’assignation.'
+      : 'Échec de l’enregistrement.'
     return { ok: false, error: msg }
   }
   revalidatePath('/admin/units')

@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Check, Copy, Search } from 'lucide-react'
-import { assignUnit } from '@/app/admin/(app)/units/actions'
+import { QRCodeSVG } from 'qrcode.react'
+import { updateUnit } from '@/app/admin/(app)/units/actions'
 import type { BoardVariant, UnitRow } from '@/lib/admin/units'
 import { Badge } from '@/components/admin/ui/badge'
 import { Button } from '@/components/admin/ui/button'
@@ -45,6 +46,12 @@ const STATUS: Record<string, { label: string; variant: BadgeVariant }> = {
 
 const fmtDate = (d: Date) => new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d)
 
+// Public TK ID URL the NFC tag points to. NEXT_PUBLIC_SITE_URL is inlined at build;
+// fall back to the current origin (admin + site share the domain).
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? ''
+const tagUrlFor = (token: string) =>
+  `${SITE || (typeof window !== 'undefined' ? window.location.origin : '')}/tk-id/${token}`
+
 export function UnitsTable({
   units,
   boardVariants,
@@ -56,8 +63,8 @@ export function UnitsTable({
   const [filter, setFilter] = useState<string>('all')
   const [pending, startTransition] = useTransition()
 
-  // Assign dialog state
-  const [assigning, setAssigning] = useState<UnitRow | null>(null)
+  // Edit / assign dialog state
+  const [editing, setEditing] = useState<UnitRow | null>(null)
   const [variantId, setVariantId] = useState('')
   const [serial, setSerial] = useState('')
   const [err, setErr] = useState<string | null>(null)
@@ -77,14 +84,21 @@ export function UnitsTable({
     toast.success('Token copié.')
   }
 
-  const submitAssign = () => {
-    if (!assigning) return
+  const openEdit = (u: UnitRow) => {
+    setEditing(u)
+    setVariantId(u.variantId ?? '')
+    setSerial(u.serial ?? '')
+    setErr(null)
+  }
+
+  const submit = () => {
+    if (!editing) return
     setErr(null)
     startTransition(async () => {
-      const res = await assignUnit(assigning.id, variantId, serial)
+      const res = await updateUnit(editing.id, variantId, serial)
       if (res.ok) {
-        toast.success('Planche assignée.')
-        setAssigning(null)
+        toast.success(editing.status === 'minted' ? 'Planche assignée.' : 'Unité mise à jour.')
+        setEditing(null)
         setVariantId('')
         setSerial('')
       } else {
@@ -92,6 +106,8 @@ export function UnitsTable({
       }
     })
   }
+
+  const isAssign = editing?.status === 'minted'
 
   return (
     <div className="flex flex-col gap-4">
@@ -142,11 +158,14 @@ export function UnitsTable({
               shown.map((u) => {
                 const s = STATUS[u.status] ?? { label: u.status, variant: 'outline' as const }
                 return (
-                  <TableRow key={u.id}>
+                  <TableRow key={u.id} onClick={() => openEdit(u)} className="cursor-pointer">
                     <TableCell>
                       <button
                         type="button"
-                        onClick={() => copy(u.token)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          copy(u.token)
+                        }}
                         className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 font-mono text-xs"
                         title="Copier le token"
                       >
@@ -170,18 +189,16 @@ export function UnitsTable({
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">{fmtDate(u.createdAt)}</TableCell>
                     <TableCell>
-                      {u.status === 'minted' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setAssigning(u)
-                            setErr(null)
-                          }}
-                        >
-                          Assigner
-                        </Button>
-                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openEdit(u)
+                        }}
+                      >
+                        {u.status === 'minted' ? 'Assigner' : 'Éditer'}
+                      </Button>
                     </TableCell>
                   </TableRow>
                 )
@@ -191,13 +208,13 @@ export function UnitsTable({
         </Table>
       </Card>
 
-      <Dialog open={assigning !== null} onOpenChange={(o) => !o && setAssigning(null)}>
+      <Dialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Assigner la planche</DialogTitle>
+            <DialogTitle>{isAssign ? 'Assigner la planche' : 'Modifier l’unité'}</DialogTitle>
             <DialogDescription>
-              Token <span className="font-mono">{assigning?.token.slice(0, 12)}…</span> → variante de
-              board + série.
+              Token <span className="font-mono">{editing?.token.slice(0, 12)}…</span> → variante de
+              board + numéro de série.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4">
@@ -217,9 +234,9 @@ export function UnitsTable({
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="assign-serial">Numéro de série</Label>
+              <Label htmlFor="edit-serial">Numéro de série</Label>
               <Input
-                id="assign-serial"
+                id="edit-serial"
                 value={serial}
                 onChange={(e) => setSerial(e.target.value)}
                 placeholder="SN-…"
@@ -227,10 +244,32 @@ export function UnitsTable({
               />
             </div>
             {err && <p className="text-destructive text-sm">{err}</p>}
+
+            {editing && (
+              <div className="flex flex-col items-center gap-2 rounded-md border p-4">
+                <span className="text-muted-foreground text-xs">URL publique (TK ID)</span>
+                <div className="rounded bg-white p-2">
+                  <QRCodeSVG value={tagUrlFor(editing.token)} size={148} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(tagUrlFor(editing.token))
+                    toast.success('URL copiée.')
+                  }}
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs break-all"
+                  title="Copier l’URL"
+                >
+                  {tagUrlFor(editing.token)}
+                  <Copy className="size-3 shrink-0" />
+                </button>
+              </div>
+            )}
           </div>
           <DialogFooter>
-            <Button onClick={submitAssign} disabled={pending}>
-              <Check className="size-4" /> {pending ? 'Assignation…' : 'Assigner'}
+            <Button onClick={submit} disabled={pending}>
+              <Check className="size-4" />{' '}
+              {pending ? 'Enregistrement…' : isAssign ? 'Assigner' : 'Enregistrer'}
             </Button>
           </DialogFooter>
         </DialogContent>

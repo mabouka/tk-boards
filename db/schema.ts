@@ -316,6 +316,7 @@ export const addresses = pgTable('address', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
+  company: text('company'), // optional business name
   line1: text('line1').notNull(),
   line2: text('line2'),
   postalCode: text('postal_code'),

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, Boxes, Nfc, Users } from 'lucide-react'
+import { LayoutDashboard, Package, Boxes, Nfc, Users, FileText, ShieldAlert } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -28,7 +28,14 @@ const NAV: NavGroup[] = [
     ],
   },
   { label: 'Production', items: [{ title: 'Registre NFC', href: '/admin/units', icon: Nfc }] },
-  { label: 'Clients', items: [{ title: 'Comptes', href: '/admin/accounts', icon: Users }] },
+  {
+    label: 'Clients',
+    items: [
+      { title: 'Comptes', href: '/admin/accounts', icon: Users },
+      { title: 'Réclamations', href: '/admin/claims', icon: FileText },
+      { title: 'Vol', href: '/admin/theft', icon: ShieldAlert },
+    ],
+  },
 ]
 
 export function AppSidebar() {
