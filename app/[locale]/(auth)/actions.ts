@@ -86,8 +86,11 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
     .returning({ id: users.id })
 
   // No auto-login: send a verification email; the user verifies, then signs in.
+  // Carry any post-login destination through the email so a brand-new account
+  // also returns where it started (e.g. a tapped TK ID tag).
+  const callbackUrl = safeCallback(formData.get('callbackUrl'), '')
   const token = await createEmailToken(created.id, 'verify', 24 * 60)
-  await sendVerificationEmail({ to: email, locale, token })
+  await sendVerificationEmail({ to: email, locale, token, callbackUrl: callbackUrl || undefined })
   return { notice: 'check-email' }
 }
 
@@ -105,8 +108,9 @@ export async function resendVerification(_prev: AuthState, formData: FormData): 
       .where(eq(users.email, email))
       .limit(1)
     if (u?.id && u.passwordHash && !u.emailVerified) {
+      const callbackUrl = safeCallback(formData.get('callbackUrl'), '')
       const token = await createEmailToken(u.id, 'verify', 24 * 60)
-      await sendVerificationEmail({ to: email, locale, token })
+      await sendVerificationEmail({ to: email, locale, token, callbackUrl: callbackUrl || undefined })
     }
   }
   return { notice: 'check-email' }
@@ -171,8 +175,10 @@ export async function signInWithFacebook(formData: FormData) {
 export async function verifyEmail(formData: FormData) {
   const locale = safeLocale(formData.get('locale'))
   const token = String(formData.get('token') ?? '')
+  const callbackUrl = safeCallback(formData.get('callbackUrl'), '')
   const userId = await consumeEmailToken(token, 'verify')
   if (!userId) redirect(`/${locale}/verify?expired=1`)
   await db.update(users).set({ emailVerified: new Date() }).where(eq(users.id, userId))
-  redirect(`/${locale}/login?verified=1`)
+  const cb = callbackUrl ? `&callbackUrl=${encodeURIComponent(callbackUrl)}` : ''
+  redirect(`/${locale}/login?verified=1${cb}`)
 }

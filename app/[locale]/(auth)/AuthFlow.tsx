@@ -234,6 +234,7 @@ export default function AuthFlow({
               <form action={resendAction}>
                 <input type="hidden" name="locale" value={locale} />
                 <input type="hidden" name="email" value={email} />
+                {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
                 <button type="submit" className={styles.changeEmail} disabled={resendPending}>
                   {t('resend_verification')}
                 </button>
@@ -274,6 +275,7 @@ export default function AuthFlow({
         <form className={styles.form} action={signupAction}>
           <input type="hidden" name="locale" value={locale} />
           <input type="hidden" name="email" value={email} />
+          {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
           <div className={styles.row2}>
             <input
               className={styles.field}

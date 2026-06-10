@@ -15,6 +15,7 @@ export default async function VerifyPage({ params, searchParams }: Props) {
 
   const token = typeof sp.token === 'string' ? sp.token : ''
   const expired = sp.expired === '1'
+  const callbackUrl = typeof sp.callbackUrl === 'string' ? sp.callbackUrl : ''
 
   // Invalid / expired (also reached after a failed confirm).
   if (!token || expired) {
@@ -41,6 +42,7 @@ export default async function VerifyPage({ params, searchParams }: Props) {
         <form className={styles.form} action={verifyEmail}>
           <input type="hidden" name="locale" value={locale} />
           <input type="hidden" name="token" value={token} />
+          {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
           <div className={styles.actions}>
             <button className={`u-cta u-cta--white-fill ${styles.btnRow}`} type="submit">
               {t('verify_cta')}

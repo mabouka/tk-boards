@@ -48,8 +48,14 @@ async function send(opts: {
   if (error) throw new Error(error.message)
 }
 
-export async function sendVerificationEmail(opts: { to: string; locale: string; token: string }) {
-  const url = `${BASE}/${opts.locale}/verify?token=${opts.token}`
+export async function sendVerificationEmail(opts: {
+  to: string
+  locale: string
+  token: string
+  callbackUrl?: string
+}) {
+  const cb = opts.callbackUrl ? `&callbackUrl=${encodeURIComponent(opts.callbackUrl)}` : ''
+  const url = `${BASE}/${opts.locale}/verify?token=${opts.token}${cb}`
   const { html, text } = await renderBoth(createElement(VerifyEmail, { url, locale: opts.locale }))
   await send({
     to: opts.to,
