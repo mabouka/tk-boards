@@ -27,7 +27,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     notFound()
   }
 
-  const [messages, settings] = await Promise.all([getMessages(), getSiteSettings()])
+  const [messages, settings] = await Promise.all([getMessages(), getSiteSettings(locale)])
 
   return (
     <>

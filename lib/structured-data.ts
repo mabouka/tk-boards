@@ -8,7 +8,8 @@ export const ORG_ID = `${siteUrl}/#organization`
 export const WEBSITE_ID = `${siteUrl}/#website`
 
 /**
- * Sitewide Organization + WebSite graph, sourced from siteSettings.
+ * Sitewide Organization + WebSite graph, sourced from the site settings
+ * (seoSettings / contactSettings / footerSettings, merged by siteSettingsQuery).
  * Emitted on every public page; Google de-duplicates by @id.
  */
 export function organizationGraph(settings: SiteSettingsQueryResult): Record<string, unknown> {

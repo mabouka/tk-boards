@@ -204,15 +204,15 @@ export type SectionAboutPreview = {
   cta?: Link;
 };
 
-export type SiteSettings = {
+export type SeoSettings = {
   _id: string;
-  _type: "siteSettings";
+  _type: "seoSettings";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
   brandName: string;
-  siteTitle: string;
-  seoDescription: string;
+  defaultTitle?: InternationalizedArrayString;
+  defaultDescription?: InternationalizedArrayText;
   logo: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -229,33 +229,6 @@ export type SiteSettings = {
     alt?: string;
     _type: "image";
   };
-  contact?: {
-    email?: string;
-    phone?: string;
-    address?: string;
-  };
-  social?: {
-    facebook?: string;
-    google?: string;
-    instagram?: string;
-    linkedin?: string;
-    messenger?: string;
-    tiktok?: string;
-    whatsapp?: string;
-    x?: string;
-    youtube?: string;
-  };
-  footer?: {
-    copyright?: string;
-    privacyPolicyUrl?: Slug;
-    cookiePolicyUrl?: Slug;
-  };
-};
-
-export type Slug = {
-  _type: "slug";
-  current: string;
-  source?: string;
 };
 
 export type SanityImageCrop = {
@@ -272,6 +245,57 @@ export type SanityImageHotspot = {
   y: number;
   height: number;
   width: number;
+};
+
+export type InternationalizedArrayText = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayTextValue
+>;
+
+export type InternationalizedArrayString = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayStringValue
+>;
+
+export type FooterSettings = {
+  _id: string;
+  _type: "footerSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  social?: {
+    facebook?: string;
+    google?: string;
+    instagram?: string;
+    linkedin?: string;
+    messenger?: string;
+    tiktok?: string;
+    whatsapp?: string;
+    x?: string;
+    youtube?: string;
+  };
+  copyright?: string;
+  privacyPolicyUrl?: Slug;
+  cookiePolicyUrl?: Slug;
+};
+
+export type Slug = {
+  _type: "slug";
+  current: string;
+  source?: string;
+};
+
+export type ContactSettings = {
+  _id: string;
+  _type: "contactSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  email?: string;
+  phone?: string;
+  address?: string;
 };
 
 export type BoardsPageSettings = {
@@ -292,17 +316,33 @@ export type BoardsPageSettings = {
   };
 };
 
-export type InternationalizedArrayText = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayTextValue
->;
-
-export type InternationalizedArrayString = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayStringValue
->;
+export type AuthPage = {
+  _id: string;
+  _type: "authPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  tagline?: InternationalizedArrayText;
+  paragraph?: InternationalizedArrayText;
+  backgroundImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  seoTitle?: InternationalizedArrayString;
+  seoDescription?: InternationalizedArrayText;
+  ogImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+};
 
 export type AccessoriesPageSettings = {
   _id: string;
@@ -498,6 +538,7 @@ export type Board = {
   name: string;
   slug: Slug;
   series: SeriesReference;
+  skuCode: string;
   heroTitle?: string;
   heroTagline?: string;
   heroImage?: {
@@ -807,13 +848,16 @@ export type AllSanitySchemaTypes =
   | SectionMarquee
   | SectionBoards
   | SectionAboutPreview
-  | SiteSettings
-  | Slug
+  | SeoSettings
   | SanityImageCrop
   | SanityImageHotspot
-  | BoardsPageSettings
   | InternationalizedArrayText
   | InternationalizedArrayString
+  | FooterSettings
+  | Slug
+  | ContactSettings
+  | BoardsPageSettings
+  | AuthPage
   | AccessoriesPageSettings
   | InternationalizedArrayTextValue
   | InternationalizedArrayStringValue
@@ -1338,11 +1382,11 @@ export type SeriesQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: siteSettingsQuery
-// Query: *[_type == "siteSettings" && _id == "siteSettings"][0] {    brandName,    siteTitle,    seoDescription,    logo,    ogImage,    contact,    social,    footer  }
+// Query: {  "brandName": *[_type == "seoSettings"][0].brandName,  "siteTitle": coalesce(    *[_type == "seoSettings"][0].defaultTitle[language == $locale][0].value,    *[_type == "seoSettings"][0].defaultTitle[language == "en"][0].value,    *[_type == "seoSettings"][0].defaultTitle[0].value  ),  "seoDescription": coalesce(    *[_type == "seoSettings"][0].defaultDescription[language == $locale][0].value,    *[_type == "seoSettings"][0].defaultDescription[language == "en"][0].value,    *[_type == "seoSettings"][0].defaultDescription[0].value  ),  "logo": *[_type == "seoSettings"][0].logo,  "ogImage": *[_type == "seoSettings"][0].ogImage,  "contact": *[_type == "contactSettings"][0]{ email, phone, address },  "social": *[_type == "footerSettings"][0].social,  "footer": *[_type == "footerSettings"][0]{ copyright, privacyPolicyUrl, cookiePolicyUrl }}
 export type SiteSettingsQueryResult = {
-  brandName: string;
-  siteTitle: string;
-  seoDescription: string;
+  brandName: string | null;
+  siteTitle: string | null;
+  seoDescription: string | null;
   logo: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -1350,7 +1394,7 @@ export type SiteSettingsQueryResult = {
     crop?: SanityImageCrop;
     alt?: string;
     _type: "image";
-  };
+  } | null;
   ogImage: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -1360,9 +1404,9 @@ export type SiteSettingsQueryResult = {
     _type: "image";
   } | null;
   contact: {
-    email?: string;
-    phone?: string;
-    address?: string;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
   } | null;
   social: {
     facebook?: string;
@@ -1376,9 +1420,35 @@ export type SiteSettingsQueryResult = {
     youtube?: string;
   } | null;
   footer: {
-    copyright?: string;
-    privacyPolicyUrl?: Slug;
-    cookiePolicyUrl?: Slug;
+    copyright: string | null;
+    privacyPolicyUrl: Slug | null;
+    cookiePolicyUrl: Slug | null;
+  } | null;
+};
+
+// Source: sanity/lib/queries.ts
+// Variable: authPageQuery
+// Query: *[_type == "authPage"][0]{    "tagline": coalesce(tagline[language == $locale][0].value, tagline[language == "en"][0].value, tagline[0].value),    "paragraph": coalesce(paragraph[language == $locale][0].value, paragraph[language == "en"][0].value, paragraph[0].value),    "seoTitle": coalesce(seoTitle[language == $locale][0].value, seoTitle[language == "en"][0].value, seoTitle[0].value),    "seoDescription": coalesce(seoDescription[language == $locale][0].value, seoDescription[language == "en"][0].value, seoDescription[0].value),    backgroundImage,    ogImage  }
+export type AuthPageQueryResult = {
+  tagline: string | null;
+  paragraph: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  backgroundImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  ogImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
   } | null;
 } | null;
 
@@ -1830,7 +1900,8 @@ declare module "@sanity/client" {
     '\n  *[_type == "board" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    style,\n    weight,\n    mainImage\n  }\n': BoardsQueryResult;
     '\n  *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    heroTitle,\n    heroTagline,\n    heroImage,\n    presentationTitle,\n    presentationText,\n    presentationNumbers[]{ value, unit, label },\n    presentationTags[]{ text, style },\n    gallery[]{\n      asset,\n      alt,\n      hotspot,\n      crop\n    },\n    mainImage,\n    style,\n    weight,\n    price,\n    currency,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    },\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': BoardBySlugQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    slug,\n    tagVariant,\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug,\n      style,\n      mainImage\n    }\n  }[count(boards) > 0]\n': SeriesQueryResult;
-    '\n  *[_type == "siteSettings" && _id == "siteSettings"][0] {\n    brandName,\n    siteTitle,\n    seoDescription,\n    logo,\n    ogImage,\n    contact,\n    social,\n    footer\n  }\n': SiteSettingsQueryResult;
+    '{\n  "brandName": *[_type == "seoSettings"][0].brandName,\n  "siteTitle": coalesce(\n    *[_type == "seoSettings"][0].defaultTitle[language == $locale][0].value,\n    *[_type == "seoSettings"][0].defaultTitle[language == "en"][0].value,\n    *[_type == "seoSettings"][0].defaultTitle[0].value\n  ),\n  "seoDescription": coalesce(\n    *[_type == "seoSettings"][0].defaultDescription[language == $locale][0].value,\n    *[_type == "seoSettings"][0].defaultDescription[language == "en"][0].value,\n    *[_type == "seoSettings"][0].defaultDescription[0].value\n  ),\n  "logo": *[_type == "seoSettings"][0].logo,\n  "ogImage": *[_type == "seoSettings"][0].ogImage,\n  "contact": *[_type == "contactSettings"][0]{ email, phone, address },\n  "social": *[_type == "footerSettings"][0].social,\n  "footer": *[_type == "footerSettings"][0]{ copyright, privacyPolicyUrl, cookiePolicyUrl }\n}': SiteSettingsQueryResult;
+    '\n  *[_type == "authPage"][0]{\n    "tagline": coalesce(tagline[language == $locale][0].value, tagline[language == "en"][0].value, tagline[0].value),\n    "paragraph": coalesce(paragraph[language == $locale][0].value, paragraph[language == "en"][0].value, paragraph[0].value),\n    "seoTitle": coalesce(seoTitle[language == $locale][0].value, seoTitle[language == "en"][0].value, seoTitle[0].value),\n    "seoDescription": coalesce(seoDescription[language == $locale][0].value, seoDescription[language == "en"][0].value, seoDescription[0].value),\n    backgroundImage,\n    ogImage\n  }\n': AuthPageQueryResult;
     '\n  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {\n    "seoTitle": coalesce(\n      seoTitle[language == $locale][0].value,\n      seoTitle[language == "en"][0].value,\n      seoTitle[0].value\n    ),\n    "seoDescription": coalesce(\n      seoDescription[language == $locale][0].value,\n      seoDescription[language == "en"][0].value,\n      seoDescription[0].value\n    ),\n    ogImage\n  }\n': BoardsPageSettingsQueryResult;
     '\n  *[_type == "board" && defined(slug.current) && !(_id in path("drafts.**"))] | order(_updatedAt desc) {\n    "slug": slug.current,\n    language,\n    _updatedAt,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': SitemapBoardsQueryResult;
     '\n  *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {\n    language,\n    _updatedAt\n  }\n': SitemapHomePagesQueryResult;

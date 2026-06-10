@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
   const [t, settings, boardsPage] = await Promise.all([
     getTranslations({ locale, namespace: 'boards' }),
-    getSiteSettings(),
+    getSiteSettings(locale),
     client.fetch(boardsPageSettingsQuery, { locale }),
   ])
 

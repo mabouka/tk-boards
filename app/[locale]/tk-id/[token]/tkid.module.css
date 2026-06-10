@@ -1,0 +1,120 @@
+.wrap {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 460px;
+  padding: 40px;
+  background: rgba(15, 17, 22, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-gold, #b08d57);
+}
+
+.title {
+  margin: 0 0 12px;
+  font-family: var(--font-display, sans-serif);
+  font-weight: 500;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: var(--color-white, #fff);
+}
+
+.text {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-white-72, rgba(255, 255, 255, 0.72));
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 24px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.metaRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metaKey {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+}
+
+.metaVal {
+  color: var(--color-white, #fff);
+  font-size: 14px;
+}
+
+.mono {
+  font-family: var(--font-mono, monospace);
+}
+
+.alert {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid rgba(220, 80, 80, 0.5);
+  background: rgba(220, 80, 80, 0.12);
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #f0b8b8;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.note {
+  margin: 16px 0 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+}
+
+.danger {
+  background: none;
+  border: 1px solid rgba(220, 80, 80, 0.5);
+  color: #f0b8b8;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 11px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.danger:hover {
+  border-color: rgba(220, 80, 80, 0.9);
+}

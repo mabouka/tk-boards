@@ -335,6 +335,19 @@ export default function BgConfigurator() {
 
     const container = document.createElement('div')
     container.setAttribute('data-bg-sentinels', '')
+    // Sentinels exist only to be measured (getBoundingClientRect). Keep them out
+    // of layout/scroll: a 0×0 clipped box at the document origin preserves their
+    // document coordinates without ever extending the page height (a halo placed
+    // far down would otherwise add scroll on short pages).
+    Object.assign(container.style, {
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      width: '0',
+      height: '0',
+      overflow: 'hidden',
+      pointerEvents: 'none',
+    })
     document.body.appendChild(container)
     containerRef.current = container
 

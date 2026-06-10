@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TK Boards — Register (NFC) mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400&display=swap" rel="stylesheet" />
+<style>
+  @font-face { font-family:'Integral CF'; src:url('/fonts/IntegralCF-Medium.woff2') format('woff2'); font-weight:500; font-display:swap; }
+  :root{
+    --color-dark:#0d0f14; --color-white:#fff; --color-black:#000; --color-gold:#c9a478; --color-paulownia:#e2c9a2;
+    --color-red:#8b1a1a; --color-green:#3a7d44; --color-white-72:rgba(255,255,255,.72); --color-white-50:rgba(255,255,255,.5);
+    --font-display:'Integral CF',sans-serif; --font-mono:'Space Mono',monospace; --font-body:'Space Grotesk',sans-serif;
+    --space-xs:8px; --space-sm:16px; --space-md:24px; --space-lg:48px; --space-xl:64px; --space-2xl:80px; --gutter:48px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--color-dark);color:var(--color-white);font-family:var(--font-body);min-height:100vh}
+  .bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .bg span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.45;animation:drift 20s ease-in-out infinite alternate}
+  .bg .h1{width:480px;height:480px;top:-120px;right:-60px;background:radial-gradient(circle,var(--color-gold),transparent 70%)}
+  .bg .h2{width:420px;height:420px;bottom:-140px;left:-40px;background:radial-gradient(circle,var(--color-paulownia),transparent 70%);animation-duration:24s}
+  @keyframes drift{from{transform:translate(0,0)}to{transform:translate(-40px,40px) scale(1.1)}}
+
+  /* demo state switcher */
+  .switcher{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;background:rgba(0,0,0,.5);padding:6px;border:1px solid var(--color-white-50);max-width:96vw}
+  .switcher button{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--color-white-72);background:transparent;border:1px solid transparent;padding:5px 9px;cursor:pointer}
+  .switcher button.active{color:var(--color-black);background:var(--color-white)}
+
+  .wrap{position:relative;z-index:1;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:var(--space-2xl) var(--gutter)}
+  .card{width:100%;max-width:460px;display:flex;flex-direction:column;gap:var(--space-md);animation:fade .3s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .logo{color:var(--color-white);filter:drop-shadow(0 0 10px rgba(0,0,0,.25))}
+  .logo svg{width:42px;height:30px;display:block}
+  .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-white-50)}
+  .title{font-family:var(--font-display);font-weight:500;font-size:clamp(1.75rem,4vw,2.4rem);line-height:1.05;text-transform:uppercase}
+  .subtitle{font-family:var(--font-mono);font-size:14px;line-height:1.5;color:var(--color-white-72);margin-top:calc(-1 * var(--space-xs))}
+
+  /* board preview */
+  .board{display:flex;gap:var(--space-md);align-items:center;border:1px solid var(--color-white-50);padding:var(--space-sm)}
+  .board__img{width:84px;height:120px;flex:none;background:linear-gradient(160deg,#1b2230,#0d0f14);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;color:var(--color-white-50);text-align:center}
+  .board__info{display:flex;flex-direction:column;gap:8px}
+  .board__name{font-family:var(--font-display);font-weight:500;font-size:20px;text-transform:uppercase}
+  .board__serial{font-family:var(--font-mono);font-size:12px;color:var(--color-white-72);border:1px solid var(--color-white-50);padding:4px 8px;width:fit-content}
+  .board__serial b{color:var(--color-white-50);font-weight:400}
+
+  .form{display:flex;flex-direction:column;gap:var(--space-sm)}
+  .field-label{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--color-white-72)}
+  .field{width:100%;background:transparent;border:1px solid var(--color-white-50);color:var(--color-white);font-family:var(--font-body);font-size:16px;padding:12px 14px}
+  .field::placeholder{color:var(--color-white-50)}
+  .field:focus{outline:none;border-color:var(--color-white)}
+  input[type=file].field{padding:10px 14px;font-family:var(--font-mono);font-size:13px;color:var(--color-white-72)}
+  .actions{display:flex;flex-direction:column;gap:var(--space-sm);margin-top:var(--space-xs)}
+  .note{font-family:var(--font-mono);font-size:12px;line-height:1.6;color:var(--color-white-50)}
+
+  /* status / success */
+  .badge{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;width:fit-content}
+  .badge--active{color:#9fe0ab;border:1px solid var(--color-green)}
+  .badge--stolen{color:#e8a1a1;border:1px solid var(--color-red)}
+  .check{width:56px;height:56px;border:2px solid var(--color-green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#9fe0ab}
+  .check svg{width:28px;height:28px}
+
+  /* my boards list */
+  .list{display:flex;flex-direction:column;gap:var(--space-sm)}
+  .row{display:flex;gap:var(--space-sm);align-items:center;border:1px solid var(--color-white-50);padding:var(--space-sm)}
+  .row__img{width:52px;height:74px;flex:none;background:linear-gradient(160deg,#1b2230,#0d0f14);border:1px solid rgba(255,255,255,.12)}
+  .row__info{display:flex;flex-direction:column;gap:5px;flex:1}
+  .row__name{font-family:var(--font-display);font-weight:500;font-size:16px;text-transform:uppercase}
+  .row__meta{font-family:var(--font-mono);font-size:12px;color:var(--color-white-72)}
+
+  /* TK CTA */
+  .u-cta{display:inline-block;width:100%;text-align:center;padding:12px 24px;border:1px solid;font-family:var(--font-body);font-size:16px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-decoration:none;cursor:pointer;background:none;transition:background .2s,color .2s,border-color .2s}
+  .u-cta--fill{background:var(--color-white);border-color:var(--color-white);color:var(--color-black)}
+  .u-cta--fill:hover{background:transparent;color:var(--color-white)}
+  .u-cta--outline{background:transparent;border-color:var(--color-white);color:var(--color-white)}
+  .u-cta--outline:hover{background:var(--color-white);color:var(--color-black)}
+  .linklike{background:none;border:none;color:var(--color-white-72);font-family:var(--font-mono);font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .linklike:hover{color:var(--color-white)}
+
+  .screen[hidden]{display:none}
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><span class="h1"></span><span class="h2"></span></div>
+
+  <div class="switcher">
+    <button data-go="in" class="active">Register · in</button>
+    <button data-go="out">Register · out</button>
+    <button data-go="already">Already</button>
+    <button data-go="success">Success</button>
+    <button data-go="myboards">My boards</button>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ░ Register — logged in, board available ░ -->
+    <div class="card screen" id="s-in">
+      <a href="#" class="logo" aria-label="TK Boards"><svg viewBox="20 20 41.5723 30" fill="none"><path d="M36.8373 36.8921L51.9196 20.329H61.4077L46.5996 36.6727L61.1883 49.9999L50.713 49.8902L36.8373 36.8921Z" fill="currentColor"/><rect x="27.6782" y="20" width="8.117" height="29.7258" fill="currentColor"/><rect x="20" y="20" width="23.5832" height="7.34918" fill="currentColor"/><circle cx="57.9526" cy="34.9177" r="3.61974" fill="currentColor"/></svg></a>
+      <div>
+        <p class="eyebrow">TK ID</p>
+        <h1 class="title">Register your board</h1>
+      </div>
+      <p class="subtitle">Linked to your TK ID for warranty and anti-theft. Identified by the NFC tag in the board.</p>
+
+      <div class="board">
+        <div class="board__img">BOARD<br>IMAGE</div>
+        <div class="board__info">
+          <span class="board__name">TK Rocket</span>
+          <span class="board__serial"><b>SN&nbsp;·&nbsp;</b>TK-RKT-00482</span>
+        </div>
+      </div>
+
+      <form class="form" onsubmit="go('success');return false">
+        <label class="field-label">Purchase date</label>
+        <input class="field" type="date" />
+        <label class="field-label">Proof of purchase (invoice / receipt)</label>
+        <input class="field" type="file" accept="image/*,application/pdf" />
+        <div class="actions">
+          <button class="u-cta u-cta--fill" type="submit">Register to my TK ID</button>
+        </div>
+      </form>
+      <p class="note">Registering proves ownership. You can declare a theft anytime from your account.</p>
+    </div>
+
+    <!-- ░ Register — logged out ░ -->
+    <div class="card screen" id="s-out" hidden>
+      <a href="#" class="logo" aria-label="TK Boards"><svg viewBox="20 20 41.5723 30" fill="none"><path d="M36.8373 36.8921L51.9196 20.329H61.4077L46.5996 36.6727L61.1883 49.9999L50.713 49.8902L36.8373 36.8921Z" fill="currentColor"/><rect x="27.6782" y="20" width="8.117" height="29.7258" fill="currentColor"/><rect x="20" y="20" width="23.5832" height="7.34918" fill="currentColor"/><circle cx="57.9526" cy="34.9177" r="3.61974" fill="currentColor"/></svg></a>
+      <div>
+        <p class="eyebrow">TK ID</p>
+        <h1 class="title">Register your board</h1>
+      </div>
+      <div class="board">
+        <div class="board__img">BOARD<br>IMAGE</div>
+        <div class="board__info">
+          <span class="board__name">TK Rocket</span>
+          <span class="board__serial"><b>SN&nbsp;·&nbsp;</b>TK-RKT-00482</span>
+        </div>
+      </div>
+      <p class="subtitle">Sign in or create your TK ID to register this board to your account.</p>
+      <div class="actions">
+        <button class="u-cta u-cta--fill" onclick="go('in')">Sign in / Create my TK ID</button>
+      </div>
+      <p class="note">We'll bring you right back here to finish registering after you sign in.</p>
+    </div>
+
+    <!-- ░ Already registered ░ -->
+    <div class="card screen" id="s-already" hidden>
+      <a href="#" class="logo" aria-label="TK Boards"><svg viewBox="20 20 41.5723 30" fill="none"><path d="M36.8373 36.8921L51.9196 20.329H61.4077L46.5996 36.6727L61.1883 49.9999L50.713 49.8902L36.8373 36.8921Z" fill="currentColor"/><rect x="27.6782" y="20" width="8.117" height="29.7258" fill="currentColor"/><rect x="20" y="20" width="23.5832" height="7.34918" fill="currentColor"/><circle cx="57.9526" cy="34.9177" r="3.61974" fill="currentColor"/></svg></a>
+      <h1 class="title">Already registered</h1>
+      <div class="board">
+        <div class="board__img">BOARD<br>IMAGE</div>
+        <div class="board__info">
+          <span class="board__name">TK Rocket</span>
+          <span class="board__serial"><b>SN&nbsp;·&nbsp;</b>TK-RKT-00482</span>
+          <span class="badge badge--active">Registered</span>
+        </div>
+      </div>
+      <p class="subtitle">This board is already linked to a TK ID. If you bought it second-hand or this is a mistake, contact support to transfer ownership.</p>
+      <div class="actions">
+        <button class="u-cta u-cta--outline" onclick="go('myboards')">Go to my boards</button>
+        <button class="linklike">Contact support</button>
+      </div>
+    </div>
+
+    <!-- ░ Success ░ -->
+    <div class="card screen" id="s-success" hidden style="align-items:center;text-align:center">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h1 class="title">Board registered</h1>
+      <p class="subtitle"><b style="color:#fff">TK Rocket</b> · SN TK-RKT-00482 is now linked to your TK ID.</p>
+      <div class="actions" style="width:100%">
+        <button class="u-cta u-cta--fill" onclick="go('myboards')">Go to my boards</button>
+      </div>
+    </div>
+
+    <!-- ░ My boards (/account/boards) ░ -->
+    <div class="card screen" id="s-myboards" hidden style="max-width:560px">
+      <h1 class="title">My boards</h1>
+      <p class="subtitle">Tap your board's NFC tag to register a new one.</p>
+      <div class="list">
+        <div class="row">
+          <div class="row__img"></div>
+          <div class="row__info">
+            <span class="row__name">TK Rocket</span>
+            <span class="row__meta">SN TK-RKT-00482 · Warranty until 12 May 2029</span>
+            <span class="badge badge--active">Active</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="row__img"></div>
+          <div class="row__info">
+            <span class="row__name">TK Tiki</span>
+            <span class="row__meta">SN TK-TIK-01173 · Warranty until 03 Jan 2028</span>
+            <span class="badge badge--stolen">Declared stolen</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const MAP = { in:'s-in', out:'s-out', already:'s-already', success:'s-success', myboards:'s-myboards' }
+    function go(key){
+      Object.values(MAP).forEach(id => document.getElementById(id).hidden = true)
+      document.getElementById(MAP[key]).hidden = false
+      document.querySelectorAll('.switcher button').forEach(b => b.classList.toggle('active', b.dataset.go === key))
+    }
+    document.querySelectorAll('.switcher button').forEach(b => b.addEventListener('click', () => go(b.dataset.go)))
+  </script>
+</body>
+</html>

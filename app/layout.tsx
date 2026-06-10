@@ -27,7 +27,8 @@ const integralCF = localFont({
 })
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings()
+  const locale = await getLocale()
+  const settings = await getSiteSettings(locale)
   const brandName = settings?.brandName ?? ''
   const defaultTitle = settings?.siteTitle ?? ''
   const defaultDescription = (settings?.seoDescription ?? '').replace(/\s+/g, ' ').trim()

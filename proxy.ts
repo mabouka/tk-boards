@@ -4,15 +4,17 @@ import { routing } from './i18n/routing'
 
 const intlMiddleware = createMiddleware(routing)
 
-// Flip to false (or remove) to take the site live.
-const UNDER_CONSTRUCTION = process.env.NODE_ENV === 'production'
+// Flip to false (or remove) to take the site live. HOLDING_PAGE=off disables it
+// (E2E runs a production build over HTTP, where the secure bypass cookie can't be set).
+const UNDER_CONSTRUCTION =
+  process.env.NODE_ENV === 'production' && process.env.HOLDING_PAGE !== 'off'
 
 // Staff bypass: visit /preview?key=<PREVIEW_SECRET> once to drop a cookie that
 // reveals the real site while everyone else still sees the holding page.
 const PREVIEW_SECRET = process.env.PREVIEW_SECRET
 const BYPASS_COOKIE = 'preview-bypass'
 
-export default function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   if (UNDER_CONSTRUCTION) {
     const { pathname, searchParams } = request.nextUrl
 
@@ -29,22 +31,25 @@ export default function proxy(request: NextRequest) {
       return res
     }
 
-    // 2. Holders of a valid bypass cookie see the real, localized site.
-    if (PREVIEW_SECRET && request.cookies.get(BYPASS_COOKIE)?.value === PREVIEW_SECRET) {
-      return intlMiddleware(request)
+    // 2. Without a valid bypass cookie, everyone gets the holding page
+    //    (matcher already excludes /studio, /api and assets).
+    const bypassed =
+      PREVIEW_SECRET && request.cookies.get(BYPASS_COOKIE)?.value === PREVIEW_SECRET
+    if (!bypassed) {
+      if (pathname !== '/construction') {
+        return NextResponse.rewrite(new URL('/construction', request.url))
+      }
+      return NextResponse.next()
     }
-
-    // 3. Everyone else gets the holding page (matcher already excludes
-    //    /studio, /api and assets).
-    if (pathname !== '/construction') {
-      return NextResponse.rewrite(new URL('/construction', request.url))
-    }
-    return NextResponse.next()
+    // 3. Bypassed → fall through to the normal (live) handling below.
   }
 
+  // i18n routing (Auth.js uses JWT cookies — no middleware session refresh needed).
   return intlMiddleware(request)
 }
 
 export const config = {
-  matcher: ['/((?!_next|studio|api|.*\\..*).*)'],
+  // /admin is excluded: it runs on its own (no i18n, no holding-page rewrite)
+  // and is gated by NextAuth instead.
+  matcher: ['/((?!_next|studio|api|admin|.*\\..*).*)'],
 }

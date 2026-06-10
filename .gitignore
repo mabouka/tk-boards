@@ -12,9 +12,15 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+.e2e-outbox.log
 
 # next.js
 /.next/
+/.next-e2e/
 /out/
 
 # production

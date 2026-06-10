@@ -15,7 +15,11 @@ import { readFileSync } from 'node:fs'
 import { transform } from 'lightningcss'
 
 const CSS_PATTERN = '{app,components}/**/*.css'
-const files = globSync(CSS_PATTERN).sort()
+// The admin app uses Tailwind v4 (@import "tailwindcss", @theme, @apply, @source…)
+// which lightningcss can't parse — it's validated by the Tailwind/Next build instead.
+const files = globSync(CSS_PATTERN)
+  .filter((f) => !f.startsWith('app/admin/'))
+  .sort()
 
 if (files.length === 0) {
   console.log('No CSS files found.')

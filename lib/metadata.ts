@@ -20,8 +20,12 @@ const OG_LOCALE: Record<string, string> = {
   es: 'es_ES',
 }
 
-/** Site-wide settings (brandName, siteTitle, seoDescription, logo, ogImage…). Memoized per request. */
-export const getSiteSettings = cache(() => client.fetch(siteSettingsQuery))
+/** Site-wide settings (brandName, siteTitle, seoDescription, logo, ogImage…),
+ *  sourced from the split singletons with SEO text resolved for `locale`.
+ *  Memoized per request, per locale. */
+export const getSiteSettings = cache((locale: string) =>
+  client.fetch(siteSettingsQuery, { locale })
+)
 
 /** Extract a Twitter/X handle (e.g. "@tkboards") from an x.com/twitter.com profile URL. */
 export function twitterHandle(xUrl?: string | null): string | undefined {
@@ -69,7 +73,7 @@ export async function buildMetadata({
   languageAlternates,
 }: BuildMetadataArgs): Promise<Metadata> {
   const url = `/${locale}${path}`
-  const settings = await getSiteSettings()
+  const settings = await getSiteSettings(locale)
   const brandName = settings?.brandName ?? ''
   const twitterSite = twitterHandle(settings?.social?.x)
 
