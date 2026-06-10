@@ -285,7 +285,11 @@ export const registrations = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (r) => [index('registration_user_idx').on(r.userId)]
+  (r) => [
+    index('registration_user_idx').on(r.userId),
+    // First-tap-wins: at most one ACTIVE registration per physical unit.
+    uniqueIndex('registration_active_unit_uq').on(r.unitId).where(sql`status = 'active'`),
+  ]
 )
 
 export const claims = pgTable('claim', {

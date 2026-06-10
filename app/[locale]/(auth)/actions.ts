@@ -3,13 +3,14 @@
 import { redirect } from 'next/navigation'
 import { AuthError } from 'next-auth'
 import bcrypt from 'bcryptjs'
-import { eq, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { signIn } from '@/auth'
 import { db } from '@/db'
 import { users } from '@/db/schema'
-import { createEmailToken, consumeEmailToken } from '@/lib/auth-tokens'
+import { createEmailToken, consumeEmailToken, applyPasswordReset } from '@/lib/auth-tokens'
 import { sendVerificationEmail, sendPasswordResetEmail } from '@/lib/email'
-import { rateLimit, clientIp } from '@/lib/rate-limit'
+import { rateLimit } from '@/lib/rate-limit'
+import { clientIp } from '@/lib/client-ip'
 
 const LOCALES = ['fr', 'en', 'es'] as const
 type Locale = (typeof LOCALES)[number]
@@ -141,12 +142,7 @@ export async function resetPassword(_prev: AuthState, formData: FormData): Promi
   if (!userId) return { error: 'reset-invalid' }
 
   const passwordHash = await bcrypt.hash(password, 12)
-  // A valid reset link proves email ownership → mark verified, and bump
-  // tokenVersion so any existing session is invalidated by the gates.
-  await db
-    .update(users)
-    .set({ passwordHash, emailVerified: new Date(), tokenVersion: sql`${users.tokenVersion} + 1` })
-    .where(eq(users.id, userId))
+  await applyPasswordReset(db, userId, passwordHash)
 
   redirect(`/${locale}/login?reset=1`)
 }

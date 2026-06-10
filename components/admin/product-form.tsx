@@ -4,9 +4,21 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus, Trash2 } from 'lucide-react'
-import { saveProduct } from '@/app/admin/(app)/products/actions'
+import { saveProduct, deleteProduct } from '@/app/admin/(app)/products/actions'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/admin/ui/dialog'
 import type { ProductInput, LinkType } from '@/lib/admin/schemas'
+import { slug, comboKey, buildGrid, dedupeOptions } from '@/lib/admin/variants'
 import { Button } from '@/components/admin/ui/button'
+import { Checkbox } from '@/components/admin/ui/checkbox'
 import { Input } from '@/components/admin/ui/input'
 import { Label } from '@/components/admin/ui/label'
 import {
@@ -24,42 +36,21 @@ import {
   SelectValue,
 } from '@/components/admin/ui/select'
 
-// ── local editor types ──
-type EditorValue = { label: string; code: string; hex: string | null }
-type EditorOption = { name: string; code: string; inputType: 'swatch' | 'select'; values: EditorValue[] }
-type Override = { price: string; sale: string }
+// ── local editor types ── (label/name = EN primary; *Fr/*Es optional translations)
+type EditorValue = { label: string; labelFr: string; labelEs: string; code: string; hex: string | null }
+type EditorOption = {
+  name: string
+  nameFr: string
+  nameEs: string
+  code: string
+  inputType: 'swatch' | 'select'
+  showTr: boolean
+  values: EditorValue[]
+}
+type Override = { price: string; sale: string; active: boolean }
 type AddonRow = { name: string; priceDelta: string; sku: string }
 type LinkRow = { linkedProductId: string; type: LinkType }
 type ProductRef = { id: string; sku: string; name: string }
-
-const slug = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, '')
-
-function comboKey(opts: EditorOption[], pick: Record<string, string>) {
-  return opts.map((o) => `${o.code}:${pick[o.code]}`).join('|')
-}
-
-type GridRow = { pick: Record<string, string>; cells: EditorValue[] }
-
-// Cartesian product of the valid option values → grid rows.
-function buildGrid(opts: EditorOption[]): GridRow[] {
-  if (opts.length === 0) return []
-  let rows: GridRow[] = [{ pick: {}, cells: [] }]
-  for (const opt of opts) {
-    const next: GridRow[] = []
-    for (const row of rows) {
-      for (const val of opt.values) {
-        next.push({ pick: { ...row.pick, [opt.code]: val.code }, cells: [...row.cells, val] })
-      }
-    }
-    rows = next
-  }
-  return rows
-}
 
 export function ProductForm({
   initial,
@@ -70,12 +61,33 @@ export function ProductForm({
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
+  const [deleting, startDeleting] = useTransition()
+
+  function remove() {
+    if (!initial?.id) return
+    const id = initial.id
+    startDeleting(async () => {
+      await deleteProduct(id)
+      toast.success('Produit supprimé.')
+      router.push('/admin/products')
+      router.refresh()
+    })
+  }
 
   const initOptions: EditorOption[] = (initial?.options ?? []).map((o) => ({
     name: o.name,
+    nameFr: o.nameFr ?? '',
+    nameEs: o.nameEs ?? '',
     code: o.code,
     inputType: o.inputType,
-    values: o.values.map((v) => ({ label: v.label, code: v.code, hex: v.hex })),
+    showTr: Boolean(o.nameFr || o.nameEs || o.values.some((v) => v.labelFr || v.labelEs)),
+    values: o.values.map((v) => ({
+      label: v.label,
+      labelFr: v.labelFr ?? '',
+      labelEs: v.labelEs ?? '',
+      code: v.code,
+      hex: v.hex,
+    })),
   }))
   const simpleInit = initOptions.length === 0
   const firstVar = initial?.variants?.[0]
@@ -100,6 +112,7 @@ export function ProductForm({
         o[comboKey(initOptions, v.combo)] = {
           price: v.priceEur ?? '',
           sale: v.salePriceEur ?? '',
+          active: v.active,
         }
       }
     }
@@ -108,41 +121,29 @@ export function ProductForm({
 
   const skuUpper = sku.trim().toUpperCase()
 
-  // Keep only complete axes, and guarantee unique codes (axes + values) so combos,
-  // SKUs and React keys never collide — even mid-edit with two same-named axes.
-  const validOptions: EditorOption[] = (() => {
-    const seenOpt = new Map<string, number>()
-    return options
-      .filter((o) => o.code && o.values.some((v) => v.code))
-      .map((o) => {
-        const n = seenOpt.get(o.code) ?? 0
-        seenOpt.set(o.code, n + 1)
-        const code = n === 0 ? o.code : `${o.code}-${n + 1}`
-        const seenVal = new Map<string, number>()
-        const values = o.values
-          .filter((v) => v.code)
-          .map((v) => {
-            const vn = seenVal.get(v.code) ?? 0
-            seenVal.set(v.code, vn + 1)
-            return vn === 0 ? v : { ...v, code: `${v.code}-${vn + 1}` }
-          })
-        return { ...o, code, values }
-      })
-  })()
+  // Drop incomplete axes + guarantee unique codes so combos/SKUs/keys never collide.
+  const validOptions: EditorOption[] = dedupeOptions(options)
   const grid = buildGrid(validOptions)
 
   // ── option editing ──
   const addOption = () =>
-    setOptions((o) => [...o, { name: '', code: '', inputType: 'select', values: [] }])
+    setOptions((o) => [
+      ...o,
+      { name: '', nameFr: '', nameEs: '', code: '', inputType: 'select', showTr: false, values: [] },
+    ])
   const removeOption = (i: number) => setOptions((o) => o.filter((_, idx) => idx !== i))
   const patchOption = (i: number, patch: Partial<EditorOption>) =>
     setOptions((o) => o.map((opt, idx) => (idx === i ? { ...opt, ...patch } : opt)))
   const setOptionName = (i: number, val: string) => patchOption(i, { name: val, code: slug(val) })
+  const toggleTr = (i: number) =>
+    setOptions((o) => o.map((opt, idx) => (idx === i ? { ...opt, showTr: !opt.showTr } : opt)))
 
   const addValue = (i: number) =>
     setOptions((o) =>
       o.map((opt, idx) =>
-        idx === i ? { ...opt, values: [...opt.values, { label: '', code: '', hex: null }] } : opt
+        idx === i
+          ? { ...opt, values: [...opt.values, { label: '', labelFr: '', labelEs: '', code: '', hex: null }] }
+          : opt
       )
     )
   const patchValue = (i: number, j: number, patch: Partial<EditorValue>) =>
@@ -164,7 +165,7 @@ export function ProductForm({
 
   const setOverride = (key: string, patch: Partial<Override>) =>
     setOverrides((ov) => {
-      const base: Override = ov[key] ?? { price: '', sale: '' }
+      const base: Override = ov[key] ?? { price: '', sale: '', active: true }
       return { ...ov, [key]: { ...base, ...patch } }
     })
 
@@ -202,7 +203,7 @@ export function ProductForm({
           combo: row.pick,
           priceEur: ov?.price || basePrice,
           salePriceEur: (ov?.sale || discount) || null,
-          active: true,
+          active: ov?.active ?? true,
         }
       })
     }
@@ -249,6 +250,33 @@ export function ProductForm({
           {initial ? 'Modifier le produit' : 'Ajouter un produit'}
         </h1>
         <div className="flex items-center gap-2">
+          {initial && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="text-destructive hover:text-destructive mr-auto">
+                  <Trash2 className="size-4" /> Supprimer
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Supprimer « {initial.name} » ?</DialogTitle>
+                  <DialogDescription>
+                    Le produit, ses variantes, attributs, options et liens seront définitivement
+                    supprimés. Les unités NFC associées sont détachées (pas supprimées). Action
+                    irréversible.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Annuler</Button>
+                  </DialogClose>
+                  <Button variant="destructive" onClick={remove} disabled={deleting}>
+                    {deleting ? 'Suppression…' : 'Supprimer définitivement'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
           <Button variant="ghost" onClick={() => router.push('/admin/products')} disabled={pending}>
             Annuler
           </Button>
@@ -299,11 +327,11 @@ export function ProductForm({
                 <div key={i} className="rounded-lg border p-4">
                   <div className="flex items-end gap-3">
                     <div className="grid flex-1 gap-2">
-                      <Label>Nom de l’axe</Label>
+                      <Label>Nom de l’axe (EN)</Label>
                       <Input
                         value={opt.name}
                         onChange={(e) => setOptionName(i, e.target.value)}
-                        placeholder="Couleur"
+                        placeholder="Color"
                       />
                     </div>
                     <div className="grid w-40 gap-2">
@@ -326,14 +354,48 @@ export function ProductForm({
                     </Button>
                   </div>
 
+                  {opt.showTr && (
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <Input
+                        value={opt.nameFr}
+                        onChange={(e) => patchOption(i, { nameFr: e.target.value })}
+                        placeholder="Nom de l’axe (FR)"
+                        className="h-9"
+                      />
+                      <Input
+                        value={opt.nameEs}
+                        onChange={(e) => patchOption(i, { nameEs: e.target.value })}
+                        placeholder="Nombre del eje (ES)"
+                        className="h-9"
+                      />
+                    </div>
+                  )}
+
                   <div className="mt-3 flex flex-col gap-2">
                     {opt.values.map((val, j) => (
                       <div key={j} className="flex items-center gap-2">
                         <Input
                           value={val.label}
                           onChange={(e) => setValueLabel(i, j, e.target.value)}
-                          placeholder={opt.inputType === 'swatch' ? 'Bleu' : '138'}
+                          placeholder={opt.inputType === 'swatch' ? 'Couleur (EN)' : 'Valeur (EN)'}
+                          className="flex-1"
                         />
+                        {opt.showTr && (
+                          <>
+                            <Input
+                              value={val.labelFr}
+                              onChange={(e) => patchValue(i, j, { labelFr: e.target.value })}
+                              placeholder="Français"
+                              className="w-32"
+                            />
+                            <Input
+                              value={val.labelEs}
+                              onChange={(e) => patchValue(i, j, { labelEs: e.target.value })}
+                              placeholder="Español"
+                              className="w-32"
+                            />
+                          </>
+                        )}
                         {opt.inputType === 'swatch' && (
                           <input
                             type="color"
@@ -343,7 +405,7 @@ export function ProductForm({
                             aria-label="Couleur"
                           />
                         )}
-                        <span className="text-muted-foreground w-24 shrink-0 font-mono text-xs">
+                        <span className="text-muted-foreground w-16 shrink-0 font-mono text-xs">
                           {val.code || '—'}
                         </span>
                         <Button variant="ghost" size="icon" onClick={() => removeValue(i, j)} aria-label="Supprimer la valeur">
@@ -351,9 +413,14 @@ export function ProductForm({
                         </Button>
                       </div>
                     ))}
-                    <Button variant="outline" size="sm" className="self-start" onClick={() => addValue(i)}>
-                      <Plus className="size-4" /> Ajouter une valeur
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => addValue(i)}>
+                        <Plus className="size-4" /> Ajouter une valeur
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => toggleTr(i)}>
+                        {opt.showTr ? 'Masquer traductions' : '+ Traductions (FR · ES)'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -375,6 +442,7 @@ export function ProductForm({
                         <th className="px-3 py-2 font-medium">SKU</th>
                         <th className="px-3 py-2 font-medium">Prix €</th>
                         <th className="px-3 py-2 font-medium">Promo €</th>
+                        <th className="px-3 py-2 text-center font-medium">Actif</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -404,6 +472,13 @@ export function ProductForm({
                                 onChange={(e) => setOverride(key, { sale: e.target.value })}
                                 placeholder="—"
                                 className="h-8 w-24"
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              <Checkbox
+                                checked={ov?.active ?? true}
+                                onCheckedChange={(c) => setOverride(key, { active: c === true })}
+                                aria-label="Variante active"
                               />
                             </td>
                           </tr>

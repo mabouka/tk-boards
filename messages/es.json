@@ -1,4 +1,28 @@
 {
+  "tkid": {
+    "invalid_title": "Etiqueta desconocida",
+    "invalid_text": "Esta etiqueta no está vinculada a ninguna tabla TK Boards.",
+    "inactive_title": "Tabla no activada",
+    "inactive_text": "Esta tabla aún no está preparada. Vuelve tras la compra.",
+    "register_title": "Registra tu tabla",
+    "register_text": "Activa tu TK ID para proteger tu tabla contra el robo y activar la garantía.",
+    "register_cta": "Registrar mi tabla",
+    "login_prompt": "Inicia sesión o crea tu cuenta para registrar esta tabla.",
+    "login_cta": "Iniciar sesión",
+    "owner_title": "Tu tabla",
+    "owner_text": "Esta tabla está registrada a tu nombre — estás protegido.",
+    "account_cta": "Ver mi cuenta",
+    "declare_stolen": "Declarar robada",
+    "protected_title": "Tabla protegida",
+    "protected_text": "Esta tabla ya está registrada y protegida por TK ID.",
+    "stolen_title": "⚠ Tabla declarada robada",
+    "stolen_text": "El propietario ha declarado esta tabla como robada.",
+    "stolen_found": "¿La has encontrado? Contacta con TK Boards.",
+    "mark_recovered": "Marcar como recuperada",
+    "model_label": "Modelo",
+    "serial_label": "Serie",
+    "back_home": "Volver al inicio"
+  },
   "nav": {
     "home": "Inicio",
     "boards": "Boards",

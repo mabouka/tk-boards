@@ -8,9 +8,9 @@ import {
   variantValues,
   productOptions,
   productLinks,
-  type I18nText,
 } from '@/db/schema'
 import type { ProductInput, LinkType } from './schemas'
+import { part, primary } from '@/lib/i18n-text'
 
 export type ProductListRow = {
   id: string
@@ -52,9 +52,6 @@ export async function getProducts(): Promise<ProductListRow[]> {
     }
   })
 }
-
-const fr = (j: unknown, fallback: string) =>
-  (j as I18nText | null)?.fr ?? fallback
 
 /** Full product tree shaped for the editor form. */
 export async function getProduct(id: string): Promise<ProductInput | null> {
@@ -104,11 +101,19 @@ export async function getProduct(id: string): Promise<ProductInput | null> {
 
   const options = attrs.map((a) => ({
     code: a.code,
-    name: fr(a.nameI18n, a.code),
+    name: primary(a.nameI18n, a.code),
+    nameFr: part(a.nameI18n, 'fr') || undefined,
+    nameEs: part(a.nameI18n, 'es') || undefined,
     inputType: a.inputType as 'swatch' | 'select',
     values: vals
       .filter((v) => v.attributeId === a.id)
-      .map((v) => ({ code: v.code, label: fr(v.labelI18n, v.code), hex: v.swatchHex ?? null })),
+      .map((v) => ({
+        code: v.code,
+        label: primary(v.labelI18n, v.code),
+        labelFr: part(v.labelI18n, 'fr') || undefined,
+        labelEs: part(v.labelI18n, 'es') || undefined,
+        hex: v.swatchHex ?? null,
+      })),
   }))
 
   const editorVariants = vars.map((v) => {
@@ -136,7 +141,7 @@ export async function getProduct(id: string): Promise<ProductInput | null> {
     options,
     variants: editorVariants,
     addons: opts.map((o) => ({
-      name: fr(o.nameI18n, ''),
+      name: primary(o.nameI18n, ''),
       priceDelta: o.priceDeltaEur ?? '',
       sku: o.sku ?? null,
     })),

@@ -1,4 +1,28 @@
 {
+  "tkid": {
+    "invalid_title": "Unknown tag",
+    "invalid_text": "This tag isn't linked to any TK Boards board.",
+    "inactive_title": "Board not activated",
+    "inactive_text": "This board hasn't been set up yet. Come back after purchase.",
+    "register_title": "Register your board",
+    "register_text": "Activate your TK ID to protect your board against theft and start your warranty.",
+    "register_cta": "Register my board",
+    "login_prompt": "Sign in or create your account to register this board.",
+    "login_cta": "Sign in",
+    "owner_title": "Your board",
+    "owner_text": "This board is registered to you — you're protected.",
+    "account_cta": "View my account",
+    "declare_stolen": "Report stolen",
+    "protected_title": "Protected board",
+    "protected_text": "This board is already registered and protected by TK ID.",
+    "stolen_title": "⚠ Board reported stolen",
+    "stolen_text": "This board has been reported stolen by its owner.",
+    "stolen_found": "Found it? Contact TK Boards.",
+    "mark_recovered": "Mark as recovered",
+    "model_label": "Model",
+    "serial_label": "Serial",
+    "back_home": "Back to home"
+  },
   "nav": {
     "home": "Home",
     "boards": "Boards",

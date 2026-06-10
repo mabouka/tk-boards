@@ -2,9 +2,17 @@ import { z } from 'zod'
 
 // ── Editor contract (shared by the product form + server actions) ──
 
+const optTr = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => v || undefined)
+
 export const optionValueSchema = z.object({
   code: z.string().trim().min(1),
-  label: z.string().trim().min(1),
+  label: z.string().trim().min(1), // EN (primary)
+  labelFr: optTr,
+  labelEs: optTr,
   hex: z
     .string()
     .trim()
@@ -15,7 +23,9 @@ export const optionValueSchema = z.object({
 
 export const optionSchema = z.object({
   code: z.string().trim().min(1), // SIZE, COLOR
-  name: z.string().trim().min(1), // "Taille"
+  name: z.string().trim().min(1), // EN (primary), e.g. "Size"
+  nameFr: optTr,
+  nameEs: optTr,
   inputType: z.enum(['swatch', 'select']),
   values: z.array(optionValueSchema).min(1),
 })

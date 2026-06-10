@@ -1,7 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto'
-import { and, eq, lt, or } from 'drizzle-orm'
+import { and, eq, lt, or, sql } from 'drizzle-orm'
 import { db } from '@/db'
-import { emailTokens } from '@/db/schema'
+import { emailTokens, users } from '@/db/schema'
+import type { AnyPgDatabase } from '@/lib/db-types'
 
 export type EmailTokenType = 'verify' | 'reset'
 
@@ -49,4 +50,20 @@ export async function consumeEmailToken(
 
   await db.delete(emailTokens).where(eq(emailTokens.id, row.id))
   return row.userId
+}
+
+/**
+ * Persist a password reset: set the new hash, mark the email verified (a valid
+ * reset link proves ownership), and bump tokenVersion so any existing JWT session
+ * is invalidated by the auth gates. `database` is injectable for integration tests.
+ */
+export async function applyPasswordReset(
+  database: AnyPgDatabase,
+  userId: string,
+  passwordHash: string
+): Promise<void> {
+  await database
+    .update(users)
+    .set({ passwordHash, emailVerified: new Date(), tokenVersion: sql`${users.tokenVersion} + 1` })
+    .where(eq(users.id, userId))
 }

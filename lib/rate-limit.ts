@@ -1,12 +1,15 @@
-import { headers } from 'next/headers'
 import { sql } from 'drizzle-orm'
 import { db } from '@/db'
 import { rateLimits } from '@/db/schema'
+import type { AnyPgDatabase } from '@/lib/db-types'
 
 /**
  * Fixed-window rate limiter backed by Neon. The whole increment is a single
  * atomic `INSERT … ON CONFLICT DO UPDATE … RETURNING`, so it is race-safe
  * without a transaction (which neon-http doesn't support).
+ *
+ * `database` is injectable so the window logic can be integration-tested against
+ * a real Postgres; the app uses the default neon-http singleton.
  *
  * @returns true if allowed, false if the limit is exceeded.
  */
@@ -14,10 +17,11 @@ export async function rateLimit(
   name: string,
   id: string,
   limit: number,
-  windowSec: number
+  windowSec: number,
+  database: AnyPgDatabase = db
 ): Promise<boolean> {
   const key = `${name}:${id}`
-  const [row] = await db
+  const [row] = await database
     .insert(rateLimits)
     .values({ key, count: 1, expiresAt: sql`now() + (${windowSec} * interval '1 second')` })
     .onConflictDoUpdate({
@@ -30,10 +34,4 @@ export async function rateLimit(
     .returning({ count: rateLimits.count })
 
   return (row?.count ?? 0) <= limit
-}
-
-/** Best-effort client IP from proxy headers (Vercel sets x-forwarded-for). */
-export async function clientIp(): Promise<string> {
-  const h = await headers()
-  return h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown'
 }

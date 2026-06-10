@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { users, accounts } from '@/db/schema'
-import { rateLimit, clientIp } from '@/lib/rate-limit'
+import { rateLimit } from '@/lib/rate-limit'
+import { clientIp } from '@/lib/client-ip'
 
 /**
  * Email-first flow: does an account exist, and how does it sign in?

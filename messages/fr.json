@@ -1,4 +1,28 @@
 {
+  "tkid": {
+    "invalid_title": "Tag inconnu",
+    "invalid_text": "Ce tag n'est associé à aucune planche TK Boards.",
+    "inactive_title": "Planche non activée",
+    "inactive_text": "Cette planche n'a pas encore été préparée. Reviens après l'achat.",
+    "register_title": "Enregistre ta planche",
+    "register_text": "Active ton TK ID pour protéger ta planche contre le vol et activer ta garantie.",
+    "register_cta": "Enregistrer ma planche",
+    "login_prompt": "Connecte-toi ou crée ton compte pour enregistrer cette planche.",
+    "login_cta": "Se connecter",
+    "owner_title": "Ta planche",
+    "owner_text": "Cette planche est enregistrée à ton nom — tu es protégé.",
+    "account_cta": "Voir mon compte",
+    "declare_stolen": "Déclarer volée",
+    "protected_title": "Planche protégée",
+    "protected_text": "Cette planche est déjà enregistrée et protégée par TK ID.",
+    "stolen_title": "⚠ Planche déclarée volée",
+    "stolen_text": "Cette planche a été signalée comme volée par son propriétaire.",
+    "stolen_found": "Tu l'as trouvée ? Contacte TK Boards.",
+    "mark_recovered": "Marquer comme retrouvée",
+    "model_label": "Modèle",
+    "serial_label": "Série",
+    "back_home": "Retour à l'accueil"
+  },
   "nav": {
     "home": "Accueil",
     "boards": "Boards",

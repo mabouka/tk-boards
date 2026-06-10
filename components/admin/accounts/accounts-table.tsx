@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { MoreHorizontal, Search } from 'lucide-react'
 import { setRole } from '@/app/admin/(app)/accounts/actions'
@@ -133,7 +134,9 @@ export function AccountsTable({
                         </Avatar>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 font-medium">
-                            {a.name}
+                            <Link href={`/admin/accounts/${a.id}`} className="hover:underline">
+                              {a.name}
+                            </Link>
                             {isMe && <span className="text-muted-foreground text-xs">(vous)</span>}
                           </div>
                           <div className="text-muted-foreground truncate text-xs">{a.email}</div>
