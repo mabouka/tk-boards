@@ -13,7 +13,13 @@ type Step = 'email' | 'signin' | 'signup' | 'oauth'
 // Stricter than HTML5 type="email" (which accepts "a@b"): require a dotted domain.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
-export default function AuthFlow({ flash }: { flash?: 'verified' | 'reset' }) {
+export default function AuthFlow({
+  flash,
+  callbackUrl,
+}: {
+  flash?: 'verified' | 'reset'
+  callbackUrl?: string
+}) {
   const t = useTranslations('auth')
   const locale = useLocale()
 
@@ -193,6 +199,7 @@ export default function AuthFlow({ flash }: { flash?: 'verified' | 'reset' }) {
           <form className={styles.form} action={loginAction}>
             <input type="hidden" name="locale" value={locale} />
             <input type="hidden" name="email" value={email} />
+            {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
             <PasswordField
               name="password"
               placeholder={t('password')}

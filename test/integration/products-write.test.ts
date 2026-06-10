@@ -11,11 +11,11 @@ beforeEach(() => truncateAll(pool))
 afterAll(() => pool.end())
 
 // A configurable product with one SIZE axis → stable child SKUs (BX-S, BX-M…).
-function boardInput(sizes: string[], id?: string): ProductInput {
+function boardInput(sizes: string[], id?: string, sku = 'BX'): ProductInput {
   return {
     id: id ?? null,
     name: 'Rocket',
-    sku: 'BX',
+    sku,
     kind: 'board',
     active: true,
     options: [
@@ -35,7 +35,7 @@ function boardInput(sizes: string[], id?: string): ProductInput {
       },
     ],
     variants: sizes.map((s) => ({
-      sku: `BX-${s}`,
+      sku: `${sku}-${s}`,
       combo: { SIZE: s },
       priceEur: '1699',
       salePriceEur: null,
@@ -75,5 +75,30 @@ describe('persistProduct — inventory preservation', () => {
     await persistProduct(db, boardInput(['S'], id)) // size M removed
 
     expect(await stockBySku(id)).toEqual({ 'BX-S': 0 })
+  })
+})
+
+describe('persistProduct — SKU collision safety (no transactions under neon-http)', () => {
+  it('rejects a duplicate SKU within the same product before any write', async () => {
+    const input = boardInput(['S', 'M'], undefined, 'BX')
+    input.variants[1].sku = 'BX-S' // collide the two variants
+
+    await expect(persistProduct(db, input)).rejects.toThrow()
+    // Nothing was created (the throw happened before the product insert).
+    expect(await db.select().from(variants)).toHaveLength(0)
+  })
+
+  it('rejects a SKU owned by another product WITHOUT wiping the edited one', async () => {
+    await persistProduct(db, boardInput(['S'], undefined, 'AX')) // product A owns AX-S
+    const bId = await persistProduct(db, boardInput(['S', 'M'], undefined, 'BX'))
+    await db.update(variants).set({ stock: 9 }).where(eq(variants.sku, 'BX-S'))
+
+    // Re-save B but collide one of its variants with A's AX-S.
+    const collide = boardInput(['S'], bId, 'BX')
+    collide.variants[0].sku = 'AX-S'
+    await expect(persistProduct(db, collide)).rejects.toThrow()
+
+    // B is untouched: its variants + inventory survived (no destructive delete ran).
+    expect(await stockBySku(bId)).toEqual({ 'BX-S': 9, 'BX-M': 0 })
   })
 })

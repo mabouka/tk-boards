@@ -28,8 +28,9 @@ export type BatchResult =
 
 export async function generateBatch(quantity: number): Promise<BatchResult> {
   await requireAdmin()
-  const qty = Math.min(500, Math.max(1, Math.trunc(Number(quantity)) || 0))
-  if (qty < 1) return { ok: false, error: 'Quantité invalide.' }
+  const n = Math.trunc(Number(quantity))
+  if (!Number.isFinite(n) || n < 1) return { ok: false, error: 'Quantité invalide.' }
+  const qty = Math.min(500, n)
 
   const rows = Array.from({ length: qty }, () => ({ token: newToken() }))
   try {
@@ -104,7 +105,12 @@ export async function assignUnit(
 }
 
 // ── CSV export of the full registry ──
-const csvField = (v: string) => `"${v.replace(/"/g, '""')}"`
+// Neutralize formula injection: a cell starting with = + - @ (or a control char)
+// executes as a formula in Excel/Sheets, so prefix those with an apostrophe.
+const csvField = (v: string) => {
+  const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v
+  return `"${safe.replace(/"/g, '""')}"`
+}
 
 export async function exportUnitsCsv(): Promise<string> {
   await requireAdmin()

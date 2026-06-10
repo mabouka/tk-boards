@@ -37,6 +37,7 @@ export default async function LoginPage({ params, searchParams }: Props) {
 
   const sp = searchParams ? await searchParams : {}
   const flash = sp.verified === '1' ? 'verified' : sp.reset === '1' ? 'reset' : undefined
+  const callbackUrl = typeof sp.callbackUrl === 'string' ? sp.callbackUrl : undefined
 
-  return <AuthFlow flash={flash} />
+  return <AuthFlow flash={flash} callbackUrl={callbackUrl} />
 }

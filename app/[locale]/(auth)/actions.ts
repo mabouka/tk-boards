@@ -23,10 +23,17 @@ export type AuthState = { error?: string; notice?: string } | null
 
 // ── Email + password ────────────────────────────────────────────
 
+// Only same-origin relative paths may be a post-login destination (no open redirect).
+function safeCallback(raw: FormDataEntryValue | null, fallback: string): string {
+  const v = typeof raw === 'string' ? raw : ''
+  return /^\/(?![/\\])/.test(v) ? v : fallback
+}
+
 export async function login(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const locale = safeLocale(formData.get('locale'))
   const email = String(formData.get('email') ?? '').toLowerCase().trim()
   const password = String(formData.get('password') ?? '')
+  const callbackUrl = safeCallback(formData.get('callbackUrl'), `/${locale}/account`)
 
   const ip = await clientIp()
   if (!(await rateLimit('login-ip', ip, 10, 60)) || !(await rateLimit('login-email', email, 5, 60))) {
@@ -42,7 +49,7 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   if (u?.passwordHash && !u.emailVerified) return { error: 'unverified' }
 
   try {
-    await signIn('credentials', { email, password, redirectTo: `/${locale}/account` })
+    await signIn('credentials', { email, password, redirectTo: callbackUrl })
   } catch (error) {
     if (error instanceof AuthError) return { error: 'invalid' }
     throw error // re-throw the redirect (success)

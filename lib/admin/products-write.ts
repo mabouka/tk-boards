@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray, ne } from 'drizzle-orm'
 import {
   products,
   productAttributes,
@@ -19,6 +19,25 @@ import type { AnyPgDatabase } from '@/lib/db-types'
  * at 0. Returns the product id; throws on DB errors (caller maps the message).
  */
 export async function persistProduct(db: AnyPgDatabase, input: ProductInput): Promise<string> {
+  // 0. Pre-flight, BEFORE any write. neon-http has no transactions and step 2 below
+  //    full-replaces the catalog subtree, so a mid-way insert failure would otherwise
+  //    leave the product's variants/attributes half-destroyed. Reject SKU clashes up
+  //    front: variant SKUs must be unique within the input and not already owned by a
+  //    *different* product (variant.sku is globally unique). The product row's own SKU
+  //    is guarded by its own insert/update in step 1, which runs before the delete.
+  const skus = input.variants.map((v) => v.sku)
+  if (new Set(skus).size !== skus.length) throw new Error('duplicate variant SKU in input')
+  const [clash] = await db
+    .select({ sku: variants.sku })
+    .from(variants)
+    .where(
+      input.id
+        ? and(inArray(variants.sku, skus), ne(variants.productId, input.id))
+        : inArray(variants.sku, skus)
+    )
+    .limit(1)
+  if (clash) throw new Error('duplicate variant SKU')
+
   // 1. Upsert the product row.
   let productId = input.id ?? null
   if (productId) {
