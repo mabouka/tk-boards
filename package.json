@@ -15,7 +15,9 @@
     "email": "email dev --dir emails --port 3030",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:int": "vitest run --config vitest.integration.config.ts"
+    "test:int": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "playwright test",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.2",
@@ -51,6 +53,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@react-email/ui": "^6.5.0",
     "@sanity/vision": "^5.26.0",
     "@tailwindcss/postcss": "^4.3.0",

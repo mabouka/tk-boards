@@ -4,7 +4,12 @@ import createNextIntlPlugin from 'next-intl/plugin'
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 
 const nextConfig: NextConfig = {
+  // Isolated build dir for E2E (so `next build` doesn't clobber a running dev server).
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   transpilePackages: ['sanity-plugin-media', 'filesize', 'copy-to-clipboard', 'lucide-react'],
+  // Keep the optional node-postgres driver (E2E only) out of the bundle; it's
+  // required lazily in db/index.ts when DB_DRIVER=pg.
+  serverExternalPackages: ['pg'],
   images: {
     qualities: [75, 85, 90],
     // Global Sanity loader → every <Image> is served straight from the Sanity

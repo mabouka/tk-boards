@@ -17,6 +17,7 @@ import {
 } from '@/components/admin/ui/dialog'
 import type { ProductInput, LinkType } from '@/lib/admin/schemas'
 import { slug, comboKey, buildGrid, dedupeOptions } from '@/lib/admin/variants'
+import { buildVariants, type Override } from '@/lib/admin/variant-build'
 import { Button } from '@/components/admin/ui/button'
 import { Checkbox } from '@/components/admin/ui/checkbox'
 import { Input } from '@/components/admin/ui/input'
@@ -47,7 +48,6 @@ type EditorOption = {
   showTr: boolean
   values: EditorValue[]
 }
-type Override = { price: string; sale: string; active: boolean }
 type AddonRow = { name: string; priceDelta: string; sku: string }
 type LinkRow = { linkedProductId: string; type: LinkType }
 type ProductRef = { id: string; sku: string; name: string }
@@ -183,30 +183,13 @@ export function ProductForm({
 
   // ── submit ──
   function buildInput(active: boolean): ProductInput {
-    let variants: ProductInput['variants']
-    if (validOptions.length === 0) {
-      variants = [
-        {
-          sku: skuUpper,
-          combo: {},
-          priceEur: basePrice,
-          salePriceEur: discount || null,
-          active: true,
-        },
-      ]
-    } else {
-      variants = grid.map((row) => {
-        const key = comboKey(validOptions, row.pick)
-        const ov = overrides[key]
-        return {
-          sku: [skuUpper, ...row.cells.map((c) => c.code)].join('-'),
-          combo: row.pick,
-          priceEur: ov?.price || basePrice,
-          salePriceEur: (ov?.sale || discount) || null,
-          active: ov?.active ?? true,
-        }
-      })
-    }
+    const variants = buildVariants({
+      sku: skuUpper,
+      options: validOptions,
+      overrides,
+      basePrice,
+      discount,
+    })
 
     return {
       id: initial?.id ?? null,

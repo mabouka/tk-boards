@@ -4,8 +4,10 @@ import { routing } from './i18n/routing'
 
 const intlMiddleware = createMiddleware(routing)
 
-// Flip to false (or remove) to take the site live.
-const UNDER_CONSTRUCTION = process.env.NODE_ENV === 'production'
+// Flip to false (or remove) to take the site live. HOLDING_PAGE=off disables it
+// (E2E runs a production build over HTTP, where the secure bypass cookie can't be set).
+const UNDER_CONSTRUCTION =
+  process.env.NODE_ENV === 'production' && process.env.HOLDING_PAGE !== 'off'
 
 // Staff bypass: visit /preview?key=<PREVIEW_SECRET> once to drop a cookie that
 // reveals the real site while everyone else still sees the holding page.

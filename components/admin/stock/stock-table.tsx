@@ -4,6 +4,13 @@ import { useState, useTransition } from 'react'
 import { Minus, Plus, Search } from 'lucide-react'
 import { setStock } from '@/app/admin/(app)/stock/actions'
 import type { StockRow } from '@/lib/admin/stock'
+import {
+  stockStatus,
+  clampStock,
+  matchesStockFilter,
+  matchesStockSearch,
+  type StockFilter,
+} from '@/lib/admin/stock-ui'
 import { Badge } from '@/components/admin/ui/badge'
 import { Button } from '@/components/admin/ui/button'
 import { Card } from '@/components/admin/ui/card'
@@ -27,7 +34,11 @@ import {
 const eur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
 
-type Filter = 'all' | 'low' | 'out'
+const TONE = {
+  out: { label: 'Rupture', variant: 'destructive' as const },
+  low: { label: 'Faible', variant: 'secondary' as const },
+  ok: { label: 'OK', variant: 'default' as const },
+}
 
 function StockControls({
   variantId,
@@ -42,17 +53,12 @@ function StockControls({
   const [, startTransition] = useTransition()
 
   const save = (next: number) => {
-    const v = Math.max(0, Math.trunc(next) || 0)
+    const v = clampStock(next)
     setValue(v)
     startTransition(() => setStock(variantId, v))
   }
 
-  const tone =
-    value === 0
-      ? { label: 'Rupture', variant: 'destructive' as const }
-      : value <= lowThreshold
-        ? { label: 'Faible', variant: 'secondary' as const }
-        : { label: 'OK', variant: 'default' as const }
+  const tone = TONE[stockStatus(value, lowThreshold)]
 
   return (
     <div className="flex items-center justify-end gap-3">
@@ -95,19 +101,11 @@ function StockControls({
 
 export function StockTable({ rows, lowThreshold }: { rows: StockRow[]; lowThreshold: number }) {
   const [q, setQ] = useState('')
-  const [filter, setFilter] = useState<Filter>('all')
+  const [filter, setFilter] = useState<StockFilter>('all')
 
-  const needle = q.trim().toLowerCase()
-  const shown = rows.filter((r) => {
-    const matchFilter =
-      filter === 'all' ||
-      (filter === 'low' ? r.stock > 0 && r.stock <= lowThreshold : r.stock === 0)
-    const matchSearch =
-      needle === '' ||
-      r.productName.toLowerCase().includes(needle) ||
-      r.sku.toLowerCase().includes(needle)
-    return matchFilter && matchSearch
-  })
+  const shown = rows.filter(
+    (r) => matchesStockFilter(r.stock, filter, lowThreshold) && matchesStockSearch(r, q)
+  )
 
   return (
     <div className="flex flex-col gap-4">
@@ -121,7 +119,7 @@ export function StockTable({ rows, lowThreshold }: { rows: StockRow[]; lowThresh
             className="pl-9"
           />
         </div>
-        <Select value={filter} onValueChange={(v) => setFilter(v as Filter)}>
+        <Select value={filter} onValueChange={(v) => setFilter(v as StockFilter)}>
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>

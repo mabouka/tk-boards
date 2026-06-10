@@ -1,3 +1,4 @@
+import { appendFileSync } from 'node:fs'
 import { createElement, type ReactElement } from 'react'
 import { render } from '@react-email/components'
 import { Resend } from 'resend'
@@ -29,6 +30,11 @@ async function send(opts: {
 }) {
   if (!KEY) {
     console.log(`\n📧 [email:dev] → ${opts.to}\n   ${opts.subject}\n   ${opts.devNote}\n`)
+    // E2E: persist the action link so the test can follow it (the raw token is
+    // never stored in the DB — only its hash). Off unless EMAIL_OUTBOX_FILE is set.
+    if (process.env.EMAIL_OUTBOX_FILE) {
+      appendFileSync(process.env.EMAIL_OUTBOX_FILE, `${opts.to}\t${opts.devNote}\n`)
+    }
     return
   }
   const resend = new Resend(KEY)
