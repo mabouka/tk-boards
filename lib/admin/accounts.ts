@@ -26,6 +26,8 @@ export async function getAccounts(): Promise<AccountRow[]> {
 export type AccountDetail = {
   id: string
   name: string
+  firstName: string | null
+  lastName: string | null
   email: string
   role: 'customer' | 'admin'
   method: 'password' | 'google'
@@ -122,6 +124,8 @@ export async function getAccount(id: string): Promise<AccountDetail | null> {
   return {
     id: u.id,
     name: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '—',
+    firstName: u.firstName,
+    lastName: u.lastName,
     email: u.email,
     role: u.role === 'admin' ? 'admin' : 'customer',
     method: u.passwordHash ? 'password' : 'google',
