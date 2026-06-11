@@ -1,0 +1,234 @@
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  backdrop-filter: brightness(50%) blur(35px);
+  -webkit-backdrop-filter: brightness(50%) blur(35px);
+  color: var(--color-white);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.menuOpen {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ── Background (featured-board image, revealed on hover) ── */
+.bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bgImage {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.bgGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(13, 15, 20, 0.92) 0%,
+    rgba(13, 15, 20, 0.55) 45%,
+    rgba(13, 15, 20, 0.15) 100%
+  );
+}
+
+/* ── Layout ── */
+.inner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+/* Bar + footer are pinned to the edges so the body centers on the full window. */
+.bar {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: var(--gutter);
+  z-index: 1;
+}
+
+.logo {
+  display: flex;
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+.close {
+  display: flex;
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-white);
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.close:hover {
+  transform: rotate(90deg);
+  opacity: 0.8;
+}
+
+.close svg {
+  width: 26px;
+  height: 26px;
+}
+
+/* body + footer ride the 12-col grid: boards at column 1, menu at column 6 */
+.body {
+  composes: u-grid from global;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  align-content: center;
+}
+
+/* ── Featured boards (column 1) ── */
+.boards {
+  grid-column: 2 / 8;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.boardLink {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 1.08;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  color: var(--color-cream);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* When a board is hovered, the others become outlined */
+.boardLink[data-dim] {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--color-white-50);
+}
+
+/* ── Main navigation (column 6) ── */
+.nav {
+  grid-column: 8 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.navLink {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(18px, 1.8vw, 24px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-white);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: var(--color-gold);
+}
+
+/* ── Footer ── */
+.foot {
+  composes: u-grid from global;
+  position: absolute;
+  bottom: 48px;
+  left: 0;
+  right: 0;
+  align-items: end;
+}
+
+.legal {
+  grid-column: 1 / 8;
+  display: flex;
+  gap: 24px;
+}
+
+.legal a {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-cream);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.socials {
+  grid-column: 8 / -1;
+  display: flex;
+  gap: 18px;
+}
+
+.socials a {
+  display: flex;
+  color: var(--color-white);
+  transition: color 0.2s ease;
+}
+
+.socials a:hover {
+  color: var(--color-gold);
+}
+
+.socials svg {
+  width: 22px;
+  height: 22px;
+}
+
+@media (max-width: 768px) {
+  .menu {
+    overflow-y: auto;
+  }
+  /* back to normal flow on mobile so nothing overlaps (higher specificity than u-grid) */
+  .menu .inner {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    height: auto;
+    padding-block: 24px;
+    gap: 40px;
+  }
+  .menu .bar,
+  .menu .body,
+  .menu .foot {
+    position: static;
+  }
+  .menu .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;
+  }
+  .menu .foot {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+}

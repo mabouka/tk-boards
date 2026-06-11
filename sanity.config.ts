@@ -16,10 +16,51 @@ const SUPPORTED_LANGUAGES = [
   { id: 'es', title: 'Español' },
 ]
 
-export const TRANSLATABLE_TYPES = ['page', 'board', 'accessory', 'navigation']
+export const TRANSLATABLE_TYPES = [
+  'page',
+  'board',
+  'accessory',
+  'navigation',
+  'homePage',
+  'contactPage',
+  'faqPage',
+  'whereToBuyPage',
+  'ourStoryPage',
+]
 
 // Singletons: exactly one document, edited from a fixed structure pane.
-export const SINGLETON_TYPES = ['seoSettings', 'contactSettings', 'footerSettings', 'authPage', 'boardsPageSettings', 'accessoriesPageSettings']
+export const SINGLETON_TYPES = ['seoSettings', 'contactSettings', 'footerSettings', 'authPage', 'boardsPageSettings', 'accessoriesPageSettings', 'accountPageSettings']
+
+// Bespoke i18n singletons that live under Pages → <language>, in display order.
+const BESPOKE_PAGES: ReadonlyArray<readonly [type: string, title: string]> = [
+  ['homePage', 'Home'],
+  ['ourStoryPage', 'Our Story'],
+  ['contactPage', 'Contact'],
+  ['faqPage', 'FAQ'],
+  ['whereToBuyPage', 'Where to buy'],
+]
+
+// One bespoke i18n singleton opened directly as its fixed per-locale document.
+// `initialValueTemplate(`${type}-${lang}`)` is the document-internationalization
+// plugin's static template, which stamps the required (hidden) `language` field —
+// so a doc created from this pane (deleted doc / fresh dataset) is never left with
+// `language: null`, which would make it invisible to every `language == $locale` query.
+const langSingletonItem = (
+  S: StructureBuilder,
+  lang: (typeof SUPPORTED_LANGUAGES)[number],
+  type: string,
+  title: string
+) =>
+  S.listItem()
+    .title(title)
+    .id(`${type}-${lang.id}`)
+    .child(
+      S.document()
+        .schemaType(type)
+        .documentId(`tk-${type}-${lang.id}`)
+        .title(`${title} — ${lang.title}`)
+        .initialValueTemplate(`${type}-${lang.id}`)
+    )
 
 const structure = (S: StructureBuilder) =>
   S.list()
@@ -133,10 +174,25 @@ const structure = (S: StructureBuilder) =>
                   .id(`pages-${lang.id}`)
                   .icon(TranslateIcon)
                   .child(
-                    S.documentTypeList('page')
+                    S.list()
                       .title(`Pages — ${lang.title}`)
-                      .filter('_type == "page" && language == $lang')
-                      .params({ lang: lang.id })
+                      .items([
+                        // Bespoke i18n singletons — one fixed doc per locale.
+                        ...BESPOKE_PAGES.map(([type, title]) =>
+                          langSingletonItem(S, lang, type, title)
+                        ),
+                        S.divider(),
+                        // Generic pages — many docs of type `page`.
+                        S.listItem()
+                          .title('Other pages')
+                          .id(`page-${lang.id}`)
+                          .child(
+                            S.documentTypeList('page')
+                              .title(`Pages — ${lang.title}`)
+                              .filter('_type == "page" && language == $lang')
+                              .params({ lang: lang.id })
+                          ),
+                      ])
                   )
               )
             )
@@ -180,7 +236,17 @@ export default defineConfig({
     visionTool(),
     media(),
     linkField({
-      linkableSchemaTypes: ['page'],
+      linkableSchemaTypes: [
+        'page',
+        'homePage',
+        'ourStoryPage',
+        'contactPage',
+        'faqPage',
+        'whereToBuyPage',
+        'boardsPageSettings',
+        'accessoriesPageSettings',
+        'accountPageSettings',
+      ],
     }),
     documentInternationalization({
       supportedLanguages: SUPPORTED_LANGUAGES,

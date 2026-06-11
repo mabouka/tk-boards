@@ -13,9 +13,27 @@ export const navigation = defineType({
       validation: (r) => r.required(),
     }),
     defineField({
+      name: 'location',
+      title: 'Location',
+      type: 'string',
+      description: 'Where this menu appears on the site (like a WordPress menu location).',
+      options: {
+        layout: 'dropdown',
+        list: [
+          { title: 'Main menu — Navigation', value: 'header' },
+          { title: 'Main menu — Featured boards', value: 'featured' },
+          { title: 'Main menu — Legal', value: 'legal' },
+          { title: 'Footer', value: 'footer' },
+        ],
+      },
+      validation: (r) => r.required(),
+    }),
+    defineField({
       name: 'items',
       title: 'Items',
       type: 'array',
+      description: 'Navigation links (for Header / Footer / Legal menus).',
+      hidden: ({ document }) => (document as { location?: string })?.location === 'featured',
       of: [
         defineArrayMember({
           type: 'object',
@@ -38,12 +56,28 @@ export const navigation = defineType({
               name: 'internalLink',
               title: 'Internal page',
               type: 'reference',
-              to: [{ type: 'page' }],
+              to: [
+                { type: 'page' },
+                { type: 'homePage' },
+                { type: 'ourStoryPage' },
+                { type: 'contactPage' },
+                { type: 'faqPage' },
+                { type: 'whereToBuyPage' },
+                // Product listings: Boards / Accessories index pages. Single
+                // language-independent docs — href resolved in GROQ to /boards
+                // and /accessories.
+                { type: 'boardsPageSettings' },
+                { type: 'accessoriesPageSettings' },
+                // User dashboard — href resolved in GROQ to /account.
+                { type: 'accountPageSettings' },
+              ],
               description: 'Link to a page — slug updates automatically. Only pages in this menu’s language are shown.',
               options: {
-                // Only offer pages in the same language as this menu document.
+                // Pages: same language as the menu. Product-listing singletons
+                // are language-independent so they're always offered.
                 filter: ({ document }) => ({
-                  filter: 'language == $lang',
+                  filter:
+                    '_type in ["boardsPageSettings", "accessoriesPageSettings", "accountPageSettings"] || language == $lang',
                   params: { lang: (document as { language?: string }).language ?? null },
                 }),
               },
@@ -65,6 +99,53 @@ export const navigation = defineType({
             select: { title: 'label', subtitle: 'externalUrl' },
             prepare({ title, subtitle }) {
               return { title: title ?? 'Untitled', subtitle: subtitle ?? '→ internal page' }
+            },
+          },
+        }),
+      ],
+    }),
+    defineField({
+      name: 'featured',
+      title: 'Featured boards',
+      type: 'array',
+      description: 'Highlighted boards on the left of the main menu (its own menu — set Location = Featured boards).',
+      hidden: ({ document }) => (document as { location?: string })?.location !== 'featured',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'featuredBoard',
+          fields: [
+            defineField({
+              name: 'board',
+              title: 'Board',
+              type: 'reference',
+              to: [{ type: 'board' }],
+              // Only required on Featured-boards menus — otherwise this field is
+              // hidden and any leftover items shouldn't block publishing.
+              validation: (r) =>
+                r.custom((value, context) => {
+                  const doc = context.document as { location?: string } | undefined
+                  if (doc?.location !== 'featured') return true
+                  return value ? true : 'Required'
+                }),
+            }),
+            defineField({
+              name: 'image',
+              title: 'Background image',
+              type: 'image',
+              description: 'Shown as the menu background when this board is hovered.',
+              validation: (r) =>
+                r.custom((value, context) => {
+                  const doc = context.document as { location?: string } | undefined
+                  if (doc?.location !== 'featured') return true
+                  return value ? true : 'Required'
+                }),
+            }),
+          ],
+          preview: {
+            select: { title: 'board.name', media: 'image' },
+            prepare({ title, media }) {
+              return { title: title ?? 'Board', media }
             },
           },
         }),

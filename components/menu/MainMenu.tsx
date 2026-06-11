@@ -1,0 +1,162 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Link } from '@/i18n/navigation'
+import LogoTK from '@/components/icons/LogoTK'
+import IconInstagram from '@/components/icons/IconInstagram'
+import IconFacebook from '@/components/icons/IconFacebook'
+import IconLinkedin from '@/components/icons/IconLinkedin'
+import IconTikTok from '@/components/icons/IconTikTok'
+import IconYoutube from '@/components/icons/IconYoutube'
+import IconX from '@/components/icons/IconX'
+import IconMessenger from '@/components/icons/IconMessenger'
+import IconWhatsapp from '@/components/icons/IconWhatsapp'
+import IconGoogle from '@/components/icons/IconGoogle'
+import { useMenu } from './MenuContext'
+import styles from './MainMenu.module.css'
+
+export type MenuNavItem = { label: string; href: string; openInNewTab: boolean }
+export type MenuFeaturedBoard = { name: string; href: string; image: string }
+export type MenuSocial = { key: string; url: string }
+
+type IconComponent = React.ComponentType<{ className?: string }>
+
+const SOCIAL_ICONS: Record<string, IconComponent> = {
+  instagram: IconInstagram,
+  facebook: IconFacebook,
+  linkedin: IconLinkedin,
+  tiktok: IconTikTok,
+  youtube: IconYoutube,
+  x: IconX,
+  messenger: IconMessenger,
+  whatsapp: IconWhatsapp,
+  google: IconGoogle,
+}
+
+export default function MainMenu({
+  navItems = [],
+  legalItems = [],
+  featuredBoards = [],
+  socials = [],
+}: {
+  navItems?: MenuNavItem[]
+  legalItems?: MenuNavItem[]
+  featuredBoards?: MenuFeaturedBoard[]
+  socials?: MenuSocial[]
+}) {
+  const { open, setOpen } = useMenu()
+  const close = () => setOpen(false)
+  const [hovered, setHovered] = useState<number | null>(null)
+
+  const socialLinks = socials.filter((s) => SOCIAL_ICONS[s.key])
+
+  // Close on Escape + lock body scroll while open.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [open, setOpen])
+
+  return (
+    <div className={`${styles.menu} ${open ? styles.menuOpen : ''}`} aria-hidden={!open}>
+      {/* Background board image — fades in on hover of a featured board */}
+      <div className={styles.bg}>
+        {featuredBoards.map((b, i) => (
+          <div
+            key={b.name}
+            className={styles.bgImage}
+            style={{ backgroundImage: `url(${b.image})`, opacity: hovered === i ? 1 : 0 }}
+          />
+        ))}
+        <div className={styles.bgGradient} />
+      </div>
+
+      <div className={styles.inner}>
+        <div className={styles.bar}>
+          <Link href="/" className={styles.logo} onClick={close} aria-label="TK Boards">
+            <LogoTK />
+          </Link>
+          <button className={styles.close} type="button" onClick={close} aria-label="Fermer le menu">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M5 5l14 14M19 5L5 19"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className={styles.body}>
+          {/* Featured boards (left) */}
+          <nav className={styles.boards} aria-label="Planches en vedette">
+            {featuredBoards.map((b, i) => (
+              <Link
+                key={b.name}
+                href={b.href}
+                className={styles.boardLink}
+                data-dim={hovered !== null && hovered !== i ? '' : undefined}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+                onFocus={() => setHovered(i)}
+                onBlur={() => setHovered(null)}
+                onClick={close}
+              >
+                {b.name}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Main navigation (right) */}
+          <nav className={styles.nav} aria-label="Navigation principale">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={styles.navLink}
+                onClick={close}
+                {...(item.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className={styles.foot}>
+          <div className={styles.legal}>
+            {legalItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={close}
+                {...(item.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          <div className={styles.socials}>
+            {socialLinks.map(({ key, url }) => {
+              const Icon = SOCIAL_ICONS[key]
+              return (
+                <a key={key} href={url} target="_blank" rel="noopener noreferrer" aria-label={key}>
+                  <Icon />
+                </a>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

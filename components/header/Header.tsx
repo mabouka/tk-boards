@@ -7,6 +7,7 @@ import LogoTK from '@/components/icons/LogoTK'
 import IconMenu from '@/components/icons/IconMenu'
 import IconCart from '@/components/icons/IconCart'
 import IconAccount from '@/components/icons/IconAccount'
+import { useMenu } from '@/components/menu/MenuContext'
 import styles from './Header.module.css'
 
 const COMPACT_HEIGHT = 60 // hauteur du header compact en mode fixed
@@ -15,6 +16,7 @@ const LOCALES = ['fr', 'en', 'es'] as const
 
 export default function Header({ locale }: { locale: string }) {
   const t = useTranslations('nav')
+  const { open, setOpen } = useMenu()
   const headerRef = useRef<HTMLElement>(null)
   const prevY = useRef(0)
   const offsetY = useRef(0)
@@ -104,7 +106,13 @@ export default function Header({ locale }: { locale: string }) {
     <header ref={headerRef} className={styles.header}>
       <div className={styles.header__inner}>
 
-        <button className={styles.header__menu} type="button" aria-label={t('menu')}>
+        <button
+          className={styles.header__menu}
+          type="button"
+          aria-label={t('menu')}
+          aria-expanded={open}
+          onClick={() => setOpen(true)}
+        >
           <IconMenu />
           <span className={styles.header__menu_label}>{t('menu')}</span>
         </button>

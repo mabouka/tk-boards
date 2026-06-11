@@ -33,6 +33,7 @@ export const accessoriesPageSettings = defineType({
     }),
   ],
   preview: {
-    prepare: () => ({ title: 'Accessories Page Settings' }),
+    // Shown in the "Internal page" picker — keep it short and route-like.
+    prepare: () => ({ title: 'Accessories', subtitle: '/accessories (product listing)' }),
   },
 })

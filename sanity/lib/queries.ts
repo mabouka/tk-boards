@@ -66,6 +66,10 @@ export const boardBySlugQuery = defineQuery(`
         "text": text,
         "openInNewTab": openInNewTab,
         "href": select(
+          type == "internal" && internalLink->_type == "homePage" => "/",
+          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
           type == "internal" => "/" + internalLink->slug.current,
           type == "external" => url,
           type == "email" => "mailto:" + email,
@@ -77,6 +81,10 @@ export const boardBySlugQuery = defineQuery(`
         "text": text,
         "openInNewTab": openInNewTab,
         "href": select(
+          type == "internal" && internalLink->_type == "homePage" => "/",
+          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
           type == "internal" => "/" + internalLink->slug.current,
           type == "external" => url,
           type == "email" => "mailto:" + email,
@@ -177,19 +185,127 @@ export const sitemapBoardsQuery = defineQuery(`
 `)
 
 export const sitemapHomePagesQuery = defineQuery(`
-  *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {
+  *[_type == "homePage" && !(_id in path("drafts.**"))] {
     language,
     _updatedAt
   }
 `)
 
+// Home page lives at "/" — fetched by locale, falling back to the fr master
+// when a locale has no homePage yet (mirrors the old pageBySlugQuery behaviour,
+// so a missing/unpublished locale shows real content instead of a blank hero).
+export const homePageByLocaleQuery = defineQuery(`
+  coalesce(
+    *[_type == "homePage" && language == $locale && !(_id in path("drafts.**"))][0],
+    *[_type == "homePage" && language == "fr" && !(_id in path("drafts.**"))][0]
+  ) {
+    _id,
+    title,
+    heroImage,
+    heroTitle,
+    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),
+    seoTitle,
+    seoDescription,
+    ogImage,
+    sections[] {
+      _type,
+      _key,
+      title,
+      showFilters,
+      items,
+      eyebrow,
+      label,
+      body,
+      image,
+      gallery,
+      mediaType,
+      size,
+      aspectRatio,
+      media,
+      videoUrl,
+      videoPoster,
+      videoWidth,
+      videoHeight,
+      controls,
+      imagePosition,
+      layout,
+      theme,
+      quote,
+      authorName,
+      authorRole,
+      "cta": cta {
+        "text": text,
+        "openInNewTab": openInNewTab,
+        "href": select(
+          type == "internal" && internalLink->_type == "homePage" => "/",
+          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
+          type == "internal" => "/" + internalLink->slug.current,
+          type == "external" => url,
+          type == "email" => "mailto:" + email,
+          type == "phone" => "tel:" + phone
+        )
+      },
+      "ctas": ctas[] {
+        _key,
+        "text": text,
+        "openInNewTab": openInNewTab,
+        "href": select(
+          type == "internal" && internalLink->_type == "homePage" => "/",
+          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
+          type == "internal" => "/" + internalLink->slug.current,
+          type == "external" => url,
+          type == "email" => "mailto:" + email,
+          type == "phone" => "tel:" + phone
+        )
+      }
+    }
+  }
+`)
+
+// Polymorphic: resolves any CMS page type by slug+locale. Returns `title` (the
+// placeholder render), `_type` (to dispatch to a real template later), the SEO
+// fields for generateMetadata, and the localized slugs of its translations
+// (for hreflang alternates). heroImage only exists on `page` — null elsewhere.
+export const cmsPageBySlugQuery = defineQuery(`
+  *[
+    _type in ["page", "ourStoryPage", "contactPage", "faqPage", "whereToBuyPage"]
+    && slug.current == $slug
+    && language == $locale
+    && !(_id in path("drafts.**"))
+  ][0] {
+    _type,
+    title,
+    seoTitle,
+    seoDescription,
+    ogImage,
+    heroImage,
+    "translations": *[_type == "translation.metadata" && references(^._id)][0]
+      .translations[]{ "lang": value->language, "slug": value->slug.current }
+  }
+`)
+
 export const navigationQuery = defineQuery(`
-  *[_type == "navigation" && title == $title && language == $locale][0] {
+  *[_type == "navigation" && location == $location && language == $locale][0] {
     items[] {
       label,
       openInNewTab,
-      "slug": internalLink->slug.current,
-      "externalUrl": externalUrl,
+      "href": select(
+        defined(internalLink) && internalLink->_type == "homePage" => "/",
+        defined(internalLink) && internalLink->_type == "boardsPageSettings" => "/boards",
+        defined(internalLink) && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+        defined(internalLink) && internalLink->_type == "accountPageSettings" => "/account",
+        defined(internalLink) => "/" + internalLink->slug.current,
+        externalUrl
+      ),
+    },
+    featured[] {
+      "name": board->name,
+      "slug": board->slug.current,
+      image,
     }
   }
 `)
@@ -254,6 +370,10 @@ export const pageBySlugQuery = defineQuery(`
         "text": text,
         "openInNewTab": openInNewTab,
         "href": select(
+          type == "internal" && internalLink->_type == "homePage" => "/",
+          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
           type == "internal" => "/" + internalLink->slug.current,
           type == "external" => url,
           type == "email" => "mailto:" + email,
@@ -265,6 +385,10 @@ export const pageBySlugQuery = defineQuery(`
         "text": text,
         "openInNewTab": openInNewTab,
         "href": select(
+          type == "internal" && internalLink->_type == "homePage" => "/",
+          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
           type == "internal" => "/" + internalLink->slug.current,
           type == "external" => url,
           type == "email" => "mailto:" + email,
