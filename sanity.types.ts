@@ -435,12 +435,25 @@ export type Navigation = {
   _updatedAt: string;
   _rev: string;
   title: string;
+  location: "header" | "footer";
   items?: Array<{
     label: string;
     internalLink?: PageReference;
     externalUrl?: string;
     openInNewTab?: boolean;
     _type: "navItem";
+    _key: string;
+  }>;
+  featured?: Array<{
+    board: BoardReference;
+    image: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    _type: "featuredBoard";
     _key: string;
   }>;
   language: string;
@@ -1491,13 +1504,24 @@ export type SitemapHomePagesQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: navigationQuery
-// Query: *[_type == "navigation" && title == $title && language == $locale][0] {    items[] {      label,      openInNewTab,      "slug": internalLink->slug.current,      "externalUrl": externalUrl,    }  }
+// Query: *[_type == "navigation" && location == $location && language == $locale][0] {    items[] {      label,      openInNewTab,      "slug": internalLink->slug.current,      "externalUrl": externalUrl,    },    featured[] {      "name": board->name,      "slug": board->slug.current,      image,    }  }
 export type NavigationQueryResult = {
   items: Array<{
     label: string;
     openInNewTab: boolean | null;
     slug: string | null;
     externalUrl: string | null;
+  }> | null;
+  featured: Array<{
+    name: string;
+    slug: string;
+    image: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
   }> | null;
 } | null;
 
@@ -1905,7 +1929,7 @@ declare module "@sanity/client" {
     '\n  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {\n    "seoTitle": coalesce(\n      seoTitle[language == $locale][0].value,\n      seoTitle[language == "en"][0].value,\n      seoTitle[0].value\n    ),\n    "seoDescription": coalesce(\n      seoDescription[language == $locale][0].value,\n      seoDescription[language == "en"][0].value,\n      seoDescription[0].value\n    ),\n    ogImage\n  }\n': BoardsPageSettingsQueryResult;
     '\n  *[_type == "board" && defined(slug.current) && !(_id in path("drafts.**"))] | order(_updatedAt desc) {\n    "slug": slug.current,\n    language,\n    _updatedAt,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': SitemapBoardsQueryResult;
     '\n  *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {\n    language,\n    _updatedAt\n  }\n': SitemapHomePagesQueryResult;
-    '\n  *[_type == "navigation" && title == $title && language == $locale][0] {\n    items[] {\n      label,\n      openInNewTab,\n      "slug": internalLink->slug.current,\n      "externalUrl": externalUrl,\n    }\n  }\n': NavigationQueryResult;
+    '\n  *[_type == "navigation" && location == $location && language == $locale][0] {\n    items[] {\n      label,\n      openInNewTab,\n      "slug": internalLink->slug.current,\n      "externalUrl": externalUrl,\n    },\n    featured[] {\n      "name": board->name,\n      "slug": board->slug.current,\n      image,\n    }\n  }\n': NavigationQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) [0..1] {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug\n    }\n  }\n': FooterSeriesQueryResult;
     '\n  coalesce(\n    *[_type == "page" && slug.current == $slug && language == $locale][0],\n    *[_type == "page" && slug.current == $slug && language == "fr"][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    slug,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    }\n  }\n': PageBySlugQueryResult;
   }

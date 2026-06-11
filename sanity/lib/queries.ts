@@ -184,12 +184,17 @@ export const sitemapHomePagesQuery = defineQuery(`
 `)
 
 export const navigationQuery = defineQuery(`
-  *[_type == "navigation" && title == $title && language == $locale][0] {
+  *[_type == "navigation" && location == $location && language == $locale][0] {
     items[] {
       label,
       openInNewTab,
       "slug": internalLink->slug.current,
       "externalUrl": externalUrl,
+    },
+    featured[] {
+      "name": board->name,
+      "slug": board->slug.current,
+      image,
     }
   }
 `)

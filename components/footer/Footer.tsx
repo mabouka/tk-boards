@@ -31,7 +31,7 @@ export default async function Footer({ locale }: Props) {
   const [series, settings, nav] = await Promise.all([
     client.fetch(footerSeriesQuery, { locale }),
     getSiteSettings(locale),
-    client.fetch(navigationQuery, { title: 'Footer Sitemap', locale }),
+    client.fetch(navigationQuery, { location: 'footer', locale }),
   ])
 
   // Keep only items that have a label and a destination (guards against
