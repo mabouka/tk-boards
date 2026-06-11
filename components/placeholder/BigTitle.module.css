@@ -1,0 +1,17 @@
+.placeholder {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 148px var(--gutter) 80px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 9vw, 140px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--color-white);
+}
