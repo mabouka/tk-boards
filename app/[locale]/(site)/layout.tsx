@@ -14,20 +14,28 @@ type Props = {
 }
 
 type RawNavItem = {
+  _key: string
   label: string
   href: string | null
   openInNewTab: boolean | null
 }
 
-type RawFeatured = { name: string | null; slug: string | null; image: SanityImageSource | null }
+type RawFeatured = {
+  _key: string
+  name: string | null
+  slug: string | null
+  image: SanityImageSource | null
+}
 
 // Map a navigation document's `items` to the shape <MainMenu /> expects.
 // The query already computes the full href (handles homePage → "/", other
 // internal pages → "/<slug>", and external URLs), so we just relay it.
+// `_key` (the stable Sanity array key) is carried through for React keys.
 function toNavItems(items: unknown) {
   return ((items ?? []) as RawNavItem[])
     .filter((i) => i.label && i.href)
     .map((i) => ({
+      _key: i._key,
       label: i.label,
       href: i.href as string,
       openInNewTab: Boolean(i.openInNewTab),
@@ -54,9 +62,11 @@ export default async function SiteLayout({ children, params }: Props) {
       Boolean(f.name && f.image)
     )
     .map((f) => ({
+      _key: f._key,
       name: f.name,
       href: f.slug ? `/boards/${f.slug}` : '#',
-      image: urlFor(f.image).width(2560).quality(85).auto('format').url(),
+      // Darkened + blurred backdrop — 1600px is plenty (was 2560).
+      image: urlFor(f.image).width(1600).quality(85).auto('format').url(),
     }))
 
   const socials = Object.entries(settings?.social ?? {})

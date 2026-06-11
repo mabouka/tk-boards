@@ -291,6 +291,7 @@ export const cmsPageBySlugQuery = defineQuery(`
 export const navigationQuery = defineQuery(`
   *[_type == "navigation" && location == $location && language == $locale][0] {
     items[] {
+      _key,
       label,
       openInNewTab,
       "href": select(
@@ -303,6 +304,7 @@ export const navigationQuery = defineQuery(`
       ),
     },
     featured[] {
+      _key,
       "name": board->name,
       "slug": board->slug.current,
       image,

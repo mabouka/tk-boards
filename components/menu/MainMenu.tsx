@@ -15,8 +15,8 @@ import IconGoogle from '@/components/icons/IconGoogle'
 import { useMenu } from './MenuContext'
 import styles from './MainMenu.module.css'
 
-export type MenuNavItem = { label: string; href: string; openInNewTab: boolean }
-export type MenuFeaturedBoard = { name: string; href: string; image: string }
+export type MenuNavItem = { _key: string; label: string; href: string; openInNewTab: boolean }
+export type MenuFeaturedBoard = { _key: string; name: string; href: string; image: string }
 export type MenuSocial = { key: string; url: string }
 
 type IconComponent = React.ComponentType<{ className?: string }>
@@ -67,15 +67,18 @@ export default function MainMenu({
 
   return (
     <div className={`${styles.menu} ${open ? styles.menuOpen : ''}`} aria-hidden={!open}>
-      {/* Background board image — fades in on hover of a featured board */}
+      {/* Background board image — fades in on hover of a featured board.
+          Only mounted while the menu is open, so the (large) backdrops aren't
+          fetched on every page load — only once the overlay is actually shown. */}
       <div className={styles.bg}>
-        {featuredBoards.map((b, i) => (
-          <div
-            key={b.name}
-            className={styles.bgImage}
-            style={{ backgroundImage: `url(${b.image})`, opacity: hovered === i ? 1 : 0 }}
-          />
-        ))}
+        {open &&
+          featuredBoards.map((b, i) => (
+            <div
+              key={b._key}
+              className={styles.bgImage}
+              style={{ backgroundImage: `url("${b.image}")`, opacity: hovered === i ? 1 : 0 }}
+            />
+          ))}
         <div className={styles.bgGradient} />
       </div>
 
@@ -101,7 +104,7 @@ export default function MainMenu({
           <nav className={styles.boards} aria-label="Planches en vedette">
             {featuredBoards.map((b, i) => (
               <Link
-                key={b.name}
+                key={b._key}
                 href={b.href}
                 className={styles.boardLink}
                 data-dim={hovered !== null && hovered !== i ? '' : undefined}
@@ -120,7 +123,7 @@ export default function MainMenu({
           <nav className={styles.nav} aria-label="Navigation principale">
             {navItems.map((item) => (
               <Link
-                key={item.label}
+                key={item._key}
                 href={item.href}
                 className={styles.navLink}
                 onClick={close}
@@ -136,7 +139,7 @@ export default function MainMenu({
           <div className={styles.legal}>
             {legalItems.map((item) => (
               <Link
-                key={item.label}
+                key={item._key}
                 href={item.href}
                 onClick={close}
                 {...(item.openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}

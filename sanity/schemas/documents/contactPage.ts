@@ -1,5 +1,5 @@
 import { defineField, defineType } from 'sanity'
-import { isUniqueSlugPerLanguage } from '../../lib/isUniqueSlugPerLanguage'
+import { pageSlugField } from '../../lib/pageSlug'
 import { seoFields } from '../../lib/seoFields'
 
 export const contactPage = defineType({
@@ -8,13 +8,7 @@ export const contactPage = defineType({
   type: 'document',
   fields: [
     defineField({ name: 'title', title: 'Title', type: 'string', validation: (r) => r.required() }),
-    defineField({
-      name: 'slug',
-      title: 'Slug',
-      type: 'slug',
-      options: { source: 'title', isUnique: isUniqueSlugPerLanguage },
-      validation: (r) => r.required(),
-    }),
+    pageSlugField(),
     defineField({ name: 'intro', title: 'Intro', type: 'text', rows: 3 }),
     defineField({ name: 'email', title: 'Email', type: 'string' }),
     defineField({ name: 'phone', title: 'Phone', type: 'string' }),
