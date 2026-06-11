@@ -1,5 +1,5 @@
 import { defineField, defineType } from 'sanity'
-import { isUniqueSlugPerLanguage } from '../../lib/isUniqueSlugPerLanguage'
+import { pageSlugField } from '../../lib/pageSlug'
 
 export const page = defineType({
   name: 'page',
@@ -19,14 +19,7 @@ export const page = defineType({
       group: 'basic',
     }),
 
-    defineField({
-      name: 'slug',
-      title: 'Slug',
-      type: 'slug',
-      options: { source: 'title', isUnique: isUniqueSlugPerLanguage },
-      validation: (r) => r.required(),
-      group: 'basic',
-    }),
+    pageSlugField('basic'),
     defineField({
       name: 'heroImage',
       title: 'Hero Image',

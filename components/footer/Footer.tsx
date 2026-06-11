@@ -16,7 +16,7 @@ import styles from './Footer.module.css'
 
 type Props = { locale: string }
 
-type NavItem = { label: string; href: string | null; openInNewTab: boolean | null }
+type NavItem = { _key: string; label: string; href: string | null; openInNewTab: boolean | null }
 
 const SITEMAP_FALLBACK = [
   { label: 'Home', href: '/' },
@@ -102,7 +102,7 @@ export default async function Footer({ locale }: Props) {
               ? navItems.map((item) => {
                 const href = item.href ?? '#'
                 return (
-                  <li key={href}>
+                  <li key={item._key}>
                     <Link
                       href={href}
                       className={styles.footer__nav_link}
