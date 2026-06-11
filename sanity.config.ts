@@ -16,10 +16,44 @@ const SUPPORTED_LANGUAGES = [
   { id: 'es', title: 'Español' },
 ]
 
-export const TRANSLATABLE_TYPES = ['page', 'board', 'accessory', 'navigation']
+export const TRANSLATABLE_TYPES = [
+  'page',
+  'board',
+  'accessory',
+  'navigation',
+  'homePage',
+  'contactPage',
+  'faqPage',
+  'whereToBuyPage',
+  'ourStoryPage',
+]
 
 // Singletons: exactly one document, edited from a fixed structure pane.
 export const SINGLETON_TYPES = ['seoSettings', 'contactSettings', 'footerSettings', 'authPage', 'boardsPageSettings', 'accessoriesPageSettings']
+
+// A per-language list pane for an i18n document type (one sub-list per locale).
+const langPanes = (S: StructureBuilder, type: string, title: string) =>
+  S.listItem()
+    .title(title)
+    .icon(TranslateIcon)
+    .child(
+      S.list()
+        .title(title)
+        .items(
+          SUPPORTED_LANGUAGES.map((lang) =>
+            S.listItem()
+              .title(lang.title)
+              .id(`${type}-${lang.id}`)
+              .icon(TranslateIcon)
+              .child(
+                S.documentTypeList(type)
+                  .title(`${title} — ${lang.title}`)
+                  .filter('_type == $type && language == $lang')
+                  .params({ type, lang: lang.id })
+              )
+          )
+        )
+    )
 
 const structure = (S: StructureBuilder) =>
   S.list()
@@ -133,10 +167,67 @@ const structure = (S: StructureBuilder) =>
                   .id(`pages-${lang.id}`)
                   .icon(TranslateIcon)
                   .child(
-                    S.documentTypeList('page')
+                    S.list()
                       .title(`Pages — ${lang.title}`)
-                      .filter('_type == "page" && language == $lang')
-                      .params({ lang: lang.id })
+                      .items([
+                        // Singletons (bespoke types) — one fixed doc per locale.
+                        S.listItem()
+                          .title('Home')
+                          .id(`homePage-${lang.id}`)
+                          .child(
+                            S.document()
+                              .schemaType('homePage')
+                              .documentId(`tk-homePage-${lang.id}`)
+                              .title(`Home — ${lang.title}`)
+                          ),
+                        S.listItem()
+                          .title('Our Story')
+                          .id(`ourStoryPage-${lang.id}`)
+                          .child(
+                            S.document()
+                              .schemaType('ourStoryPage')
+                              .documentId(`tk-ourStoryPage-${lang.id}`)
+                              .title(`Our Story — ${lang.title}`)
+                          ),
+                        S.listItem()
+                          .title('Contact')
+                          .id(`contactPage-${lang.id}`)
+                          .child(
+                            S.document()
+                              .schemaType('contactPage')
+                              .documentId(`tk-contactPage-${lang.id}`)
+                              .title(`Contact — ${lang.title}`)
+                          ),
+                        S.listItem()
+                          .title('FAQ')
+                          .id(`faqPage-${lang.id}`)
+                          .child(
+                            S.document()
+                              .schemaType('faqPage')
+                              .documentId(`tk-faqPage-${lang.id}`)
+                              .title(`FAQ — ${lang.title}`)
+                          ),
+                        S.listItem()
+                          .title('Where to buy')
+                          .id(`whereToBuyPage-${lang.id}`)
+                          .child(
+                            S.document()
+                              .schemaType('whereToBuyPage')
+                              .documentId(`tk-whereToBuyPage-${lang.id}`)
+                              .title(`Where to buy — ${lang.title}`)
+                          ),
+                        S.divider(),
+                        // Generic pages — many docs of type `page`.
+                        S.listItem()
+                          .title('Other pages')
+                          .id(`page-${lang.id}`)
+                          .child(
+                            S.documentTypeList('page')
+                              .title(`Pages — ${lang.title}`)
+                              .filter('_type == "page" && language == $lang')
+                              .params({ lang: lang.id })
+                          ),
+                      ])
                   )
               )
             )
@@ -180,7 +271,7 @@ export default defineConfig({
     visionTool(),
     media(),
     linkField({
-      linkableSchemaTypes: ['page'],
+      linkableSchemaTypes: ['page', 'ourStoryPage', 'contactPage', 'faqPage', 'whereToBuyPage'],
     }),
     documentInternationalization({
       supportedLanguages: SUPPORTED_LANGUAGES,

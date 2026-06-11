@@ -177,9 +177,85 @@ export const sitemapBoardsQuery = defineQuery(`
 `)
 
 export const sitemapHomePagesQuery = defineQuery(`
-  *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {
+  *[_type == "homePage" && !(_id in path("drafts.**"))] {
     language,
     _updatedAt
+  }
+`)
+
+// Home page lives at "/" — fetched by locale only (no slug).
+export const homePageByLocaleQuery = defineQuery(`
+  *[_type == "homePage" && language == $locale][0] {
+    _id,
+    title,
+    heroImage,
+    heroTitle,
+    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),
+    seoTitle,
+    seoDescription,
+    ogImage,
+    sections[] {
+      _type,
+      _key,
+      title,
+      showFilters,
+      items,
+      eyebrow,
+      label,
+      body,
+      image,
+      gallery,
+      mediaType,
+      size,
+      aspectRatio,
+      media,
+      videoUrl,
+      videoPoster,
+      videoWidth,
+      videoHeight,
+      controls,
+      imagePosition,
+      layout,
+      theme,
+      quote,
+      authorName,
+      authorRole,
+      "cta": cta {
+        "text": text,
+        "openInNewTab": openInNewTab,
+        "href": select(
+          type == "internal" => "/" + internalLink->slug.current,
+          type == "external" => url,
+          type == "email" => "mailto:" + email,
+          type == "phone" => "tel:" + phone
+        )
+      },
+      "ctas": ctas[] {
+        _key,
+        "text": text,
+        "openInNewTab": openInNewTab,
+        "href": select(
+          type == "internal" => "/" + internalLink->slug.current,
+          type == "external" => url,
+          type == "email" => "mailto:" + email,
+          type == "phone" => "tel:" + phone
+        )
+      }
+    }
+  }
+`)
+
+// Polymorphic: resolves any CMS page type by slug+locale. Returns just the
+// fields the [slug] route needs (title for the placeholder + _type to dispatch
+// to a real template later).
+export const cmsPageBySlugQuery = defineQuery(`
+  *[
+    _type in ["page", "ourStoryPage", "contactPage", "faqPage", "whereToBuyPage"]
+    && slug.current == $slug
+    && language == $locale
+  ][0] {
+    _type,
+    title
   }
 `)
 

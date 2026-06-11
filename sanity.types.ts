@@ -418,13 +418,108 @@ export type NavigationReference = {
   [internalGroqTypeReferenceTo]?: "navigation";
 };
 
+export type HomePageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "homePage";
+};
+
+export type ContactPageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "contactPage";
+};
+
+export type FaqPageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "faqPage";
+};
+
+export type WhereToBuyPageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "whereToBuyPage";
+};
+
+export type OurStoryPageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "ourStoryPage";
+};
+
 export type InternationalizedArrayReferenceValue = {
   _type: "internationalizedArrayReferenceValue";
   value?:
     | PageReference
     | BoardReference
     | AccessoryReference
-    | NavigationReference;
+    | NavigationReference
+    | HomePageReference
+    | ContactPageReference
+    | FaqPageReference
+    | WhereToBuyPageReference
+    | OurStoryPageReference;
+  language: string;
+};
+
+export type HomePage = {
+  _id: string;
+  _type: "homePage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  heroImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  heroTitle?: string;
+  heroSubtitle?: string;
+  sections?: Array<
+    | ({
+        _key: string;
+      } & SectionAboutPreview)
+    | ({
+        _key: string;
+      } & SectionBoards)
+    | ({
+        _key: string;
+      } & SectionMarquee)
+    | ({
+        _key: string;
+      } & SectionTextImage)
+    | ({
+        _key: string;
+      } & SectionTextGallery)
+    | ({
+        _key: string;
+      } & SectionFullMedia)
+    | ({
+        _key: string;
+      } & SectionBigQuote)
+    | ({
+        _key: string;
+      } & SectionMediaLine)
+  >;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
   language: string;
 };
 
@@ -435,10 +530,15 @@ export type Navigation = {
   _updatedAt: string;
   _rev: string;
   title: string;
-  location: "header" | "footer";
+  location: "header" | "featured" | "legal" | "footer";
   items?: Array<{
     label: string;
-    internalLink?: PageReference;
+    internalLink?:
+      | PageReference
+      | OurStoryPageReference
+      | ContactPageReference
+      | FaqPageReference
+      | WhereToBuyPageReference;
     externalUrl?: string;
     openInNewTab?: boolean;
     _type: "navItem";
@@ -677,7 +777,12 @@ export type Link = {
   _type: "link";
   text?: string;
   type: string;
-  internalLink?: PageReference;
+  internalLink?:
+    | PageReference
+    | OurStoryPageReference
+    | ContactPageReference
+    | FaqPageReference
+    | WhereToBuyPageReference;
   url?: string;
   email?: string;
   phone?: string;
@@ -685,6 +790,93 @@ export type Link = {
   blank?: boolean;
   parameters?: string;
   anchor?: string;
+};
+
+export type WhereToBuyPage = {
+  _id: string;
+  _type: "whereToBuyPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  slug: Slug;
+  intro?: string;
+  stores?: Array<{
+    name: string;
+    address?: string;
+    country?: string;
+    url?: string;
+    _type: "store";
+    _key: string;
+  }>;
+  language: string;
+};
+
+export type FaqPage = {
+  _id: string;
+  _type: "faqPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  slug: Slug;
+  intro?: string;
+  items?: Array<{
+    question: string;
+    answer: string;
+    category?: string;
+    _type: "faqItem";
+    _key: string;
+  }>;
+  language: string;
+};
+
+export type ContactPage = {
+  _id: string;
+  _type: "contactPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  slug: Slug;
+  intro?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  hours?: string;
+  mapUrl?: string;
+  language: string;
+};
+
+export type OurStoryPage = {
+  _id: string;
+  _type: "ourStoryPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  slug: Slug;
+  intro?: string;
+  blocks?: Array<{
+    heading?: string;
+    body?: string;
+    image?: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    _type: "storyBlock";
+    _key: string;
+  }>;
+  keyFigures?: Array<{
+    value: string;
+    label: string;
+    _type: "figure";
+    _key: string;
+  }>;
+  language: string;
 };
 
 export type Page = {
@@ -880,7 +1072,13 @@ export type AllSanitySchemaTypes =
   | BoardReference
   | AccessoryReference
   | NavigationReference
+  | HomePageReference
+  | ContactPageReference
+  | FaqPageReference
+  | WhereToBuyPageReference
+  | OurStoryPageReference
   | InternationalizedArrayReferenceValue
+  | HomePage
   | Navigation
   | AccessoryCategoryReference
   | Accessory
@@ -889,6 +1087,10 @@ export type AllSanitySchemaTypes =
   | Board
   | Series
   | Link
+  | WhereToBuyPage
+  | FaqPage
+  | ContactPage
+  | OurStoryPage
   | Page
   | MediaTag
   | SanityImagePaletteSwatch
@@ -1496,11 +1698,415 @@ export type SitemapBoardsQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: sitemapHomePagesQuery
-// Query: *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {    language,    _updatedAt  }
+// Query: *[_type == "homePage" && !(_id in path("drafts.**"))] {    language,    _updatedAt  }
 export type SitemapHomePagesQueryResult = Array<{
   language: string;
   _updatedAt: string;
 }>;
+
+// Source: sanity/lib/queries.ts
+// Variable: homePageByLocaleQuery
+// Query: *[_type == "homePage" && language == $locale][0] {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      }    }  }
+export type HomePageByLocaleQueryResult = {
+  _id: string;
+  title: string;
+  heroImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  heroTitle: string | null;
+  heroSubtitle: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  ogImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  sections: Array<
+    | {
+        _type: "sectionAboutPreview";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?: "normal";
+          listItem?: never;
+          markDefs?: null;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: {
+          text: string | null;
+          openInNewTab: null;
+          href: string | null;
+        } | null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionBigQuote";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        quote: string;
+        authorName: string | null;
+        authorRole: string | null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionBoards";
+        _key: string;
+        title: string | null;
+        showFilters: boolean | null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionFullMedia";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: "image" | "video" | null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: string | null;
+        videoPoster: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        videoWidth: number | null;
+        videoHeight: number | null;
+        controls: boolean | null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionMarquee";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: Array<{
+          text?: string;
+          accent?: boolean;
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionMediaLine";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
+        media: Array<{
+          mediaType?: "image" | "video";
+          image?: MediaItemImage;
+          videoUrl?: string;
+          videoPoster?: VideoPoster;
+          controls?: boolean;
+          _type: "mediaItem";
+          _key: string;
+        }> | null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionTextGallery";
+        _key: string;
+        title: string;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: string | null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: null;
+        gallery: Array<{
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+          _key: string;
+        }> | null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: "left" | "right" | null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+      }
+    | {
+        _type: "sectionTextImage";
+        _key: string;
+        title: string;
+        showFilters: null;
+        items: null;
+        eyebrow: null;
+        label: string | null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        };
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: "left" | "right" | null;
+        layout: "contained" | "full" | null;
+        theme: "dark" | "light" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: Array<{
+          _key: string;
+          text: string | null;
+          openInNewTab: null;
+          href: string | null;
+        }> | null;
+      }
+  > | null;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: cmsPageBySlugQuery
+// Query: *[    _type in ["page", "ourStoryPage", "contactPage", "faqPage", "whereToBuyPage"]    && slug.current == $slug    && language == $locale  ][0] {    _type,    title  }
+export type CmsPageBySlugQueryResult =
+  | {
+      _type: "contactPage";
+      title: string;
+    }
+  | {
+      _type: "faqPage";
+      title: string;
+    }
+  | {
+      _type: "ourStoryPage";
+      title: string;
+    }
+  | {
+      _type: "page";
+      title: string;
+    }
+  | {
+      _type: "whereToBuyPage";
+      title: string;
+    }
+  | null;
 
 // Source: sanity/lib/queries.ts
 // Variable: navigationQuery
@@ -1928,7 +2534,9 @@ declare module "@sanity/client" {
     '\n  *[_type == "authPage"][0]{\n    "tagline": coalesce(tagline[language == $locale][0].value, tagline[language == "en"][0].value, tagline[0].value),\n    "paragraph": coalesce(paragraph[language == $locale][0].value, paragraph[language == "en"][0].value, paragraph[0].value),\n    "seoTitle": coalesce(seoTitle[language == $locale][0].value, seoTitle[language == "en"][0].value, seoTitle[0].value),\n    "seoDescription": coalesce(seoDescription[language == $locale][0].value, seoDescription[language == "en"][0].value, seoDescription[0].value),\n    backgroundImage,\n    ogImage\n  }\n': AuthPageQueryResult;
     '\n  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {\n    "seoTitle": coalesce(\n      seoTitle[language == $locale][0].value,\n      seoTitle[language == "en"][0].value,\n      seoTitle[0].value\n    ),\n    "seoDescription": coalesce(\n      seoDescription[language == $locale][0].value,\n      seoDescription[language == "en"][0].value,\n      seoDescription[0].value\n    ),\n    ogImage\n  }\n': BoardsPageSettingsQueryResult;
     '\n  *[_type == "board" && defined(slug.current) && !(_id in path("drafts.**"))] | order(_updatedAt desc) {\n    "slug": slug.current,\n    language,\n    _updatedAt,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': SitemapBoardsQueryResult;
-    '\n  *[_type == "page" && slug.current == "home" && !(_id in path("drafts.**"))] {\n    language,\n    _updatedAt\n  }\n': SitemapHomePagesQueryResult;
+    '\n  *[_type == "homePage" && !(_id in path("drafts.**"))] {\n    language,\n    _updatedAt\n  }\n': SitemapHomePagesQueryResult;
+    '\n  *[_type == "homePage" && language == $locale][0] {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    }\n  }\n': HomePageByLocaleQueryResult;
+    '\n  *[\n    _type in ["page", "ourStoryPage", "contactPage", "faqPage", "whereToBuyPage"]\n    && slug.current == $slug\n    && language == $locale\n  ][0] {\n    _type,\n    title\n  }\n': CmsPageBySlugQueryResult;
     '\n  *[_type == "navigation" && location == $location && language == $locale][0] {\n    items[] {\n      label,\n      openInNewTab,\n      "slug": internalLink->slug.current,\n      "externalUrl": externalUrl,\n    },\n    featured[] {\n      "name": board->name,\n      "slug": board->slug.current,\n      image,\n    }\n  }\n': NavigationQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) [0..1] {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug\n    }\n  }\n': FooterSeriesQueryResult;
     '\n  coalesce(\n    *[_type == "page" && slug.current == $slug && language == $locale][0],\n    *[_type == "page" && slug.current == $slug && language == "fr"][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    slug,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    }\n  }\n': PageBySlugQueryResult;

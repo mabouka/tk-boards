@@ -56,7 +56,13 @@ export const navigation = defineType({
               name: 'internalLink',
               title: 'Internal page',
               type: 'reference',
-              to: [{ type: 'page' }],
+              to: [
+                { type: 'page' },
+                { type: 'ourStoryPage' },
+                { type: 'contactPage' },
+                { type: 'faqPage' },
+                { type: 'whereToBuyPage' },
+              ],
               description: 'Link to a page — slug updates automatically. Only pages in this menu’s language are shown.',
               options: {
                 // Only offer pages in the same language as this menu document.
