@@ -2,8 +2,9 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  backdrop-filter: brightness(50%) blur(35px);
-  -webkit-backdrop-filter: brightness(50%) blur(35px);
+  /* swc-css-ignore-start */
+  backdrop-filter: brightness(50%) blur(35px); /* postcss-ignore-line */
+  /* swc-css-ignore-ends */
   color: var(--color-white);
   opacity: 0;
   visibility: hidden;
