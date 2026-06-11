@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { fmtDate } from '@/lib/admin/format'
 import { toast } from 'sonner'
 import { Check, Copy, Search } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
@@ -43,8 +44,6 @@ const STATUS: Record<string, { label: string; variant: BadgeVariant }> = {
   stolen: { label: 'Volée', variant: 'destructive' },
   transferred: { label: 'Transférée', variant: 'outline' },
 }
-
-const fmtDate = (d: Date) => new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d)
 
 // Public TK ID URL the NFC tag points to. NEXT_PUBLIC_SITE_URL is inlined at build;
 // fall back to the current origin (admin + site share the domain).

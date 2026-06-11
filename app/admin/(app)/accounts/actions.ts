@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { db } from '@/db'
 import { users, addresses } from '@/db/schema'
@@ -127,7 +127,10 @@ export async function updateAddress(
   const v = addressValues(input)
   if (!addressId || !v.line1) return { ok: false, error: 'Adresse (ligne 1) requise.' }
   if (v.isDefault) await db.update(addresses).set({ isDefault: false }).where(eq(addresses.userId, userId))
-  await db.update(addresses).set(v).where(eq(addresses.id, addressId))
+  await db
+    .update(addresses)
+    .set(v)
+    .where(and(eq(addresses.id, addressId), eq(addresses.userId, userId)))
   revalidatePath(`/admin/accounts/${userId}`)
   return { ok: true }
 }
@@ -135,7 +138,7 @@ export async function updateAddress(
 export async function deleteAddress(addressId: string, userId: string): Promise<Result> {
   await requireAdmin()
   if (!addressId) return { ok: false, error: 'Adresse introuvable.' }
-  await db.delete(addresses).where(eq(addresses.id, addressId))
+  await db.delete(addresses).where(and(eq(addresses.id, addressId), eq(addresses.userId, userId)))
   revalidatePath(`/admin/accounts/${userId}`)
   return { ok: true }
 }
@@ -143,8 +146,11 @@ export async function deleteAddress(addressId: string, userId: string): Promise<
 export async function setDefaultAddress(addressId: string, userId: string): Promise<Result> {
   await requireAdmin()
   if (!addressId || !userId) return { ok: false, error: 'Requête invalide.' }
-  await db.update(addresses).set({ isDefault: false }).where(eq(addresses.userId, userId))
-  await db.update(addresses).set({ isDefault: true }).where(eq(addresses.id, addressId))
+  // Single atomic statement → exactly one default for this user, no race window.
+  await db
+    .update(addresses)
+    .set({ isDefault: sql`${addresses.id} = ${addressId}` })
+    .where(eq(addresses.userId, userId))
   revalidatePath(`/admin/accounts/${userId}`)
   return { ok: true }
 }

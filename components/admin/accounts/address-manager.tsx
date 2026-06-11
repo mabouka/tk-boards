@@ -79,6 +79,7 @@ export function AddressManager({ userId, addresses }: { userId: string; addresse
     })
   }
   function remove(id: string) {
+    if (!window.confirm('Supprimer définitivement cette adresse ?')) return
     start(async () => {
       const res = await deleteAddress(id, userId)
       if (res.ok) toast.success('Adresse supprimée.')

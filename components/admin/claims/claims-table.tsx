@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { fmtDate } from '@/lib/admin/format'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { toast } from 'sonner'
@@ -41,7 +42,6 @@ const STATUS: Record<ClaimStatus, { label: string; variant: 'default' | 'seconda
 }
 const STATUS_KEYS = Object.keys(STATUS) as ClaimStatus[]
 
-const fmtDate = (d: Date) => new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d)
 const statusOf = (s: string) => STATUS[s as ClaimStatus] ?? { label: s, variant: 'default' as const }
 
 type StatusFilter = 'all' | ClaimStatus

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { fmtDate } from '@/lib/admin/format'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { getAccount } from '@/lib/admin/accounts'
@@ -20,9 +21,6 @@ import {
 } from '@/components/admin/ui/table'
 import { AccountInfoForm } from '@/components/admin/accounts/account-info-form'
 import { AddressManager } from '@/components/admin/accounts/address-manager'
-
-const fmtDate = (d: Date | null) =>
-  d ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d) : '—'
 
 const UNIT_STATUS: Record<string, string> = {
   minted: 'À assigner',

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { fmtDate } from '@/lib/admin/format'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { MoreHorizontal, Search } from 'lucide-react'
@@ -32,9 +33,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/admin/ui/table'
-
-const fmtDate = (d: Date) =>
-  new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d)
 
 const initials = (name: string, email: string) => {
   const base = name && name !== '—' ? name : email
