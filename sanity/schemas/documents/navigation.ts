@@ -58,16 +58,26 @@ export const navigation = defineType({
               type: 'reference',
               to: [
                 { type: 'page' },
+                { type: 'homePage' },
                 { type: 'ourStoryPage' },
                 { type: 'contactPage' },
                 { type: 'faqPage' },
                 { type: 'whereToBuyPage' },
+                // Product listings: Boards / Accessories index pages. Single
+                // language-independent docs — href resolved in GROQ to /boards
+                // and /accessories.
+                { type: 'boardsPageSettings' },
+                { type: 'accessoriesPageSettings' },
+                // User dashboard — href resolved in GROQ to /account.
+                { type: 'accountPageSettings' },
               ],
               description: 'Link to a page — slug updates automatically. Only pages in this menu’s language are shown.',
               options: {
-                // Only offer pages in the same language as this menu document.
+                // Pages: same language as the menu. Product-listing singletons
+                // are language-independent so they're always offered.
                 filter: ({ document }) => ({
-                  filter: 'language == $lang',
+                  filter:
+                    '_type in ["boardsPageSettings", "accessoriesPageSettings", "accountPageSettings"] || language == $lang',
                   params: { lang: (document as { language?: string }).language ?? null },
                 }),
               },
@@ -110,14 +120,26 @@ export const navigation = defineType({
               title: 'Board',
               type: 'reference',
               to: [{ type: 'board' }],
-              validation: (r) => r.required(),
+              // Only required on Featured-boards menus — otherwise this field is
+              // hidden and any leftover items shouldn't block publishing.
+              validation: (r) =>
+                r.custom((value, context) => {
+                  const doc = context.document as { location?: string } | undefined
+                  if (doc?.location !== 'featured') return true
+                  return value ? true : 'Required'
+                }),
             }),
             defineField({
               name: 'image',
               title: 'Background image',
               type: 'image',
               description: 'Shown as the menu background when this board is hovered.',
-              validation: (r) => r.required(),
+              validation: (r) =>
+                r.custom((value, context) => {
+                  const doc = context.document as { location?: string } | undefined
+                  if (doc?.location !== 'featured') return true
+                  return value ? true : 'Required'
+                }),
             }),
           ],
           preview: {

@@ -29,30 +29,37 @@ export const TRANSLATABLE_TYPES = [
 ]
 
 // Singletons: exactly one document, edited from a fixed structure pane.
-export const SINGLETON_TYPES = ['seoSettings', 'contactSettings', 'footerSettings', 'authPage', 'boardsPageSettings', 'accessoriesPageSettings']
+export const SINGLETON_TYPES = ['seoSettings', 'contactSettings', 'footerSettings', 'authPage', 'boardsPageSettings', 'accessoriesPageSettings', 'accountPageSettings']
 
-// A per-language list pane for an i18n document type (one sub-list per locale).
-const langPanes = (S: StructureBuilder, type: string, title: string) =>
+// Bespoke i18n singletons that live under Pages → <language>, in display order.
+const BESPOKE_PAGES: ReadonlyArray<readonly [type: string, title: string]> = [
+  ['homePage', 'Home'],
+  ['ourStoryPage', 'Our Story'],
+  ['contactPage', 'Contact'],
+  ['faqPage', 'FAQ'],
+  ['whereToBuyPage', 'Where to buy'],
+]
+
+// One bespoke i18n singleton opened directly as its fixed per-locale document.
+// `initialValueTemplate(`${type}-${lang}`)` is the document-internationalization
+// plugin's static template, which stamps the required (hidden) `language` field —
+// so a doc created from this pane (deleted doc / fresh dataset) is never left with
+// `language: null`, which would make it invisible to every `language == $locale` query.
+const langSingletonItem = (
+  S: StructureBuilder,
+  lang: (typeof SUPPORTED_LANGUAGES)[number],
+  type: string,
+  title: string
+) =>
   S.listItem()
     .title(title)
-    .icon(TranslateIcon)
+    .id(`${type}-${lang.id}`)
     .child(
-      S.list()
-        .title(title)
-        .items(
-          SUPPORTED_LANGUAGES.map((lang) =>
-            S.listItem()
-              .title(lang.title)
-              .id(`${type}-${lang.id}`)
-              .icon(TranslateIcon)
-              .child(
-                S.documentTypeList(type)
-                  .title(`${title} — ${lang.title}`)
-                  .filter('_type == $type && language == $lang')
-                  .params({ type, lang: lang.id })
-              )
-          )
-        )
+      S.document()
+        .schemaType(type)
+        .documentId(`tk-${type}-${lang.id}`)
+        .title(`${title} — ${lang.title}`)
+        .initialValueTemplate(`${type}-${lang.id}`)
     )
 
 const structure = (S: StructureBuilder) =>
@@ -170,52 +177,10 @@ const structure = (S: StructureBuilder) =>
                     S.list()
                       .title(`Pages — ${lang.title}`)
                       .items([
-                        // Singletons (bespoke types) — one fixed doc per locale.
-                        S.listItem()
-                          .title('Home')
-                          .id(`homePage-${lang.id}`)
-                          .child(
-                            S.document()
-                              .schemaType('homePage')
-                              .documentId(`tk-homePage-${lang.id}`)
-                              .title(`Home — ${lang.title}`)
-                          ),
-                        S.listItem()
-                          .title('Our Story')
-                          .id(`ourStoryPage-${lang.id}`)
-                          .child(
-                            S.document()
-                              .schemaType('ourStoryPage')
-                              .documentId(`tk-ourStoryPage-${lang.id}`)
-                              .title(`Our Story — ${lang.title}`)
-                          ),
-                        S.listItem()
-                          .title('Contact')
-                          .id(`contactPage-${lang.id}`)
-                          .child(
-                            S.document()
-                              .schemaType('contactPage')
-                              .documentId(`tk-contactPage-${lang.id}`)
-                              .title(`Contact — ${lang.title}`)
-                          ),
-                        S.listItem()
-                          .title('FAQ')
-                          .id(`faqPage-${lang.id}`)
-                          .child(
-                            S.document()
-                              .schemaType('faqPage')
-                              .documentId(`tk-faqPage-${lang.id}`)
-                              .title(`FAQ — ${lang.title}`)
-                          ),
-                        S.listItem()
-                          .title('Where to buy')
-                          .id(`whereToBuyPage-${lang.id}`)
-                          .child(
-                            S.document()
-                              .schemaType('whereToBuyPage')
-                              .documentId(`tk-whereToBuyPage-${lang.id}`)
-                              .title(`Where to buy — ${lang.title}`)
-                          ),
+                        // Bespoke i18n singletons — one fixed doc per locale.
+                        ...BESPOKE_PAGES.map(([type, title]) =>
+                          langSingletonItem(S, lang, type, title)
+                        ),
                         S.divider(),
                         // Generic pages — many docs of type `page`.
                         S.listItem()
@@ -271,7 +236,17 @@ export default defineConfig({
     visionTool(),
     media(),
     linkField({
-      linkableSchemaTypes: ['page', 'ourStoryPage', 'contactPage', 'faqPage', 'whereToBuyPage'],
+      linkableSchemaTypes: [
+        'page',
+        'homePage',
+        'ourStoryPage',
+        'contactPage',
+        'faqPage',
+        'whereToBuyPage',
+        'boardsPageSettings',
+        'accessoriesPageSettings',
+        'accountPageSettings',
+      ],
     }),
     documentInternationalization({
       supportedLanguages: SUPPORTED_LANGUAGES,

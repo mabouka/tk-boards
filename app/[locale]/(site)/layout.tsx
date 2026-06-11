@@ -15,20 +15,21 @@ type Props = {
 
 type RawNavItem = {
   label: string
-  slug: string | null
-  externalUrl: string | null
+  href: string | null
   openInNewTab: boolean | null
 }
 
 type RawFeatured = { name: string | null; slug: string | null; image: SanityImageSource | null }
 
 // Map a navigation document's `items` to the shape <MainMenu /> expects.
+// The query already computes the full href (handles homePage → "/", other
+// internal pages → "/<slug>", and external URLs), so we just relay it.
 function toNavItems(items: unknown) {
   return ((items ?? []) as RawNavItem[])
-    .filter((i) => i.label && (i.slug || i.externalUrl))
+    .filter((i) => i.label && i.href)
     .map((i) => ({
       label: i.label,
-      href: i.slug ? `/${i.slug}` : (i.externalUrl ?? '#'),
+      href: i.href as string,
       openInNewTab: Boolean(i.openInNewTab),
     }))
 }

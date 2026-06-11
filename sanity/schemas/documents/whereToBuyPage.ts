@@ -1,5 +1,6 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
 import { isUniqueSlugPerLanguage } from '../../lib/isUniqueSlugPerLanguage'
+import { seoFields } from '../../lib/seoFields'
 
 export const whereToBuyPage = defineType({
   name: 'whereToBuyPage',
@@ -33,6 +34,7 @@ export const whereToBuyPage = defineType({
         }),
       ],
     }),
+    ...seoFields,
     defineField({ name: 'language', type: 'string', readOnly: true, hidden: true, validation: (r) => r.required() }),
   ],
   preview: { select: { title: 'title', subtitle: 'slug.current' } },

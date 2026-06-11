@@ -16,7 +16,7 @@ import styles from './Footer.module.css'
 
 type Props = { locale: string }
 
-type NavItem = { label: string; slug: string | null; externalUrl: string | null; openInNewTab: boolean | null }
+type NavItem = { label: string; href: string | null; openInNewTab: boolean | null }
 
 const SITEMAP_FALLBACK = [
   { label: 'Home', href: '/' },
@@ -37,7 +37,7 @@ export default async function Footer({ locale }: Props) {
   // Keep only items that have a label and a destination (guards against
   // half-filled nav documents — e.g. labels not yet translated).
   const navItems: NavItem[] = (nav?.items ?? []).filter(
-    (item: NavItem) => item.label && (item.slug || item.externalUrl)
+    (item: NavItem) => item.label && item.href
   )
 
   const social = settings?.social ?? {}
@@ -100,7 +100,7 @@ export default async function Footer({ locale }: Props) {
           <ul>
             {navItems.length > 0
               ? navItems.map((item) => {
-                const href = item.slug ? `/${item.slug}` : (item.externalUrl ?? '#')
+                const href = item.href ?? '#'
                 return (
                   <li key={href}>
                     <Link

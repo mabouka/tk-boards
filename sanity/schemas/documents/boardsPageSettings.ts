@@ -33,6 +33,7 @@ export const boardsPageSettings = defineType({
     }),
   ],
   preview: {
-    prepare: () => ({ title: 'Boards Page Settings' }),
+    // Shown in the "Internal page" picker — keep it short and route-like.
+    prepare: () => ({ title: 'Boards', subtitle: '/boards (product listing)' }),
   },
 })

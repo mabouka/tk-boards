@@ -1,6 +1,7 @@
 import { accessory } from './documents/accessory'
 import { accessoryCategory } from './documents/accessoryCategory'
 import { accessoriesPageSettings } from './documents/accessoriesPageSettings'
+import { accountPageSettings } from './documents/accountPageSettings'
 import { authPage } from './documents/authPage'
 import { board } from './documents/board'
 import { boardsPageSettings } from './documents/boardsPageSettings'
@@ -28,6 +29,7 @@ export const schemaTypes = [
   accessory,
   accessoryCategory,
   accessoriesPageSettings,
+  accountPageSettings,
   authPage,
   board,
   boardsPageSettings,
