@@ -1,6 +1,7 @@
 import { desc, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { claims, registrations, units, variants, products, users } from '@/db/schema'
+import { fullName } from './format'
 
 export type ClaimRow = {
   id: string
@@ -54,7 +55,7 @@ export async function getClaims(type?: 'theft' | 'warranty'): Promise<ClaimRow[]
     photoCount: r.photoPaths?.length ?? 0,
     createdAt: r.createdAt,
     ownerId: r.ownerId,
-    ownerName: [r.firstName, r.lastName].filter(Boolean).join(' ') || r.name || '—',
+    ownerName: fullName(r.firstName, r.lastName, r.name),
     ownerEmail: r.email,
     productName: r.productName,
     sku: r.sku,

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { fmtDate } from '@/lib/admin/format'
 import { toast } from 'sonner'
 import { updateAccount } from '@/app/admin/(app)/accounts/actions'
 import { Button } from '@/components/admin/ui/button'
@@ -14,9 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/admin/ui/select'
-
-const fmtDate = (d: Date | null) =>
-  d ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d) : '—'
 
 type Account = {
   id: string

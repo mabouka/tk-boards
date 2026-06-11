@@ -1,6 +1,7 @@
 import { desc, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { users, registrations, units, variants, products, claims, addresses } from '@/db/schema'
+import { fullName } from './format'
 
 export type AccountRow = {
   id: string
@@ -15,7 +16,7 @@ export async function getAccounts(): Promise<AccountRow[]> {
   const rows = await db.select().from(users).orderBy(desc(users.createdAt))
   return rows.map((u) => ({
     id: u.id,
-    name: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '—',
+    name: fullName(u.firstName, u.lastName, u.name),
     email: u.email,
     role: u.role === 'admin' ? 'admin' : 'customer',
     method: u.passwordHash ? 'password' : 'google',
@@ -125,7 +126,7 @@ export async function getAccount(id: string): Promise<AccountDetail | null> {
 
   return {
     id: u.id,
-    name: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '—',
+    name: fullName(u.firstName, u.lastName, u.name),
     firstName: u.firstName,
     lastName: u.lastName,
     email: u.email,
