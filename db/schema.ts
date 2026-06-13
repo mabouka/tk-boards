@@ -109,7 +109,7 @@ export const products = pgTable(
     id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     sku: text('sku').notNull(), // parent SKU, e.g. TK-RKT — links to the Sanity page
     name: text('name').notNull(), // internal admin name (marketing lives in Sanity)
-    kind: text('kind'), // 'board' | 'accessory' — admin filter only
+    kind: text('kind').notNull(), // 'board' | 'accessory' — admin filter only
     active: boolean('active').notNull().default(true),
     createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date' })
