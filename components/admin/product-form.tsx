@@ -95,6 +95,15 @@ export function ProductForm({
   const [name, setName] = useState(initial?.name ?? '')
   const [sku, setSku] = useState(initial?.sku ?? '')
   const [kind, setKind] = useState<'board' | 'accessory' | 'none'>(initial?.kind ?? 'none')
+  // Required fields flagged red after a failed publish/save attempt; cleared on edit.
+  const [errors, setErrors] = useState<Set<string>>(new Set())
+  const clearError = (field: string) =>
+    setErrors((prev) => {
+      if (!prev.has(field)) return prev
+      const next = new Set(prev)
+      next.delete(field)
+      return next
+    })
   const [basePrice, setBasePrice] = useState(firstVar?.priceEur ?? '')
   const [discount, setDiscount] = useState(firstVar?.salePriceEur ?? '')
   const [options, setOptions] = useState<EditorOption[]>(initOptions)
@@ -209,16 +218,18 @@ export function ProductForm({
   }
 
   function submit(active: boolean) {
-    if (!name.trim() || !skuUpper) {
-      toast.error('Nom et SKU sont requis.')
-      return
-    }
-    if (kind === 'none') {
-      toast.error('Type requis.')
+    const invalid = new Set<string>()
+    if (!name.trim()) invalid.add('name')
+    if (!skuUpper) invalid.add('sku')
+    if (kind === 'none') invalid.add('kind')
+    if (!basePrice.trim() || Number.isNaN(Number(basePrice.replace(',', '.')))) invalid.add('price')
+    setErrors(invalid)
+    if (invalid.size > 0) {
+      toast.error('Des champs requis sont manquants ou invalides.')
       return
     }
     startTransition(async () => {
-      const res = await saveProduct(buildInput(active, kind))
+      const res = await saveProduct(buildInput(active, kind as 'board' | 'accessory'))
       if (res.ok) {
         toast.success(active ? 'Produit publié.' : 'Brouillon enregistré.')
         router.push('/admin/products')
@@ -286,14 +297,27 @@ export function ProductForm({
             <CardContent className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">Nom</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Rocket" />
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    clearError('name')
+                  }}
+                  aria-invalid={errors.has('name')}
+                  placeholder="Rocket"
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="sku">SKU parent</Label>
                 <Input
                   id="sku"
                   value={sku}
-                  onChange={(e) => setSku(e.target.value)}
+                  onChange={(e) => {
+                    setSku(e.target.value)
+                    clearError('sku')
+                  }}
+                  aria-invalid={errors.has('sku')}
                   placeholder="TK-RKT"
                   className="font-mono"
                 />
@@ -601,7 +625,17 @@ export function ProductForm({
             <CardContent className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="price">Prix de base (€)</Label>
-                <Input id="price" value={basePrice} onChange={(e) => setBasePrice(e.target.value)} placeholder="1000" inputMode="decimal" />
+                <Input
+                  id="price"
+                  value={basePrice}
+                  onChange={(e) => {
+                    setBasePrice(e.target.value)
+                    clearError('price')
+                  }}
+                  aria-invalid={errors.has('price')}
+                  placeholder="1000"
+                  inputMode="decimal"
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="discount">Prix promo (€)</Label>
@@ -616,8 +650,14 @@ export function ProductForm({
               <CardDescription>Filtre admin. Les catégories boutique vivent dans Sanity.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Select value={kind} onValueChange={(v) => setKind(v as 'board' | 'accessory')}>
-                <SelectTrigger>
+              <Select
+                value={kind}
+                onValueChange={(v) => {
+                  setKind(v as 'board' | 'accessory')
+                  clearError('kind')
+                }}
+              >
+                <SelectTrigger aria-invalid={errors.has('kind')}>
                   <SelectValue placeholder="Choisir un type" />
                 </SelectTrigger>
                 <SelectContent>
