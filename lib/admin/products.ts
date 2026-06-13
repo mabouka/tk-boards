@@ -9,7 +9,7 @@ import {
   productOptions,
   productLinks,
 } from '@/db/schema'
-import type { ProductInput, LinkType } from './schemas'
+import type { ProductEditInput, LinkType } from './schemas'
 import { part, primary } from '@/lib/i18n-text'
 
 export type ProductListRow = {
@@ -54,7 +54,7 @@ export async function getProducts(): Promise<ProductListRow[]> {
 }
 
 /** Full product tree shaped for the editor form. */
-export async function getProduct(id: string): Promise<ProductInput | null> {
+export async function getProduct(id: string): Promise<ProductEditInput | null> {
   const [p] = await db.select().from(products).where(eq(products.id, id)).limit(1)
   if (!p) return null
 

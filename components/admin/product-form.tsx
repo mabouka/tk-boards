@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/admin/ui/dialog'
-import type { ProductInput, LinkType } from '@/lib/admin/schemas'
+import type { ProductInput, ProductEditInput, LinkType } from '@/lib/admin/schemas'
 import { slug, comboKey, buildGrid, dedupeOptions } from '@/lib/admin/variants'
 import { buildVariants, type Override } from '@/lib/admin/variant-build'
 import { Button } from '@/components/admin/ui/button'
@@ -56,7 +56,7 @@ export function ProductForm({
   initial,
   allProducts = [],
 }: {
-  initial?: ProductInput
+  initial?: ProductEditInput
   allProducts?: ProductRef[]
 }) {
   const router = useRouter()
@@ -182,7 +182,7 @@ export function ProductForm({
   const removeLink = (i: number) => setLinks((l) => l.filter((_, idx) => idx !== i))
 
   // ── submit ──
-  function buildInput(active: boolean): ProductInput {
+  function buildInput(active: boolean, productKind: 'board' | 'accessory'): ProductInput {
     const variants = buildVariants({
       sku: skuUpper,
       options: validOptions,
@@ -195,7 +195,7 @@ export function ProductForm({
       id: initial?.id ?? null,
       name,
       sku: skuUpper,
-      kind: kind === 'none' ? null : kind,
+      kind: productKind,
       active,
       options: validOptions,
       variants,
@@ -213,8 +213,12 @@ export function ProductForm({
       toast.error('Nom et SKU sont requis.')
       return
     }
+    if (kind === 'none') {
+      toast.error('Type requis.')
+      return
+    }
     startTransition(async () => {
-      const res = await saveProduct(buildInput(active))
+      const res = await saveProduct(buildInput(active, kind))
       if (res.ok) {
         toast.success(active ? 'Produit publié.' : 'Brouillon enregistré.')
         router.push('/admin/products')
@@ -612,12 +616,11 @@ export function ProductForm({
               <CardDescription>Filtre admin. Les catégories boutique vivent dans Sanity.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Select value={kind} onValueChange={(v) => setKind(v as 'board' | 'accessory' | 'none')}>
+              <Select value={kind} onValueChange={(v) => setKind(v as 'board' | 'accessory')}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Choisir un type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">—</SelectItem>
                   <SelectItem value="board">Board</SelectItem>
                   <SelectItem value="accessory">Accessoire</SelectItem>
                 </SelectContent>
