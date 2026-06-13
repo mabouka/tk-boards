@@ -61,6 +61,7 @@ describe('productInputSchema', () => {
   const valid = {
     name: 'Pro Board',
     sku: 'pro-1',
+    kind: 'board',
     active: true,
     options: [],
     variants: [baseVariant],
@@ -73,9 +74,9 @@ describe('productInputSchema', () => {
     expect(p.links).toEqual([])
   })
 
-  it('coerces a blank/absent kind to null but keeps a real one', () => {
-    expect(productInputSchema.parse(valid).kind).toBeNull()
-    expect(productInputSchema.parse({ ...valid, kind: 'board' }).kind).toBe('board')
+  it('requires a board/accessory kind', () => {
+    expect(productInputSchema.safeParse({ ...valid, kind: undefined }).success).toBe(false)
+    expect(productInputSchema.parse({ ...valid, kind: 'accessory' }).kind).toBe('accessory')
   })
 
   it('requires a name and at least one variant', () => {

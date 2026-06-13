@@ -80,11 +80,7 @@ export const productInputSchema = z.object({
     .trim()
     .min(1, 'SKU requis')
     .transform((s) => s.toUpperCase()),
-  kind: z
-    .enum(['board', 'accessory'])
-    .nullable()
-    .optional()
-    .transform((v) => v || null),
+  kind: z.enum(['board', 'accessory']),
   active: z.boolean(),
   options: z.array(optionSchema), // variant axes (→ product_attribute)
   variants: z.array(editorVariantSchema).min(1, 'Au moins une variante'),
@@ -99,3 +95,9 @@ export type AddonInput = z.infer<typeof addonSchema>
 export type LinkInput = z.infer<typeof linkSchema>
 export type LinkType = LinkInput['type']
 export type ProductInput = z.infer<typeof productInputSchema>
+
+// Read shape for the edit form: `kind` is required on save (ProductInput) but
+// legacy products may still have a null kind, so loading one keeps it nullable.
+export type ProductEditInput = Omit<ProductInput, 'kind'> & {
+  kind: 'board' | 'accessory' | null
+}
