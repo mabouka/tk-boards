@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { cmsPageBySlugQuery } from '@/sanity/lib/queries'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import BigTitle from '@/components/placeholder/BigTitle'
@@ -9,7 +10,11 @@ import BigTitle from '@/components/placeholder/BigTitle'
 type Props = { params: Promise<{ locale: string; slug: string }> }
 
 const getCmsPage = cache((locale: string, slug: string) =>
-  client.fetch(cmsPageBySlugQuery, { slug, locale })
+  client.fetch(
+    cmsPageBySlugQuery,
+    { slug, locale },
+    sanityCache('page', 'ourStoryPage', 'contactPage', 'faqPage', 'whereToBuyPage')
+  )
 )
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

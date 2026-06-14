@@ -1,5 +1,6 @@
 import styles from './design-system.module.css'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
 import type { SanityImage, PortableTextValue } from '@/sanity/lib/types'
 import SectionTextGallery from '@/components/text-gallery/SectionTextGallery'
@@ -18,8 +19,8 @@ export default async function DesignSystemPage({
   // Real Sanity images for the Text + Gallery preview.
   // Prefer the EN Rocket (richest gallery); fall back to the page locale.
   const board =
-    (await client.fetch(boardBySlugQuery, { locale: 'en', slug: 'rocket' })) ??
-    (await client.fetch(boardBySlugQuery, { locale, slug: 'rocket' }))
+    (await client.fetch(boardBySlugQuery, { locale: 'en', slug: 'rocket' }, sanityCache('board'))) ??
+    (await client.fetch(boardBySlugQuery, { locale, slug: 'rocket' }, sanityCache('board')))
 
   const galleryPreview = [board?.mainImage, ...(board?.gallery ?? []), board?.heroImage]
     .filter(Boolean)

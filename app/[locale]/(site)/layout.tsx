@@ -4,6 +4,7 @@ import Footer from '@/components/footer/Footer'
 import MainMenu from '@/components/menu/MainMenu'
 import { MenuProvider } from '@/components/menu/MenuContext'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { navigationQuery } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { getSiteSettings } from '@/lib/metadata'
@@ -48,9 +49,9 @@ export default async function SiteLayout({ children, params }: Props) {
   // Main menu = the navigation document whose Location is "Header". Falls back to
   // built-in lists inside <MainMenu /> when none is published.
   const [nav, featuredNav, legalNav, settings] = await Promise.all([
-    client.fetch(navigationQuery, { location: 'header', locale }),
-    client.fetch(navigationQuery, { location: 'featured', locale }),
-    client.fetch(navigationQuery, { location: 'legal', locale }),
+    client.fetch(navigationQuery, { location: 'header', locale }, sanityCache('navigation')),
+    client.fetch(navigationQuery, { location: 'featured', locale }, sanityCache('navigation')),
+    client.fetch(navigationQuery, { location: 'legal', locale }, sanityCache('navigation')),
     getSiteSettings(locale),
   ])
 

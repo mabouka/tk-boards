@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { boardsQuery, boardsPageSettingsQuery } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [t, settings, boardsPage] = await Promise.all([
     getTranslations({ locale, namespace: 'boards' }),
     getSiteSettings(locale),
-    client.fetch(boardsPageSettingsQuery, { locale }),
+    client.fetch(boardsPageSettingsQuery, { locale }, sanityCache('boardsPageSettings')),
   ])
 
   return buildMetadata({
@@ -36,7 +37,7 @@ export default async function BoardsPage({ params }: Props) {
   const { locale } = await params
   const t = await getTranslations('boards')
 
-  const boards = await client.fetch(boardsQuery, { locale })
+  const boards = await client.fetch(boardsQuery, { locale }, sanityCache('board'))
 
   return (
     <div className={styles.boards}>

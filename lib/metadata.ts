@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { cache } from 'react'
 import { urlFor } from '@/sanity/lib/image'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { siteSettingsQuery } from '@/sanity/lib/queries'
 import { routing } from '@/i18n/routing'
 import type { SanityImage } from '@/sanity/lib/types'
@@ -24,7 +25,7 @@ const OG_LOCALE: Record<string, string> = {
  *  sourced from the split singletons with SEO text resolved for `locale`.
  *  Memoized per request, per locale. */
 export const getSiteSettings = cache((locale: string) =>
-  client.fetch(siteSettingsQuery, { locale })
+  client.fetch(siteSettingsQuery, { locale }, sanityCache('seoSettings', 'contactSettings', 'footerSettings'))
 )
 
 /** Extract a Twitter/X handle (e.g. "@tkboards") from an x.com/twitter.com profile URL. */

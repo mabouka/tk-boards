@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { urlFor } from '@/sanity/lib/image'
 import { seriesQuery } from '@/sanity/lib/queries'
 import type { SanityImage, Cta } from '@/sanity/lib/types'
@@ -61,7 +62,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
   // Pre-fetch data only for section types that are actually present
   const needsBoards = sections.some((s) => s._type === 'sectionBoards')
   const rawSeries: RawSeries[] = needsBoards
-    ? await client.fetch<RawSeries[]>(seriesQuery, { locale })
+    ? await client.fetch<RawSeries[]>(seriesQuery, { locale }, sanityCache('series', 'board'))
     : []
 
   // Pre-resolve image URLs server-side so @sanity/image-url never reaches the client bundle

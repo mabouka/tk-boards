@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { auth } from '@/auth'
 import { buildMetadata } from '@/lib/metadata'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { authPageQuery } from '@/sanity/lib/queries'
 import AuthFlow from '../AuthFlow'
 
@@ -15,7 +16,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
   const [authContent, t] = await Promise.all([
-    client.fetch(authPageQuery, { locale }),
+    client.fetch(authPageQuery, { locale }, sanityCache('authPage')),
     getTranslations('auth'),
   ])
   return buildMetadata({
