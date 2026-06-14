@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { cache } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { homePageByLocaleQuery } from '@/sanity/lib/queries'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import Hero from '@/components/hero/Hero'
@@ -11,7 +12,9 @@ type Props = {
   params: Promise<{ locale: string }>
 }
 
-const getHomePage = cache((locale: string) => client.fetch(homePageByLocaleQuery, { locale }))
+const getHomePage = cache((locale: string) =>
+  client.fetch(homePageByLocaleQuery, { locale }, sanityCache('homePage'))
+)
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params

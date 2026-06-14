@@ -3,6 +3,7 @@ import { cache } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
 import { getStorefrontProduct } from '@/lib/storefront/product'
 import { urlFor } from '@/sanity/lib/image'
@@ -18,7 +19,7 @@ type Props = {
 }
 
 const getBoard = cache((locale: string, slug: string) =>
-  client.fetch(boardBySlugQuery, { locale, slug })
+  client.fetch(boardBySlugQuery, { locale, slug }, sanityCache('board'))
 )
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

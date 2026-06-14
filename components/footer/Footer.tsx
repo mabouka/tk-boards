@@ -1,5 +1,6 @@
 import { Link } from '@/i18n/navigation'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { footerSeriesQuery, navigationQuery } from '@/sanity/lib/queries'
 import { getSiteSettings } from '@/lib/metadata'
 import LogoTK from '@/components/icons/LogoTK'
@@ -29,9 +30,9 @@ const SITEMAP_FALLBACK = [
 
 export default async function Footer({ locale }: Props) {
   const [series, settings, nav] = await Promise.all([
-    client.fetch(footerSeriesQuery, { locale }),
+    client.fetch(footerSeriesQuery, { locale }, sanityCache('series', 'board')),
     getSiteSettings(locale),
-    client.fetch(navigationQuery, { location: 'footer', locale }),
+    client.fetch(navigationQuery, { location: 'footer', locale }, sanityCache('navigation')),
   ])
 
   // Keep only items that have a label and a destination (guards against

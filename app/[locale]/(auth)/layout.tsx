@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import LogoTK from '@/components/icons/LogoTK'
 import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
 import { authPageQuery } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import styles from './auth.module.css'
@@ -15,7 +16,7 @@ export default async function AuthLayout({ children, params }: Props) {
   const { locale } = await params
   const [t, authContent] = await Promise.all([
     getTranslations('auth'),
-    client.fetch(authPageQuery, { locale }),
+    client.fetch(authPageQuery, { locale }, sanityCache('authPage')),
   ])
 
   const bgUrl = authContent?.backgroundImage
