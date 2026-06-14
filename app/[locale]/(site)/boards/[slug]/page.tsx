@@ -4,6 +4,8 @@ import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
+import { getStorefrontProduct } from '@/lib/storefront/product'
+import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { productGraph } from '@/lib/structured-data'
 import JsonLd from '@/components/json-ld/JsonLd'
@@ -58,6 +60,11 @@ export default async function BoardPage({ params }: Props) {
 
   if (!board) notFound()
 
+  const product = board.skuCode ? await getStorefrontProduct(board.skuCode, locale) : null
+  const previewImage = board.mainImage
+    ? urlFor(board.mainImage).width(1000).quality(85).auto('format').url()
+    : null
+
   // Gallery: dedicated images or mainImage repeated as fallback
   type GalleryImage = { alt?: string | null;[k: string]: unknown }
   const gallery: GalleryImage[] =
@@ -87,6 +94,13 @@ export default async function BoardPage({ params }: Props) {
         tags={board.presentationTags ?? []}
         buyLabel={t('buy_now')}
         cartLabel={t('add_to_cart')}
+        configureLabel={t('configure')}
+        fromLabel={t('from_price')}
+        cartStubLabel={t('cart_stub')}
+        closeLabel={t('close')}
+        product={product}
+        locale={locale}
+        previewImage={previewImage}
         perks={[t('perk_shipping'), t('perk_warranty'), t('perk_payment')]}
         gallery={gallery}
         boardName={board.name}

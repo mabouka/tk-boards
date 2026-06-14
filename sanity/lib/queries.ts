@@ -17,6 +17,7 @@ export const boardBySlugQuery = defineQuery(`
     _id,
     name,
     slug,
+    skuCode,
     series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },
     heroTitle,
     heroTagline,

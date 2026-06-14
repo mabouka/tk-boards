@@ -2,9 +2,12 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  /* swc-css-ignore-start */
-  backdrop-filter: brightness(50%) blur(35px); /* postcss-ignore-line */
-  /* swc-css-ignore-ends */
+  /* Via a custom property so the prod CSS minifier can't strip the space between
+     the two filter functions (`brightness(50%)blur(35px)` would be invalid and
+     the whole declaration dropped). Custom-property values are preserved as-is. */
+  --menu-backdrop-fx: brightness(50%) blur(35px);
+  backdrop-filter: var(--menu-backdrop-fx);
+  -webkit-backdrop-filter: var(--menu-backdrop-fx);
   color: var(--color-white);
   opacity: 0;
   visibility: hidden;
