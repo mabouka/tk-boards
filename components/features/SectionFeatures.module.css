@@ -1,0 +1,115 @@
+/* Features — GSAP horizontal scroll-on-scroll (desktop: section pins, track
+   scrubs sideways). On mobile the JS pin is disabled and items stack vertically. */
+.features {
+  /* Item width = 6 of the 12 grid columns (computed from the grid tokens; the
+     project's var(--w-cols) bakes --span at :root so it can't be reused here). */
+  --feat-item-w: calc(6 * (var(--col-width) + var(--col-gutter)) - var(--col-gutter));
+  --feat-ratio: 801 / 559;
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* Fallback (no-JS / reduced-motion / GSAP fails): native horizontal scroll so
+     items are never clipped. GSAP upgrades this to a pinned 100vh canvas
+     (height + overflow set in SectionFeatures.tsx). */
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.features::-webkit-scrollbar {
+  display: none;
+}
+
+.light {
+  background: var(--color-cream);
+  color: var(--color-black);
+}
+
+.dark {
+  background: var(--color-dark);
+  color: var(--color-white);
+}
+
+/* Horizontal track — wider than the viewport; GSAP translates it on scroll. */
+.track {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--col-gutter);
+  padding-inline: var(--gutter);
+  margin: 0;
+  list-style: none;
+  will-change: transform;
+}
+
+.item {
+  flex: 0 0 var(--feat-item-w);
+}
+
+/* First item starts at column 2 (one-column leading indent). */
+.item:first-child {
+  margin-left: calc(var(--col-width) + var(--col-gutter));
+}
+
+.media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--feat-ratio);
+  overflow: hidden;
+  background: var(--color-carbon);
+}
+
+.mediaImg {
+  object-fit: cover;
+}
+
+.title {
+  margin: var(--space-md) 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.4vw, 36px);
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.text {
+  margin: var(--space-sm) 0 0;
+  max-width: 46ch;
+  font-family: var(--font-body);
+  font-size: clamp(16px, 1.2vw, 20px);
+  line-height: 1.5;
+}
+
+.dark .text {
+  color: var(--color-white-80);
+}
+
+.light .text {
+  color: var(--color-black-80);
+}
+
+.cta {
+  margin-top: var(--space-md);
+}
+
+/* ── Mobile: no pin / no horizontal scroll — stack vertically ── */
+@media (max-width: 768px) {
+  .features {
+    display: block;
+    overflow-x: hidden;
+  }
+
+  .track {
+    flex-direction: column;
+    gap: var(--space-2xl);
+    padding: var(--space-2xl) var(--gutter);
+  }
+
+  .item {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .item:first-child {
+    margin-left: 0;
+  }
+}

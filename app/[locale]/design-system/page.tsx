@@ -2,12 +2,14 @@ import styles from './design-system.module.css'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
+import { urlFor } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue } from '@/sanity/lib/types'
 import SectionTextGallery from '@/components/text-gallery/SectionTextGallery'
 import SectionTextImage from '@/components/text-image/SectionTextImage'
 import SectionFullMedia from '@/components/full-media/SectionFullMedia'
 import SectionBigQuote from '@/components/big-quote/SectionBigQuote'
 import SectionMediaLine from '@/components/media-line/SectionMediaLine'
+import SectionFeatures from '@/components/features/SectionFeatures'
 
 export default async function DesignSystemPage({
   params,
@@ -25,6 +27,26 @@ export default async function DesignSystemPage({
   const galleryPreview = [board?.mainImage, ...(board?.gallery ?? []), board?.heroImage]
     .filter(Boolean)
     .slice(0, 4) as unknown as SanityImage[]
+
+  // Sample data for the Features slider preview (image-or-video + optional CTA).
+  const featureSample = [
+    { title: 'Confort sur mesure', text: 'Chaque pad de traction est façonné à la main, avec des rails en relief, pour un grab naturel, précis et confortable.' },
+    { title: 'Un tail fait pour le pop', text: 'Un tail fait pour sauter qui rend chaque pop plus explosif. Ses ailerons plus fins et nerveux permettent une maniabilité maîtrisée.', cta: { text: 'En savoir plus', href: '#' } },
+    { title: 'Carbone sergé biaxial', text: 'Une coque carbone haute résistance pour une rigidité et une réactivité sans compromis.' },
+    { title: 'Façonné à Tarifa', text: "Un travail d'orfèvrerie, board après board, dans notre atelier en Espagne." },
+  ]
+  const featureItems = featureSample.map((f, i) => ({
+    ...f,
+    imageUrl: galleryPreview[i % Math.max(galleryPreview.length, 1)]
+      ? urlFor(galleryPreview[i % galleryPreview.length]).width(900).height(628).quality(85).url()
+      : undefined,
+  }))
+  // Demonstrate "image OR video": swap the 3rd item to a video.
+  const featureItemsMixed = featureItems.map((f, i) =>
+    i === 2
+      ? { ...f, imageUrl: undefined, videoUrl: 'https://customer-se4p8jzilnf43xyu.cloudflarestream.com/40edf58cdba22802adf01fc5a5404cb5/downloads/default.mp4', videoPoster: f.imageUrl }
+      : f
+  )
 
   const sampleBody = [
     {
@@ -267,6 +289,14 @@ export default async function DesignSystemPage({
             aspectRatio="4 / 3"
             size="in-grid"
           />
+        </div>
+      )}
+
+      {/* Features slider — light, dark, and image-or-video. Drag with the mouse or use the arrows. */}
+      {galleryPreview.length > 0 && (
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <SectionFeatures items={featureItems} theme="light" />
+          <SectionFeatures items={featureItemsMixed} theme="dark" />
         </div>
       )}
     </>

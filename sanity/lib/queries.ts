@@ -91,6 +91,28 @@ export const boardBySlugQuery = defineQuery(`
           type == "email" => "mailto:" + email,
           type == "phone" => "tel:" + phone
         )
+      },
+      "features": items[]{
+        mediaType,
+        image,
+        videoUrl,
+        videoPoster,
+        title,
+        text,
+        "cta": cta {
+          "text": text,
+          "openInNewTab": openInNewTab,
+          "href": select(
+            type == "internal" && internalLink->_type == "homePage" => "/",
+            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
+            type == "internal" => "/" + internalLink->slug.current,
+            type == "external" => url,
+            type == "email" => "mailto:" + email,
+            type == "phone" => "tel:" + phone
+          )
+        }
       }
     },
     seoTitle,
@@ -262,6 +284,28 @@ export const homePageByLocaleQuery = defineQuery(`
           type == "email" => "mailto:" + email,
           type == "phone" => "tel:" + phone
         )
+      },
+      "features": items[]{
+        mediaType,
+        image,
+        videoUrl,
+        videoPoster,
+        title,
+        text,
+        "cta": cta {
+          "text": text,
+          "openInNewTab": openInNewTab,
+          "href": select(
+            type == "internal" && internalLink->_type == "homePage" => "/",
+            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
+            type == "internal" => "/" + internalLink->slug.current,
+            type == "external" => url,
+            type == "email" => "mailto:" + email,
+            type == "phone" => "tel:" + phone
+          )
+        }
       }
     }
   }
@@ -397,6 +441,28 @@ export const pageBySlugQuery = defineQuery(`
           type == "email" => "mailto:" + email,
           type == "phone" => "tel:" + phone
         )
+      },
+      "features": items[]{
+        mediaType,
+        image,
+        videoUrl,
+        videoPoster,
+        title,
+        text,
+        "cta": cta {
+          "text": text,
+          "openInNewTab": openInNewTab,
+          "href": select(
+            type == "internal" && internalLink->_type == "homePage" => "/",
+            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
+            type == "internal" => "/" + internalLink->slug.current,
+            type == "external" => url,
+            type == "email" => "mailto:" + email,
+            type == "phone" => "tel:" + phone
+          )
+        }
       }
     }
   }

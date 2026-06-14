@@ -54,6 +54,7 @@ export const page = defineType({
         { type: 'sectionFullMedia' },
         { type: 'sectionBigQuote' },
         { type: 'sectionMediaLine' },
+        { type: 'sectionFeatures' },
       ],
       group: 'content',
     }),

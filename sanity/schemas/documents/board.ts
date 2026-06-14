@@ -225,6 +225,7 @@ export const board = defineType({
         { type: 'sectionFullMedia' },
         { type: 'sectionBigQuote' },
         { type: 'sectionMediaLine' },
+        { type: 'sectionFeatures' },
       ],
       group: 'content',
     }),

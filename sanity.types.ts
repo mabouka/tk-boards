@@ -39,6 +39,22 @@ export type VideoPoster = {
   _type: "image";
 };
 
+export type FeatureImage = {
+  asset?: SanityImageAssetReference;
+  media?: unknown; // Unable to locate the referenced type "feature.image.media" in schema
+  hotspot?: SanityImageHotspot;
+  crop?: SanityImageCrop;
+  _type: "image";
+};
+
+export type FeatureVideoPoster = {
+  asset?: SanityImageAssetReference;
+  media?: unknown; // Unable to locate the referenced type "feature.videoPoster.media" in schema
+  hotspot?: SanityImageHotspot;
+  crop?: SanityImageCrop;
+  _type: "image";
+};
+
 export type OgImage = {
   asset?: SanityImageAssetReference;
   media?: unknown; // Unable to locate the referenced type "ogImage.media" in schema
@@ -46,6 +62,22 @@ export type OgImage = {
   crop?: SanityImageCrop;
   alt?: string;
   _type: "image";
+};
+
+export type SectionFeatures = {
+  _type: "sectionFeatures";
+  theme?: "light" | "dark";
+  items?: Array<{
+    mediaType?: "image" | "video";
+    image?: FeatureImage;
+    videoUrl?: string;
+    videoPoster?: FeatureVideoPoster;
+    title: string;
+    text: string;
+    cta?: Link;
+    _type: "feature";
+    _key: string;
+  }>;
 };
 
 export type SectionMediaLine = {
@@ -680,6 +712,9 @@ export type Board = {
     | ({
         _key: string;
       } & SectionMediaLine)
+    | ({
+        _key: string;
+      } & SectionFeatures)
   >;
   weight?: number;
   price?: number;
@@ -924,6 +959,9 @@ export type HomePage = {
     | ({
         _key: string;
       } & SectionMediaLine)
+    | ({
+        _key: string;
+      } & SectionFeatures)
   >;
   seoTitle?: string;
   seoDescription?: string;
@@ -980,6 +1018,9 @@ export type Page = {
     | ({
         _key: string;
       } & SectionMediaLine)
+    | ({
+        _key: string;
+      } & SectionFeatures)
   >;
   seoTitle?: string;
   seoDescription?: string;
@@ -1104,7 +1145,10 @@ export type AllSanitySchemaTypes =
   | SanityImageAssetReference
   | MediaItemImage
   | VideoPoster
+  | FeatureImage
+  | FeatureVideoPoster
   | OgImage
+  | SectionFeatures
   | SectionMediaLine
   | SectionBigQuote
   | SectionFullMedia
@@ -1192,7 +1236,7 @@ export type BoardsQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: boardBySlugQuery
-// Query: *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {    _id,    name,    slug,    skuCode,    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },    heroTitle,    heroTagline,    heroImage,    presentationTitle,    presentationText,    presentationNumbers[]{ value, unit, label },    presentationTags[]{ text, style },    gallery[]{      asset,      alt,      hotspot,      crop    },    mainImage,    style,    weight,    price,    currency,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      }    },    seoTitle,    seoDescription,    ogImage,    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
+// Query: *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {    _id,    name,    slug,    skuCode,    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },    heroTitle,    heroTagline,    heroImage,    presentationTitle,    presentationText,    presentationNumbers[]{ value, unit, label },    presentationTags[]{ text, style },    gallery[]{      asset,      alt,      hotspot,      crop    },    mainImage,    style,    weight,    price,    currency,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,          "openInNewTab": openInNewTab,          "href": select(            type == "internal" && internalLink->_type == "homePage" => "/",            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",            type == "internal" => "/" + internalLink->slug.current,            type == "external" => url,            type == "email" => "mailto:" + email,            type == "phone" => "tel:" + phone          )        }      }    },    seoTitle,    seoDescription,    ogImage,    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
 export type BoardBySlugQueryResult = {
   _id: string;
   name: string;
@@ -1314,6 +1358,7 @@ export type BoardBySlugQueryResult = {
           href: string | "/" | "/accessories" | "/account" | "/boards" | null;
         } | null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionBigQuote";
@@ -1343,6 +1388,7 @@ export type BoardBySlugQueryResult = {
         authorRole: string | null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionBoards";
@@ -1372,6 +1418,59 @@ export type BoardBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
+      }
+    | {
+        _type: "sectionFeatures";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: Array<{
+          mediaType?: "image" | "video";
+          image?: FeatureImage;
+          videoUrl?: string;
+          videoPoster?: FeatureVideoPoster;
+          title: string;
+          text: string;
+          cta?: Link;
+          _type: "feature";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: "image" | "video" | null;
+          image: FeatureImage | null;
+          videoUrl: string | null;
+          videoPoster: FeatureVideoPoster | null;
+          title: string;
+          text: string;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+          } | null;
+        }> | null;
       }
     | {
         _type: "sectionFullMedia";
@@ -1414,6 +1513,7 @@ export type BoardBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionMarquee";
@@ -1447,6 +1547,15 @@ export type BoardBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: null;
+          videoUrl: null;
+          videoPoster: null;
+          title: null;
+          text: string | null;
+          cta: null;
+        }> | null;
       }
     | {
         _type: "sectionMediaLine";
@@ -1484,6 +1593,7 @@ export type BoardBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionTextGallery";
@@ -1546,6 +1656,7 @@ export type BoardBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionTextImage";
@@ -1611,6 +1722,7 @@ export type BoardBySlugQueryResult = {
           openInNewTab: null;
           href: string | "/" | "/accessories" | "/account" | "/boards" | null;
         }> | null;
+        features: null;
       }
   > | null;
   seoTitle: string | null;
@@ -1771,7 +1883,7 @@ export type SitemapHomePagesQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: homePageByLocaleQuery
-// Query: coalesce(    *[_type == "homePage" && language == $locale && !(_id in path("drafts.**"))][0],    *[_type == "homePage" && language == "fr" && !(_id in path("drafts.**"))][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      }    }  }
+// Query: coalesce(    *[_type == "homePage" && language == $locale && !(_id in path("drafts.**"))][0],    *[_type == "homePage" && language == "fr" && !(_id in path("drafts.**"))][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,          "openInNewTab": openInNewTab,          "href": select(            type == "internal" && internalLink->_type == "homePage" => "/",            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",            type == "internal" => "/" + internalLink->slug.current,            type == "external" => url,            type == "email" => "mailto:" + email,            type == "phone" => "tel:" + phone          )        }      }    }  }
 export type HomePageByLocaleQueryResult = {
   _id: string;
   title: string;
@@ -1846,6 +1958,7 @@ export type HomePageByLocaleQueryResult = {
           href: string | "/" | "/accessories" | "/account" | "/boards" | null;
         } | null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionBigQuote";
@@ -1875,6 +1988,7 @@ export type HomePageByLocaleQueryResult = {
         authorRole: string | null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionBoards";
@@ -1904,6 +2018,59 @@ export type HomePageByLocaleQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
+      }
+    | {
+        _type: "sectionFeatures";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: Array<{
+          mediaType?: "image" | "video";
+          image?: FeatureImage;
+          videoUrl?: string;
+          videoPoster?: FeatureVideoPoster;
+          title: string;
+          text: string;
+          cta?: Link;
+          _type: "feature";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: "image" | "video" | null;
+          image: FeatureImage | null;
+          videoUrl: string | null;
+          videoPoster: FeatureVideoPoster | null;
+          title: string;
+          text: string;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+          } | null;
+        }> | null;
       }
     | {
         _type: "sectionFullMedia";
@@ -1946,6 +2113,7 @@ export type HomePageByLocaleQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionMarquee";
@@ -1979,6 +2147,15 @@ export type HomePageByLocaleQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: null;
+          videoUrl: null;
+          videoPoster: null;
+          title: null;
+          text: string | null;
+          cta: null;
+        }> | null;
       }
     | {
         _type: "sectionMediaLine";
@@ -2016,6 +2193,7 @@ export type HomePageByLocaleQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionTextGallery";
@@ -2078,6 +2256,7 @@ export type HomePageByLocaleQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionTextImage";
@@ -2143,6 +2322,7 @@ export type HomePageByLocaleQueryResult = {
           openInNewTab: null;
           href: string | "/" | "/accessories" | "/account" | "/boards" | null;
         }> | null;
+        features: null;
       }
   > | null;
 } | null;
@@ -2265,7 +2445,7 @@ export type FooterSeriesQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: pageBySlugQuery
-// Query: coalesce(    *[_type == "page" && slug.current == $slug && language == $locale][0],    *[_type == "page" && slug.current == $slug && language == "fr"][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    slug,    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      }    }  }
+// Query: coalesce(    *[_type == "page" && slug.current == $slug && language == $locale][0],    *[_type == "page" && slug.current == $slug && language == "fr"][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    slug,    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,          "openInNewTab": openInNewTab,          "href": select(            type == "internal" && internalLink->_type == "homePage" => "/",            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",            type == "internal" => "/" + internalLink->slug.current,            type == "external" => url,            type == "email" => "mailto:" + email,            type == "phone" => "tel:" + phone          )        }      }    }  }
 export type PageBySlugQueryResult = {
   _id: string;
   title: string;
@@ -2341,6 +2521,7 @@ export type PageBySlugQueryResult = {
           href: string | "/" | "/accessories" | "/account" | "/boards" | null;
         } | null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionBigQuote";
@@ -2370,6 +2551,7 @@ export type PageBySlugQueryResult = {
         authorRole: string | null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionBoards";
@@ -2399,6 +2581,59 @@ export type PageBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
+      }
+    | {
+        _type: "sectionFeatures";
+        _key: string;
+        title: null;
+        showFilters: null;
+        items: Array<{
+          mediaType?: "image" | "video";
+          image?: FeatureImage;
+          videoUrl?: string;
+          videoPoster?: FeatureVideoPoster;
+          title: string;
+          text: string;
+          cta?: Link;
+          _type: "feature";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: "image" | "video" | null;
+          image: FeatureImage | null;
+          videoUrl: string | null;
+          videoPoster: FeatureVideoPoster | null;
+          title: string;
+          text: string;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+          } | null;
+        }> | null;
       }
     | {
         _type: "sectionFullMedia";
@@ -2441,6 +2676,7 @@ export type PageBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionMarquee";
@@ -2474,6 +2710,15 @@ export type PageBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: null;
+          videoUrl: null;
+          videoPoster: null;
+          title: null;
+          text: string | null;
+          cta: null;
+        }> | null;
       }
     | {
         _type: "sectionMediaLine";
@@ -2511,6 +2756,7 @@ export type PageBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionTextGallery";
@@ -2573,6 +2819,7 @@ export type PageBySlugQueryResult = {
         authorRole: null;
         cta: null;
         ctas: null;
+        features: null;
       }
     | {
         _type: "sectionTextImage";
@@ -2638,6 +2885,7 @@ export type PageBySlugQueryResult = {
           openInNewTab: null;
           href: string | "/" | "/accessories" | "/account" | "/boards" | null;
         }> | null;
+        features: null;
       }
   > | null;
 } | null;
@@ -2647,17 +2895,17 @@ import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
     '\n  *[_type == "board" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    style,\n    weight,\n    mainImage\n  }\n': BoardsQueryResult;
-    '\n  *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    _id,\n    name,\n    slug,\n    skuCode,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    heroTitle,\n    heroTagline,\n    heroImage,\n    presentationTitle,\n    presentationText,\n    presentationNumbers[]{ value, unit, label },\n    presentationTags[]{ text, style },\n    gallery[]{\n      asset,\n      alt,\n      hotspot,\n      crop\n    },\n    mainImage,\n    style,\n    weight,\n    price,\n    currency,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    },\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': BoardBySlugQueryResult;
+    '\n  *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    _id,\n    name,\n    slug,\n    skuCode,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    heroTitle,\n    heroTagline,\n    heroImage,\n    presentationTitle,\n    presentationText,\n    presentationNumbers[]{ value, unit, label },\n    presentationTags[]{ text, style },\n    gallery[]{\n      asset,\n      alt,\n      hotspot,\n      crop\n    },\n    mainImage,\n    style,\n    weight,\n    price,\n    currency,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n          "openInNewTab": openInNewTab,\n          "href": select(\n            type == "internal" && internalLink->_type == "homePage" => "/",\n            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n            type == "internal" => "/" + internalLink->slug.current,\n            type == "external" => url,\n            type == "email" => "mailto:" + email,\n            type == "phone" => "tel:" + phone\n          )\n        }\n      }\n    },\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': BoardBySlugQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    slug,\n    tagVariant,\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug,\n      style,\n      mainImage\n    }\n  }[count(boards) > 0]\n': SeriesQueryResult;
     '{\n  "brandName": *[_type == "seoSettings"][0].brandName,\n  "siteTitle": coalesce(\n    *[_type == "seoSettings"][0].defaultTitle[language == $locale][0].value,\n    *[_type == "seoSettings"][0].defaultTitle[language == "en"][0].value,\n    *[_type == "seoSettings"][0].defaultTitle[0].value\n  ),\n  "seoDescription": coalesce(\n    *[_type == "seoSettings"][0].defaultDescription[language == $locale][0].value,\n    *[_type == "seoSettings"][0].defaultDescription[language == "en"][0].value,\n    *[_type == "seoSettings"][0].defaultDescription[0].value\n  ),\n  "logo": *[_type == "seoSettings"][0].logo,\n  "ogImage": *[_type == "seoSettings"][0].ogImage,\n  "contact": *[_type == "contactSettings"][0]{ email, phone, address },\n  "social": *[_type == "footerSettings"][0].social,\n  "footer": *[_type == "footerSettings"][0]{ copyright, privacyPolicyUrl, cookiePolicyUrl }\n}': SiteSettingsQueryResult;
     '\n  *[_type == "authPage"][0]{\n    "tagline": coalesce(tagline[language == $locale][0].value, tagline[language == "en"][0].value, tagline[0].value),\n    "paragraph": coalesce(paragraph[language == $locale][0].value, paragraph[language == "en"][0].value, paragraph[0].value),\n    "seoTitle": coalesce(seoTitle[language == $locale][0].value, seoTitle[language == "en"][0].value, seoTitle[0].value),\n    "seoDescription": coalesce(seoDescription[language == $locale][0].value, seoDescription[language == "en"][0].value, seoDescription[0].value),\n    backgroundImage,\n    ogImage\n  }\n': AuthPageQueryResult;
     '\n  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {\n    "seoTitle": coalesce(\n      seoTitle[language == $locale][0].value,\n      seoTitle[language == "en"][0].value,\n      seoTitle[0].value\n    ),\n    "seoDescription": coalesce(\n      seoDescription[language == $locale][0].value,\n      seoDescription[language == "en"][0].value,\n      seoDescription[0].value\n    ),\n    ogImage\n  }\n': BoardsPageSettingsQueryResult;
     '\n  *[_type == "board" && defined(slug.current) && !(_id in path("drafts.**"))] | order(_updatedAt desc) {\n    "slug": slug.current,\n    language,\n    _updatedAt,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': SitemapBoardsQueryResult;
     '\n  *[_type == "homePage" && !(_id in path("drafts.**"))] {\n    language,\n    _updatedAt\n  }\n': SitemapHomePagesQueryResult;
-    '\n  coalesce(\n    *[_type == "homePage" && language == $locale && !(_id in path("drafts.**"))][0],\n    *[_type == "homePage" && language == "fr" && !(_id in path("drafts.**"))][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    }\n  }\n': HomePageByLocaleQueryResult;
+    '\n  coalesce(\n    *[_type == "homePage" && language == $locale && !(_id in path("drafts.**"))][0],\n    *[_type == "homePage" && language == "fr" && !(_id in path("drafts.**"))][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n          "openInNewTab": openInNewTab,\n          "href": select(\n            type == "internal" && internalLink->_type == "homePage" => "/",\n            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n            type == "internal" => "/" + internalLink->slug.current,\n            type == "external" => url,\n            type == "email" => "mailto:" + email,\n            type == "phone" => "tel:" + phone\n          )\n        }\n      }\n    }\n  }\n': HomePageByLocaleQueryResult;
     '\n  *[\n    _type in ["page", "ourStoryPage", "contactPage", "faqPage", "whereToBuyPage"]\n    && slug.current == $slug\n    && language == $locale\n    && !(_id in path("drafts.**"))\n  ][0] {\n    _type,\n    title,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    heroImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0]\n      .translations[]{ "lang": value->language, "slug": value->slug.current }\n  }\n': CmsPageBySlugQueryResult;
     '\n  *[_type == "navigation" && location == $location && language == $locale][0] {\n    items[] {\n      _key,\n      label,\n      openInNewTab,\n      "href": select(\n        defined(internalLink) && internalLink->_type == "homePage" => "/",\n        defined(internalLink) && internalLink->_type == "boardsPageSettings" => "/boards",\n        defined(internalLink) && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n        defined(internalLink) && internalLink->_type == "accountPageSettings" => "/account",\n        defined(internalLink) => "/" + internalLink->slug.current,\n        externalUrl\n      ),\n    },\n    featured[] {\n      _key,\n      "name": board->name,\n      "slug": board->slug.current,\n      image,\n    }\n  }\n': NavigationQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) [0..1] {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug\n    }\n  }\n': FooterSeriesQueryResult;
-    '\n  coalesce(\n    *[_type == "page" && slug.current == $slug && language == $locale][0],\n    *[_type == "page" && slug.current == $slug && language == "fr"][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    slug,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      }\n    }\n  }\n': PageBySlugQueryResult;
+    '\n  coalesce(\n    *[_type == "page" && slug.current == $slug && language == $locale][0],\n    *[_type == "page" && slug.current == $slug && language == "fr"][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    slug,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n          "openInNewTab": openInNewTab,\n          "href": select(\n            type == "internal" && internalLink->_type == "homePage" => "/",\n            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n            type == "internal" => "/" + internalLink->slug.current,\n            type == "external" => url,\n            type == "email" => "mailto:" + email,\n            type == "phone" => "tel:" + phone\n          )\n        }\n      }\n    }\n  }\n': PageBySlugQueryResult;
   }
 }
