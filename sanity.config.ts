@@ -16,6 +16,9 @@ const SUPPORTED_LANGUAGES = [
   { id: 'es', title: 'Español' },
 ]
 
+// Required by Sanity for document-type lists that use a custom GROQ filter.
+const API_VERSION = '2025-05-25'
+
 export const TRANSLATABLE_TYPES = [
   'page',
   'board',
@@ -80,6 +83,7 @@ const structure = (S: StructureBuilder) =>
                   .icon(TranslateIcon)
                   .child(
                     S.documentTypeList('board')
+                      .apiVersion(API_VERSION)
                       .title(`Boards — ${lang.title}`)
                       .filter('_type == "board" && language == $lang')
                       .params({ lang: lang.id })
@@ -117,6 +121,7 @@ const structure = (S: StructureBuilder) =>
                   .icon(TranslateIcon)
                   .child(
                     S.documentTypeList('accessory')
+                      .apiVersion(API_VERSION)
                       .title(`Accessories — ${lang.title}`)
                       .filter('_type == "accessory" && language == $lang')
                       .params({ lang: lang.id })
@@ -154,6 +159,7 @@ const structure = (S: StructureBuilder) =>
                   .icon(TranslateIcon)
                   .child(
                     S.documentTypeList('navigation')
+                      .apiVersion(API_VERSION)
                       .title(`Menus — ${lang.title}`)
                       .filter('_type == "navigation" && language == $lang')
                       .params({ lang: lang.id })
@@ -188,6 +194,7 @@ const structure = (S: StructureBuilder) =>
                           .id(`page-${lang.id}`)
                           .child(
                             S.documentTypeList('page')
+                              .apiVersion(API_VERSION)
                               .title(`Pages — ${lang.title}`)
                               .filter('_type == "page" && language == $lang')
                               .params({ lang: lang.id })

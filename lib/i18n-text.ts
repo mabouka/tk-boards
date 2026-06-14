@@ -17,3 +17,7 @@ export const part = (j: unknown, key: string): string => (j as I18nText | null)?
 
 /** Read the primary (en) value, falling back to a default when absent. */
 export const primary = (j: unknown, fallback: string) => part(j, 'en') || fallback
+
+/** Read a locale value, falling back to en, then a default. */
+export const localized = (j: unknown, locale: string, fallback = ''): string =>
+  part(j, locale) || part(j, 'en') || fallback

@@ -151,26 +151,6 @@
   }
 }
 
-.boardPresentation__btn {
-  composes: u-cta from global;
-}
-
-.boardPresentation__btn:hover {
-  opacity: 0.82;
-}
-
-.boardPresentation__btn--buy {
-  background: var(--color-white);
-  color: var(--color-dark);
-  border-color: var(--color-white);
-}
-
-.boardPresentation__btn--cart {
-  background: transparent;
-  color: var(--color-white);
-  border-color: var(--color-white);
-}
-
 /* ── Perks ── */
 
 .boardPresentation__perks {

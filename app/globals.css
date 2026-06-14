@@ -245,6 +245,11 @@ main {
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
+.u-cta:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* noir plein */
 .u-cta--black-fill { background: var(--color-black); border-color: var(--color-black); color: var(--color-white); }
 .u-cta--black-fill:hover { background-color: var(--color-white); color: var(--color-black); }

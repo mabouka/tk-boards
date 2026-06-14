@@ -1,0 +1,260 @@
+/* ── Price + buttons (drawer footer) ── */
+.price {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.4vw, 30px);
+  color: var(--color-white);
+  letter-spacing: 0.01em;
+}
+
+.priceFrom {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-cream);
+  margin-right: 4px;
+}
+
+.priceOld {
+  margin-left: 8px;
+  font-size: 0.6em;
+  color: var(--color-white-50);
+  text-decoration: line-through;
+}
+
+.btnRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.note {
+  font-family: var(--font-mono, var(--font-body));
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-gold);
+}
+
+/* ── Drawer ── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  /* Via a custom property so the prod CSS minifier can't strip the space between
+     the two filter functions (`brightness(60%)blur(15px)` would be invalid and
+     the whole declaration dropped). Custom-property values are preserved as-is. */
+  --backdrop-fx: brightness(60%) blur(15px);
+  backdrop-filter: var(--backdrop-fx);
+  -webkit-backdrop-filter: var(--backdrop-fx);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.backdropOpen {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Fallback dim where backdrop-filter is unsupported (the brightness() above
+   is what dims, so without it the backdrop would be fully transparent). */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .backdrop {
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Board photo floating in the blurred zone, left of the panel. */
+.preview {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: min(400px, 100vw);
+  z-index: 1101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.previewOpen {
+  opacity: 1;
+  visibility: visible;
+}
+
+.previewFrame {
+  position: relative;
+  width: 85vh;
+  height: 85vh;
+  max-width: 88%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1101;
+  height: 100%;
+  width: min(400px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-dark);
+  color: var(--color-white);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow-y: auto;
+}
+
+.panelOpen {
+  transform: translateX(0);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px var(--gutter);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.close {
+  display: flex;
+  padding: 6px;
+  background: none;
+  border: none;
+  color: var(--color-white);
+  cursor: pointer;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.close:hover {
+  transform: rotate(90deg);
+  opacity: 0.8;
+}
+
+.close svg {
+  width: 22px;
+  height: 22px;
+}
+
+.groups {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 28px var(--gutter);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.groupLabel {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-cream);
+}
+
+.values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* select-type pill */
+.value {
+  min-width: 48px;
+  padding: 10px 16px;
+  border-radius: 0;
+  border: 1px solid var(--color-white-50);
+  background: transparent;
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.value:hover:not(:disabled) {
+  border-color: var(--color-white);
+}
+
+.valueSelected {
+  border-color: var(--color-white);
+  background: var(--color-white);
+  color: var(--color-dark);
+}
+
+.value:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* swatch-type */
+.swatch {
+  width: 36px;
+  height: 36px;
+  min-width: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--color-black);
+  box-shadow: 0 0 0 1px var(--color-white-50);
+  cursor: pointer;
+  /* Subtle top-left → bottom-right sheen over the swatch colour. */
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(0, 0, 0, 0.14));
+  transition: box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.swatch:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.swatchSelected {
+  box-shadow: 0 0 0 2px var(--color-white);
+  border-color: var(--color-dark);
+}
+
+.swatch:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px var(--gutter);
+  background: var(--color-dark);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer .btnRow {
+  flex-direction: column;
+}
+
+.footer .btnRow button {
+  width: 100%;
+  text-align: center;
+}

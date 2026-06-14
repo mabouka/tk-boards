@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useDrawer } from '@/lib/use-drawer'
 import { Link } from '@/i18n/navigation'
 import LogoTK from '@/components/icons/LogoTK'
 import IconInstagram from '@/components/icons/IconInstagram'
@@ -51,19 +52,7 @@ export default function MainMenu({
   const socialLinks = socials.filter((s) => SOCIAL_ICONS[s.key])
 
   // Close on Escape + lock body scroll while open.
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('keydown', onKey)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
-    }
-  }, [open, setOpen])
+  useDrawer(open, close)
 
   return (
     <div className={`${styles.menu} ${open ? styles.menuOpen : ''}`} aria-hidden={!open}>

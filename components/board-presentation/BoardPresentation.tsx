@@ -2,6 +2,8 @@ import { PortableText } from 'next-sanity'
 import type { SanityImage, PortableTextValue } from '@/sanity/lib/types'
 import styles from './BoardPresentation.module.css'
 import BoardGallery from './BoardGallery'
+import BuyCta from '@/components/configurator/BuyCta'
+import type { StorefrontProduct } from '@/lib/storefront/product'
 
 export type PresentationNumber = { value: string; unit?: string | null; label: string }
 export type PresentationTag = { text: string; style?: string | null }
@@ -14,6 +16,13 @@ type Props = {
   tags?: PresentationTag[]
   buyLabel: string
   cartLabel: string
+  configureLabel: string
+  fromLabel: string
+  cartStubLabel: string
+  closeLabel: string
+  product: StorefrontProduct | null
+  locale: string
+  previewImage: string | null
   perks: string[]
   gallery: (SanityImage & { alt?: string | null })[]
   boardName: string
@@ -27,6 +36,13 @@ export default function BoardPresentation({
   tags = [],
   buyLabel,
   cartLabel,
+  configureLabel,
+  fromLabel,
+  cartStubLabel,
+  closeLabel,
+  product,
+  locale,
+  previewImage,
   perks,
   gallery,
   boardName,
@@ -89,18 +105,19 @@ export default function BoardPresentation({
         )}
 
         <div className={styles.boardPresentation__ctas}>
-          <button
-            className={`${styles.boardPresentation__btn} ${styles['boardPresentation__btn--buy']}`}
-            type="button"
-          >
-            {buyLabel}
-          </button>
-          <button
-            className={`${styles.boardPresentation__btn} ${styles['boardPresentation__btn--cart']}`}
-            type="button"
-          >
-            {cartLabel}
-          </button>
+          <BuyCta
+            product={product}
+            locale={locale}
+            previewImage={previewImage}
+            labels={{
+              buy: buyLabel,
+              cart: cartLabel,
+              configure: configureLabel,
+              from: fromLabel,
+              cartStub: cartStubLabel,
+              close: closeLabel,
+            }}
+          />
         </div>
 
         <ul className={styles.boardPresentation__perks}>
