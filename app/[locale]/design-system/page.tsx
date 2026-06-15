@@ -10,6 +10,7 @@ import SectionFullMedia from '@/components/full-media/SectionFullMedia'
 import SectionBigQuote from '@/components/big-quote/SectionBigQuote'
 import SectionMediaLine from '@/components/media-line/SectionMediaLine'
 import SectionFeatures from '@/components/features/SectionFeatures'
+import SectionOutline from '@/components/outline/SectionOutline'
 
 export default async function DesignSystemPage({
   params,
@@ -47,6 +48,14 @@ export default async function DesignSystemPage({
       ? { ...f, imageUrl: undefined, videoUrl: 'https://customer-se4p8jzilnf43xyu.cloudflarestream.com/40edf58cdba22802adf01fc5a5404cb5/downloads/default.mp4', videoPoster: f.imageUrl }
       : f
   )
+
+  // Outline timeline — the 4 shape-evolution SVGs from the prototype.
+  const outlineMilestones = [
+    { year: '1970', name: 'Surf classique', tag: 'Origine', svgPath: 'M 50,10 C 64,10 82,50 84,138 C 86,218 78,268 70,286 L 50,290 L 30,286 C 22,268 14,218 16,138 C 18,50 36,10 50,10 Z' },
+    { year: '2004', name: 'First freestyle shape', tag: 'Smaller tail', svgPath: 'M 50,10 C 60,10 74,44 76,128 C 78,206 72,260 65,280 L 50,290 L 35,280 C 28,260 22,206 24,128 C 26,44 40,10 50,10 Z' },
+    { year: '2015', name: 'Square shape', tag: 'Round nose', svgPath: 'M 50,10 C 66,10 86,50 89,126 C 91,184 84,234 74,260 L 64,278 L 57,271 L 50,275 L 43,271 L 36,278 L 26,260 C 16,234 9,184 11,126 C 14,50 34,10 50,10 Z' },
+    { year: '2015', name: 'The Rocket', tag: 'Perfect One', svgPath: 'M 48.9,5.0 C 53.9,5.5 57.0,6.0 63.0,7.9 C 71.5,10.4 74.1,13.3 78.7,24.6 C 83.0,35.1 85.5,46.9 86.5,67.0 C 87.8,92.7 90.6,197.1 91.0,232.7 C 91.2,253.5 88.4,268.5 85.1,277.9 C 83.3,283.9 80.5,288.7 76.1,291.1 C 70.5,293.7 59.2,295.0 50.2,295.0 C 41.2,295.0 31.2,294.2 25.6,291.6 C 21.1,289.3 18.4,287.2 14.9,278.1 C 11.4,268.7 9.0,253.6 9.2,232.8 C 9.6,197.2 12.0,90.4 13.2,64.7 C 14.3,43.3 17.2,33.8 19.9,26.4 C 24.5,13.4 27.4,9.7 35.9,7.5 C 40.3,6.4 44.1,5.4 48.9,5.0 Z' },
+  ]
 
   const sampleBody = [
     {
@@ -299,6 +308,22 @@ export default async function DesignSystemPage({
           <SectionFeatures items={featureItemsMixed} theme="dark" />
         </div>
       )}
+
+      {/* Outline — shape evolution. Sticky scrub: scroll to fade+scale through eras. */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <SectionOutline
+          title={'Evolution du shape\ndu surf a la Rocket'}
+          intro="Vingt ans de R&D condensés dans un seul shape. Au début les planches directionnelles de kitesurf sont inspirées du surf ; au cours des années, elles ont évolué en réduisant le volume, en modifiant le tail, en ajoutant des pads."
+          milestones={outlineMilestones}
+          finalImageUrl="/samples/rocket.png"
+          finalLabel={{ title: 'TK Rocket', subtitle: 'Freestyle Strapless' }}
+          halos={[
+            { rgb: '120, 160, 255', opacity: 0.22, w: '70vw', h: '70vh', spread: '0%', anchor: 'top-left', y: '30vh' },
+            { rgb: '210, 160, 120', opacity: 0.2, w: '60vw', h: '60vh', spread: '0%', anchor: 'top-right', y: '170vh' },
+            { rgb: '120, 210, 200', opacity: 0.2, w: '66vw', h: '66vh', spread: '0%', anchor: 'top-left', y: '310vh' },
+          ]}
+        />
+      </div>
     </>
   )
 }

@@ -1,0 +1,19 @@
+/* Local halos — glows that live inside a section and scroll/pin with it. */
+.halos {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.halo {
+  position: absolute;
+  /* left/top/width/height + the --halo-* vars are set inline per halo. */
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(var(--halo-rgb), var(--halo-op)) var(--halo-spread),
+    transparent 100%
+  );
+}

@@ -1,0 +1,257 @@
+/* Outline — sticky scrubbed shape-evolution. Dark section. */
+.section {
+  position: relative;
+  height: calc(var(--ol-steps, 4) * 100vh);
+  color: var(--color-white);
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  z-index: 1; /* above the local halos (z-index 0) */
+  overflow: hidden;
+  /* 12-column grid (matches the project grid) so content lands on the right
+     columns, like the Figma. */
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--col-gutter);
+  padding-inline: var(--gutter);
+}
+
+/* ── Visual (left): stacked outlines + final photo ── */
+.visual {
+  position: relative;
+  grid-column: 1 / 7;
+}
+
+/* Subtle vertical guide on the inner edge + soft center glow (from the mockup). */
+.visual::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255, 255, 255, 0.025) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.board {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hidden until the scrub reveals it. GSAP animates `.outline` opacity/scale, so
+   the initial-hide must live on `.outline` (NOT `.board`) — otherwise the parent
+   stays at opacity 0 and the revealed child never shows. */
+.outline {
+  opacity: 0;
+}
+
+.outline {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.outline svg {
+  display: block;
+  height: 70vh;
+  width: auto;
+  fill: none;
+  stroke: var(--color-white);
+  stroke-width: 1.5px;
+}
+
+.outline svg path {
+  vector-effect: non-scaling-stroke;
+}
+
+.finalPhoto {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+}
+
+.finalPhoto img {
+  height: 70vh;
+  width: auto;
+  display: block;
+}
+
+.finalLabel {
+  position: absolute;
+  bottom: 52px;
+  right: 52px;
+  z-index: 10;
+  opacity: 0;
+  text-align: right;
+}
+
+.finalLabel strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.finalLabel span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-white-50);
+}
+
+/* ── Content (right): eyebrow, title, intro, timeline ── */
+.content {
+  grid-column: 7 / 11; /* cols 7–10, matches the Figma block (~526px) */
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.eyebrow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-white-72);
+  margin-bottom: 24px;
+}
+
+/* Short divider under the eyebrow (Figma). */
+.eyebrow::after {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--color-white-50);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 2.6vw, 36px);
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--color-white);
+  white-space: pre-line;
+  margin-bottom: 20px;
+}
+
+.intro {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-white-80);
+  max-width: 526px;
+  margin-bottom: var(--space-xl);
+}
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 526px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.row:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.year {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-white);
+  opacity: 0.6;
+  flex-shrink: 0;
+  min-width: 34px;
+}
+
+.name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-white-50);
+}
+
+.tag {
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: 12px;
+  text-align: right;
+  color: var(--color-white-50);
+}
+
+/* ── Fallback: mobile + reduced-motion — static, show final photo + timeline ── */
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+  .section {
+    height: auto;
+  }
+
+  .sticky {
+    position: static;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+
+  .visual {
+    aspect-ratio: 4 / 5;
+  }
+
+  .board {
+    display: none;
+  }
+
+  .finalPhoto {
+    position: relative;
+    opacity: 1;
+  }
+
+  .finalLabel {
+    position: static;
+    opacity: 1;
+    text-align: left;
+    margin-top: var(--space-md);
+  }
+
+  .content {
+    max-width: none;
+    padding: var(--space-2xl) var(--gutter);
+  }
+}

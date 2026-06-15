@@ -83,7 +83,7 @@ export default function SectionFeatures({ items, theme = 'light' }: Props) {
       <ul ref={trackRef} className={styles.track}>
         {items.map((item, i) => (
           <li key={i} className={styles.item}>
-            <div className={styles.media}>
+            <div className={styles.media} >
               {item.videoUrl ? (
                 <FullMediaVideo src={item.videoUrl} poster={item.videoPoster} />
               ) : item.imageUrl ? (
