@@ -35,9 +35,11 @@ const DIM = 0.5 // inactive timeline row
 // the global base layer (see Halos.tsx). y offsets place them at different scroll
 // depths down the section. Brand blue-white, matching the site's other halos.
 const HALOS: Halo[] = [
-  { rgb: '225, 255, 255', opacity: 0.25, w: '80vw', h: '70vh', spread: '0%', anchor: 'top-left', y: '30vh' },
-  { rgb: '225, 255, 255', opacity: 0.25, w: '80vw', h: '70vh', spread: '0%', anchor: 'top-right', y: '170vh' },
-  { rgb: '225, 255, 255', opacity: 0.25, w: '80vW', h: '70vh', spread: '0%', anchor: 'top-left', y: '310vh' },
+  { rgb: '225, 255, 255', opacity: 0.25, w: '80vw', h: '70vh', spread: '0%', anchor: 'top-left', y: '0vh' },
+  { rgb: '225, 255, 255', opacity: 0.25, w: '80vw', h: '70vh', spread: '0%', anchor: 'top-right', y: '100vh' },
+  { rgb: '225, 255, 255', opacity: 0.25, w: '80vW', h: '70vh', spread: '0%', anchor: 'top-left', y: '250vh' },
+  { rgb: '225, 255, 255', opacity: 0.25, w: '80vW', h: '70vh', spread: '0%', anchor: 'top-right', y: '390vh' },
+
 ]
 
 /**
