@@ -33,6 +33,8 @@ export const homePage = defineType({
         { type: 'sectionFullMedia' },
         { type: 'sectionBigQuote' },
         { type: 'sectionMediaLine' },
+        { type: 'sectionFeatures' },
+        { type: 'sectionOutline' },
       ],
       group: 'content',
     }),

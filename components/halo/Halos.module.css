@@ -1,0 +1,13 @@
+/* Invisible position markers for the global halo layer (BgHalos reads their
+   document position and draws the glow at the base — nothing renders here). */
+.halos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
