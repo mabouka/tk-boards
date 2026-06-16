@@ -1,3 +1,6 @@
+'use client'
+
+import { useEffect } from 'react'
 import styles from './Halos.module.css'
 
 export type HaloAnchor =
@@ -41,35 +44,53 @@ const ANCHORS: Record<HaloAnchor, { left: string; top: string }> = {
   'bottom-right': { left: '100%', top: '100%' },
 }
 
-function haloStyle(h: Halo): React.CSSProperties {
-  const a = ANCHORS[h.anchor ?? 'center']
-  return {
-    left: h.x ? `calc(${a.left} + ${h.x})` : a.left,
-    top: h.y ? `calc(${a.top} + ${h.y})` : a.top,
-    width: h.w ?? '67vw',
-    height: h.h ?? '64vh',
-    ['--halo-rgb' as string]: h.rgb ?? '212, 172, 251',
-    ['--halo-op' as string]: String(h.opacity ?? 0.36),
-    ['--halo-spread' as string]: h.spread ?? '1%',
-  } as React.CSSProperties
-}
-
 /**
- * Local halos — radial-gradient glows rendered as DOM children of a section, so
- * they move WITH it (works on pinned/sticky GSAP sections, unlike the global
- * doc-anchored data-halo system). Pass an array; each halo has its own colour,
- * size, anchor, and x/y offset (e.g. y: "100vh" / "200vh") so several halos sit
- * at different depths down a tall section. Pure CSS — no JS.
+ * Multiple halos for a section, rendered by the GLOBAL background layer (BgHalos)
+ * — same as every other `data-halo` halo, so they sit in the base layer behind
+ * all content, not painted inside the section.
  *
- * The parent must be `position: relative` (or any positioning context).
+ * Each entry becomes an invisible `data-halo` marker positioned (anchor + x/y
+ * offset, e.g. y:"100vh"/"200vh") inside the parent; BgHalos reads the marker's
+ * document position and draws the glow at the base. The parent must be
+ * `position: relative`. Dispatches `bg:rebuild` so BgHalos picks the markers up
+ * (and re-bakes after the layout settles).
  */
 export default function Halos({ halos }: { halos: Halo[] }) {
+  useEffect(() => {
+    const rebuild = () => window.dispatchEvent(new Event('bg:rebuild'))
+    rebuild()
+    window.addEventListener('load', rebuild)
+    window.addEventListener('resize', rebuild)
+    return () => {
+      window.removeEventListener('load', rebuild)
+      window.removeEventListener('resize', rebuild)
+    }
+  }, [])
+
   if (!halos?.length) return null
+
   return (
     <div className={styles.halos} aria-hidden="true">
-      {halos.map((h, i) => (
-        <span key={i} className={styles.halo} style={haloStyle(h)} />
-      ))}
+      {halos.map((h, i) => {
+        const a = ANCHORS[h.anchor ?? 'center']
+        return (
+          <span
+            key={i}
+            className={styles.marker}
+            style={{
+              left: h.x ? `calc(${a.left} + ${h.x})` : a.left,
+              top: h.y ? `calc(${a.top} + ${h.y})` : a.top,
+            }}
+            data-halo
+            data-halo-anchor="center"
+            data-halo-rgb={h.rgb ?? '212, 172, 251'}
+            data-halo-opacity={String(h.opacity ?? 0.36)}
+            data-halo-w={h.w ?? '67vw'}
+            data-halo-h={h.h ?? '64vh'}
+            data-halo-spread={h.spread ?? '1%'}
+          />
+        )
+      })}
     </div>
   )
 }

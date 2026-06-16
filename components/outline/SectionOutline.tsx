@@ -25,14 +25,20 @@ type Props = {
   /** Final board photo revealed at the end (mockup now, Sanity later). */
   finalImageUrl?: string
   finalLabel?: { title: string; subtitle: string }
-  /** Local halos that scroll through behind the pinned content (use y offsets
-   *  like "100vh" / "200vh" to place them at different depths). */
-  halos?: Halo[]
 }
 
 const VIEWBOX = '0 0 100 300'
 const GHOST = 0.13 // faint trace of the previous outline
 const DIM = 0.5 // inactive timeline row
+
+// Background halos for the section — tweak colours/positions here. They render in
+// the global base layer (see Halos.tsx). y offsets place them at different scroll
+// depths down the section. Brand blue-white, matching the site's other halos.
+const HALOS: Halo[] = [
+  { rgb: '225, 255, 255', opacity: 0.25, w: '80vw', h: '70vh', spread: '0%', anchor: 'top-left', y: '30vh' },
+  { rgb: '225, 255, 255', opacity: 0.25, w: '80vw', h: '70vh', spread: '0%', anchor: 'top-right', y: '170vh' },
+  { rgb: '225, 255, 255', opacity: 0.25, w: '80vW', h: '70vh', spread: '0%', anchor: 'top-left', y: '310vh' },
+]
 
 /**
  * Outline — the board's shape evolution. The section is sticky for its scroll
@@ -48,7 +54,6 @@ export default function SectionOutline({
   milestones,
   finalImageUrl,
   finalLabel,
-  halos,
 }: Props) {
   const rootRef = useRef<HTMLElement>(null)
 
@@ -58,6 +63,11 @@ export default function SectionOutline({
       if (!root || milestones.length === 0) return
 
       ScrollTrigger.config({ ignoreMobileResize: true })
+
+      // Pins above shift our halo markers' document positions; re-bake the global
+      // halos whenever ScrollTrigger recomputes layout.
+      const rebuildHalos = () => window.dispatchEvent(new Event('bg:rebuild'))
+      ScrollTrigger.addEventListener('refresh', rebuildHalos)
 
       const mm = gsap.matchMedia()
       mm.add('(min-width: 769px) and (prefers-reduced-motion: no-preference)', () => {
@@ -114,6 +124,8 @@ export default function SectionOutline({
       if (document.readyState !== 'complete') {
         window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true })
       }
+
+      return () => ScrollTrigger.removeEventListener('refresh', rebuildHalos)
     },
     { scope: rootRef, dependencies: [milestones.length] }
   )
@@ -124,7 +136,7 @@ export default function SectionOutline({
       className={styles.section}
       style={{ '--ol-steps': milestones.length } as React.CSSProperties}
     >
-      {halos && <Halos halos={halos} />}
+      <Halos halos={HALOS} />
       <div className={styles.sticky}>
         {/* Visual — stacked outlines + the final photo */}
         <div className={styles.visual}>

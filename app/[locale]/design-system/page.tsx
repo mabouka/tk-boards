@@ -317,11 +317,6 @@ export default async function DesignSystemPage({
           milestones={outlineMilestones}
           finalImageUrl="/samples/rocket.png"
           finalLabel={{ title: 'TK Rocket', subtitle: 'Freestyle Strapless' }}
-          halos={[
-            { rgb: '120, 160, 255', opacity: 0.22, w: '70vw', h: '70vh', spread: '0%', anchor: 'top-left', y: '30vh' },
-            { rgb: '210, 160, 120', opacity: 0.2, w: '60vw', h: '60vh', spread: '0%', anchor: 'top-right', y: '170vh' },
-            { rgb: '120, 210, 200', opacity: 0.2, w: '66vw', h: '66vh', spread: '0%', anchor: 'top-left', y: '310vh' },
-          ]}
         />
       </div>
     </>

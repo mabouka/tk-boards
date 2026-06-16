@@ -1,19 +1,13 @@
-/* Local halos — glows that live inside a section and scroll/pin with it. */
+/* Invisible position markers for the global halo layer (BgHalos reads their
+   document position and draws the glow at the base — nothing renders here). */
 .halos {
   position: absolute;
   inset: 0;
-  overflow: hidden;
-  z-index: 0;
   pointer-events: none;
 }
 
-.halo {
+.marker {
   position: absolute;
-  /* left/top/width/height + the --halo-* vars are set inline per halo. */
-  transform: translate(-50%, -50%);
-  background: radial-gradient(
-    50% 50% at 50% 50%,
-    rgba(var(--halo-rgb), var(--halo-op)) var(--halo-spread),
-    transparent 100%
-  );
+  width: 0;
+  height: 0;
 }
