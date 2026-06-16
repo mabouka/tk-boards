@@ -2,12 +2,13 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  /* Via a custom property so the prod CSS minifier can't strip the space between
-     the two filter functions (`brightness(50%)blur(35px)` would be invalid and
-     the whole declaration dropped). Custom-property values are preserved as-is. */
+  /* Custom property keeps the space between the two filter functions through
+     minification (`brightness()blur()` would be invalid). Order matters: the
+     -webkit- prefix MUST come first and the standard property last, otherwise
+     the prod minifier drops the unprefixed one (Chrome/FF/Edge lose the blur). */
   --menu-backdrop-fx: brightness(50%) blur(35px);
-  backdrop-filter: var(--menu-backdrop-fx);
   -webkit-backdrop-filter: var(--menu-backdrop-fx);
+  backdrop-filter: var(--menu-backdrop-fx);
   color: var(--color-white);
   opacity: 0;
   visibility: hidden;
