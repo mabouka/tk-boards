@@ -20,8 +20,13 @@ export function lineFromVariant(
     })
     .filter((x): x is string => x !== null)
 
+  // Variant SKU is the dedup key; fall back to a combo key when a variant has a
+  // blank/missing SKU so distinct configurations don't collapse into one line.
+  const comboKey = product.attributes.map((a) => `${a.code}:${selected[a.code] ?? ''}`).join('|')
+  const id = variant.sku && variant.sku.trim() ? variant.sku : `${product.sku}|${comboKey}`
+
   return {
-    id: variant.sku,
+    id,
     name,
     attributes,
     imageUrl,

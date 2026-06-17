@@ -16,7 +16,10 @@ export default function CartDrawer({ locale }: { locale: string }) {
       onClose={() => setOpen(false)}
       onQty={(id, delta) => {
         const line = items.find((l) => l.id === id)
-        if (line) setQty(id, line.qty + delta)
+        if (!line) return
+        const next = line.qty + delta
+        if (next < 1) removeItem(id)
+        else setQty(id, next)
       }}
       onRemove={removeItem}
     />

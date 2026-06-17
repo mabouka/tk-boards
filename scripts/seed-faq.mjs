@@ -207,6 +207,9 @@ async function main() {
 
   const client = createClient({ projectId, dataset, apiVersion: '2025-05-25', token, useCdn: false })
 
+  // Phase 1 — resolve docs + build & validate every locale's patch. Any failure
+  // here aborts BEFORE a single write, so the seed can never be left partial.
+  const planned = []
   for (const lang of ['en', 'fr', 'es']) {
     const c = content[lang]
     const doc = await client.fetch(
@@ -214,26 +217,31 @@ async function main() {
       { lang },
     )
     if (!doc?._id) {
-      console.error(`✗ [${lang}] No published faqPage doc found — skipping.`)
-      continue
-    }
-
-    const items = c.items.map(([catKey, q, a]) => item(c.cat[catKey], q, a))
-
-    // Sanity check: _keys must be unique within the array.
-    const keys = new Set(items.map((i) => i._key))
-    if (keys.size !== items.length) {
-      console.error(`✗ [${lang}] Duplicate _key detected — aborting.`)
+      console.error(`✗ [${lang}] No published faqPage doc found — aborting (nothing written).`)
       process.exit(1)
     }
-
-    await client.patch(doc._id).set({ title: c.title, intro: c.intro, items }).commit()
-
-    const byCat = {}
-    for (const i of items) byCat[i.category] = (byCat[i.category] || 0) + 1
-    console.log(`✓ [${lang}] ${doc._id} — ${items.length} items:`, JSON.stringify(byCat))
+    const items = c.items.map(([catKey, q, a]) => item(c.cat[catKey], q, a))
+    // _keys must be unique within the array.
+    const keys = new Set(items.map((i) => i._key))
+    if (keys.size !== items.length) {
+      console.error(`✗ [${lang}] Duplicate _key detected — aborting (nothing written).`)
+      process.exit(1)
+    }
+    planned.push({ lang, id: doc._id, set: { title: c.title, intro: c.intro, items }, items })
   }
 
+  // Phase 2 — commit all three locales in ONE transaction (all-or-nothing).
+  const tx = planned.reduce(
+    (t, p) => t.patch(p.id, (patch) => patch.set(p.set)),
+    client.transaction(),
+  )
+  await tx.commit()
+
+  for (const p of planned) {
+    const byCat = {}
+    for (const i of p.items) byCat[i.category] = (byCat[i.category] || 0) + 1
+    console.log(`✓ [${p.lang}] ${p.id} — ${p.items.length} items:`, JSON.stringify(byCat))
+  }
   console.log('Done. Page updates after cache revalidation (sanityCache revalidate 3600 / webhook).')
 }
 
