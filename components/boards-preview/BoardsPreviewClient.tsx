@@ -27,18 +27,37 @@ type Props = {
   discoverCta: string
   viewBoardLabel: string
   showFilters?: boolean
+  filterBySeries?: boolean
 }
 
-export default function BoardsPreviewClient({ series, title, discoverCta, viewBoardLabel, showFilters = true }: Props) {
+type BoardWithSeries = Board & {
+  seriesName: string
+  seriesTagVariant: Series['tagVariant']
+}
+
+export default function BoardsPreviewClient({ series, title, discoverCta, viewBoardLabel, showFilters = true, filterBySeries = true }: Props) {
   const [activeId, setActiveId] = useState(series[0]?._id ?? '')
   const activeSeries = series.find(s => s._id === activeId)
-  const boards = activeSeries?.boards ?? []
+
+  const boards: BoardWithSeries[] = filterBySeries
+    ? (activeSeries?.boards ?? []).map(board => ({
+        ...board,
+        seriesName: activeSeries?.name ?? '',
+        seriesTagVariant: activeSeries?.tagVariant,
+      }))
+    : series.flatMap(s =>
+        s.boards.map(board => ({
+          ...board,
+          seriesName: s.name,
+          seriesTagVariant: s.tagVariant,
+        })),
+      )
 
   return (
     <section className={styles.boards}>
       <h2 className={styles.boards__title}>{title}</h2>
 
-      {showFilters && series.length > 1 && (
+      {filterBySeries && showFilters && series.length > 1 && (
         <div className={styles.boards__filters}>
           {series.map(s => (
             <button
@@ -83,7 +102,7 @@ export default function BoardsPreviewClient({ series, title, discoverCta, viewBo
               <div className={styles.boards__card_overlay} aria-hidden="true" />
               <span className={styles.boards__card_name}>{board.name}</span>
               <div className={styles.boards__card_meta}>
-                <span className={`${styles.boards__card_tag} u-tag--${activeSeries?.tagVariant ?? 'dark'}`}>{activeSeries?.name}</span>
+                <span className={`${styles.boards__card_tag} u-tag--${board.seriesTagVariant ?? 'dark'}`}>{board.seriesName}</span>
                 {board.style && (
                   <span className={`${styles.boards__card_tag} u-tag--cream`}>{board.style}</span>
                 )}

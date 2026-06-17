@@ -138,6 +138,7 @@ export async function getProduct(id: string): Promise<ProductEditInput | null> {
     sku: p.sku,
     kind: (p.kind as 'board' | 'accessory' | null) ?? null,
     active: p.active,
+    miniConfigurator: p.miniConfigurator,
     options,
     variants: editorVariants,
     addons: opts.map((o) => ({

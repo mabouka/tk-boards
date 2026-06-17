@@ -13,8 +13,11 @@ import SectionTextGallery from '@/components/text-gallery/SectionTextGallery'
 import SectionFullMedia from '@/components/full-media/SectionFullMedia'
 import SectionBigQuote from '@/components/big-quote/SectionBigQuote'
 import SectionMediaLine from '@/components/media-line/SectionMediaLine'
+import SectionFixedImage from '@/components/fixed-image/SectionFixedImage'
+import SectionSpecs from '@/components/specs/SectionSpecs'
 import type { FeatureItem } from '@/components/features/SectionFeatures'
 import type { OutlineMilestone } from '@/components/outline/SectionOutline'
+import type { FixedImageItem } from '@/components/fixed-image/SectionFixedImage'
 
 // Lazy-loaded so GSAP only ships on pages that actually render these sections.
 const SectionFeatures = dynamic(() => import('@/components/features/SectionFeatures'))
@@ -99,6 +102,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
                 discoverCta={t('boards_discover')}
                 viewBoardLabel={t('view_board')}
                 showFilters={section.showFilters ?? true}
+                filterBySeries={section.filterBySeries ?? true}
               />
             )
           case 'sectionAboutPreview':
@@ -228,6 +232,31 @@ export default async function PageBuilder({ sections, locale }: Props) {
               />
             )
           }
+          case 'sectionFixedImage': {
+            const fixedItems: FixedImageItem[] = (section.fixedImages ?? []).map((it) => ({
+              _key: it._key,
+              imageUrl: it.image ? urlFor(it.image).width(2000).quality(85).url() : undefined,
+              title: it.title ?? undefined,
+              text: it.text ?? undefined,
+              startColumn: it.startColumn ?? undefined,
+              verticalPosition: it.verticalPosition ?? undefined,
+              cta: it.cta ? toCta(it.cta) : undefined,
+            }))
+            return <SectionFixedImage key={section._key} items={fixedItems} />
+          }
+          case 'sectionSpecs':
+            return (
+              <SectionSpecs
+                key={section._key}
+                eyebrow={section.eyebrow ?? undefined}
+                title={section.title ?? undefined}
+                columns={(section.columns ?? []).filter((c): c is string => typeof c === 'string')}
+                rows={(section.rows ?? []).map((r) => ({
+                  _key: r._key,
+                  cells: (r.cells ?? []).map((c) => c ?? ''),
+                }))}
+              />
+            )
           default:
             return null
         }

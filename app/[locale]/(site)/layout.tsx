@@ -3,6 +3,8 @@ import Header from '@/components/header/Header'
 import Footer from '@/components/footer/Footer'
 import MainMenu from '@/components/menu/MainMenu'
 import { MenuProvider } from '@/components/menu/MenuContext'
+import { CartProvider } from '@/components/cart/CartContext'
+import CartDrawer from '@/components/cart/CartDrawer'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { navigationQuery } from '@/sanity/lib/queries'
@@ -75,16 +77,19 @@ export default async function SiteLayout({ children, params }: Props) {
     .map(([key, url]) => ({ key, url: url as string }))
 
   return (
-    <MenuProvider>
-      <Header locale={locale} />
-      <main>{children}</main>
-      <Footer locale={locale} />
-      <MainMenu
-        navItems={navItems}
-        legalItems={legalItems}
-        featuredBoards={featuredBoards}
-        socials={socials}
-      />
-    </MenuProvider>
+    <CartProvider>
+      <MenuProvider>
+        <Header locale={locale} />
+        <main>{children}</main>
+        <Footer locale={locale} />
+        <MainMenu
+          navItems={navItems}
+          legalItems={legalItems}
+          featuredBoards={featuredBoards}
+          socials={socials}
+        />
+        <CartDrawer locale={locale} />
+      </MenuProvider>
+    </CartProvider>
   )
 }

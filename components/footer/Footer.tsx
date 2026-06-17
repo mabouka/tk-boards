@@ -49,10 +49,10 @@ export default async function Footer({ locale }: Props) {
         className={styles.footer__grid}
         data-halo
         data-halo-rgb="225, 225, 255"
-        data-halo-opacity="0.23"
+        data-halo-opacity="0.20"
         data-halo-w="122vw"
         data-halo-h="47vh"
-        data-halo-spread="23%"
+        data-halo-spread="2%"
         data-halo-anchor="bottom-right"
       >
 

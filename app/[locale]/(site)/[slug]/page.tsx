@@ -3,9 +3,11 @@ import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
-import { cmsPageBySlugQuery } from '@/sanity/lib/queries'
+import { cmsPageBySlugQuery, faqPageQuery } from '@/sanity/lib/queries'
+import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import BigTitle from '@/components/placeholder/BigTitle'
+import FaqPage from '@/components/faq/FaqPage'
 
 type Props = { params: Promise<{ locale: string; slug: string }> }
 
@@ -15,6 +17,10 @@ const getCmsPage = cache((locale: string, slug: string) =>
     { slug, locale },
     sanityCache('page', 'ourStoryPage', 'contactPage', 'faqPage', 'whereToBuyPage')
   )
+)
+
+const getFaqPage = cache((locale: string, slug: string) =>
+  client.fetch(faqPageQuery, { slug, locale }, sanityCache('faqPage'))
 )
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -53,6 +59,25 @@ export default async function CmsPage({ params }: Props) {
   const { locale, slug } = await params
   const page = await getCmsPage(locale, slug)
   if (!page) notFound()
+
+  if (page._type === 'faqPage') {
+    const faq = await getFaqPage(locale, slug)
+    if (!faq) notFound()
+
+    // Resolve image URLs server-side so the client component never ships
+    // @sanity/image-url (consistent with the other product/section routes).
+    const items = (faq.items ?? []).map((item) => ({
+      question: item.question,
+      answer: item.answer,
+      category: item.category,
+      imageUrl: item.image?.asset
+        ? urlFor(item.image).width(960).quality(85).auto('format').url()
+        : null,
+      imageAlt: item.image?.alt ?? null,
+    }))
+
+    return <FaqPage title={faq.title} intro={faq.intro} items={items} />
+  }
 
   return <BigTitle>{page.title}</BigTitle>
 }

@@ -18,6 +18,7 @@ function boardInput(sizes: string[], id?: string, sku = 'BX'): ProductInput {
     sku,
     kind: 'board',
     active: true,
+    miniConfigurator: false,
     options: [
       {
         code: 'SIZE',

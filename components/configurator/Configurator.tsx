@@ -7,6 +7,7 @@ import type { StorefrontProduct, StorefrontVariant } from '@/lib/storefront/prod
 import { formatEur } from '@/lib/format-price'
 import { useDrawer } from '@/lib/use-drawer'
 import { useCart } from '@/lib/use-cart'
+import { lineFromVariant } from '@/components/cart/cartLine'
 import styles from './Configurator.module.css'
 
 export type ConfiguratorLabels = {
@@ -22,6 +23,7 @@ type Props = {
   product: StorefrontProduct
   locale: string
   labels: ConfiguratorLabels
+  productName: string
   previewImage?: string | null
   open: boolean
   onClose: () => void
@@ -31,6 +33,7 @@ export default function Configurator({
   product,
   locale,
   labels,
+  productName,
   previewImage,
   open,
   onClose,
@@ -40,7 +43,7 @@ export default function Configurator({
     const first = product.variants.find((v) => v.stock > 0) ?? product.variants[0]
     return first ? { ...first.combo } : {}
   })
-  const { addToCart, justAdded } = useCart()
+  const { addItem } = useCart()
   // Portal target only exists on the client — false during SSR/hydration, true
   // after, without a setState-in-effect.
   const mounted = useSyncExternalStore(
@@ -100,7 +103,9 @@ export default function Configurator({
   const oldPrice = resolved && resolved.salePrice != null ? resolved.price : null
 
   function handleAdd() {
-    if (resolved) addToCart(resolved.sku)
+    if (!resolved) return
+    addItem(lineFromVariant(product, resolved, selected, productName, previewImage ?? ''))
+    onClose()
   }
 
   if (!mounted) return null
@@ -193,7 +198,6 @@ export default function Configurator({
               {oldPrice != null && <span className={styles.priceOld}>{formatEur(oldPrice, locale)}</span>}
             </p>
           )}
-          {justAdded && <p className={styles.note}>{labels.cartStub}</p>}
           <div className={styles.btnRow}>
             <button
               type="button"

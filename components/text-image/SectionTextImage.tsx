@@ -54,10 +54,10 @@ export default function SectionTextImage({
       {...(isDark
         ? {
           'data-halo': '',
-          'data-halo-rgb': '212, 172, 251',
-          'data-halo-opacity': '0.28',
-          'data-halo-w': '61vw',
-          'data-halo-h': '39vh',
+          'data-halo-rgb': '225, 255, 255',
+          'data-halo-opacity': '0.25',
+          'data-halo-w': '60vw',
+          'data-halo-h': '40vh',
           'data-halo-spread': '29%',
         }
         : {})}

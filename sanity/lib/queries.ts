@@ -42,6 +42,7 @@ export const boardBySlugQuery = defineQuery(`
       _key,
       title,
       showFilters,
+      filterBySeries,
       items,
       eyebrow,
       label,
@@ -68,6 +69,8 @@ export const boardBySlugQuery = defineQuery(`
       finalImage,
       finalLabelTitle,
       finalLabelSubtitle,
+      columns,
+      "rows": rows[]{ _key, cells },
       "cta": cta {
         "text": text,
         "openInNewTab": openInNewTab,
@@ -118,8 +121,62 @@ export const boardBySlugQuery = defineQuery(`
             type == "phone" => "tel:" + phone
           )
         }
+      },
+      "fixedImages": items[]{
+        _key,
+        image,
+        title,
+        text,
+        startColumn,
+        verticalPosition,
+        "cta": cta {
+          "text": text,
+          "openInNewTab": openInNewTab,
+          "href": select(
+            type == "internal" && internalLink->_type == "homePage" => "/",
+            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
+            type == "internal" => "/" + internalLink->slug.current,
+            type == "external" => url,
+            type == "email" => "mailto:" + email,
+            type == "phone" => "tel:" + phone
+          )
+        }
       }
     },
+    seoTitle,
+    seoDescription,
+    ogImage,
+    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{
+      "lang": value->language,
+      "slug": value->slug.current
+    }
+  }
+`)
+
+export const accessoryBySlugQuery = defineQuery(`
+  *[_type == "accessory" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {
+    _id,
+    title,
+    slug,
+    skuCode,
+    presentationTitle,
+    text,
+    presentationNumbers[]{ value, unit, label },
+    presentationTags[]{ text, style },
+    specifications[]{ name, value },
+    gallery[]{
+      asset,
+      alt,
+      hotspot,
+      crop
+    },
+    mainImage,
+    sizes,
+    price,
+    originalPrice,
+    currency,
     seoTitle,
     seoDescription,
     ogImage,
@@ -240,6 +297,7 @@ export const homePageByLocaleQuery = defineQuery(`
       _key,
       title,
       showFilters,
+      filterBySeries,
       items,
       eyebrow,
       label,
@@ -266,6 +324,8 @@ export const homePageByLocaleQuery = defineQuery(`
       finalImage,
       finalLabelTitle,
       finalLabelSubtitle,
+      columns,
+      "rows": rows[]{ _key, cells },
       "cta": cta {
         "text": text,
         "openInNewTab": openInNewTab,
@@ -316,6 +376,28 @@ export const homePageByLocaleQuery = defineQuery(`
             type == "phone" => "tel:" + phone
           )
         }
+      },
+      "fixedImages": items[]{
+        _key,
+        image,
+        title,
+        text,
+        startColumn,
+        verticalPosition,
+        "cta": cta {
+          "text": text,
+          "openInNewTab": openInNewTab,
+          "href": select(
+            type == "internal" && internalLink->_type == "homePage" => "/",
+            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
+            type == "internal" => "/" + internalLink->slug.current,
+            type == "external" => url,
+            type == "email" => "mailto:" + email,
+            type == "phone" => "tel:" + phone
+          )
+        }
       }
     }
   }
@@ -340,6 +422,21 @@ export const cmsPageBySlugQuery = defineQuery(`
     heroImage,
     "translations": *[_type == "translation.metadata" && references(^._id)][0]
       .translations[]{ "lang": value->language, "slug": value->slug.current }
+  }
+`)
+
+export const faqPageQuery = defineQuery(`
+  *[_type == "faqPage" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {
+    title,
+    intro,
+    "items": items[]{ question, answer, category, image },
+    seoTitle,
+    seoDescription,
+    ogImage,
+    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{
+      "lang": value->language,
+      "slug": value->slug.current
+    }
   }
 `)
 
@@ -402,6 +499,7 @@ export const pageBySlugQuery = defineQuery(`
       _key,
       title,
       showFilters,
+      filterBySeries,
       items,
       eyebrow,
       label,
@@ -428,6 +526,8 @@ export const pageBySlugQuery = defineQuery(`
       finalImage,
       finalLabelTitle,
       finalLabelSubtitle,
+      columns,
+      "rows": rows[]{ _key, cells },
       "cta": cta {
         "text": text,
         "openInNewTab": openInNewTab,
@@ -464,6 +564,28 @@ export const pageBySlugQuery = defineQuery(`
         videoPoster,
         title,
         text,
+        "cta": cta {
+          "text": text,
+          "openInNewTab": openInNewTab,
+          "href": select(
+            type == "internal" && internalLink->_type == "homePage" => "/",
+            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",
+            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",
+            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",
+            type == "internal" => "/" + internalLink->slug.current,
+            type == "external" => url,
+            type == "email" => "mailto:" + email,
+            type == "phone" => "tel:" + phone
+          )
+        }
+      },
+      "fixedImages": items[]{
+        _key,
+        image,
+        title,
+        text,
+        startColumn,
+        verticalPosition,
         "cta": cta {
           "text": text,
           "openInNewTab": openInNewTab,

@@ -11,7 +11,7 @@ import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { productGraph } from '@/lib/structured-data'
 import JsonLd from '@/components/json-ld/JsonLd'
 import HeroBoard from '@/components/hero-board/HeroBoard'
-import BoardPresentation from '@/components/board-presentation/BoardPresentation'
+import ProductPresentation from '@/components/product-presentation/ProductPresentation'
 import PageBuilder from '@/components/page-builder/PageBuilder'
 
 type Props = {
@@ -87,7 +87,7 @@ export default async function BoardPage({ params }: Props) {
         backgroundImage={board.heroImage}
       />
 
-      <BoardPresentation
+      <ProductPresentation
         sectionLabel={t('section_presentation')}
         title={board.presentationTitle}
         text={board.presentationText}
@@ -104,7 +104,7 @@ export default async function BoardPage({ params }: Props) {
         previewImage={previewImage}
         perks={[t('perk_shipping'), t('perk_warranty'), t('perk_payment')]}
         gallery={gallery}
-        boardName={board.name}
+        productName={board.name}
       />
 
       <PageBuilder sections={board.sections ?? []} locale={locale} />

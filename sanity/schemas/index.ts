@@ -26,6 +26,8 @@ import { sectionBigQuote } from './sections/sectionBigQuote'
 import { sectionMediaLine } from './sections/sectionMediaLine'
 import { sectionFeatures } from './sections/sectionFeatures'
 import { sectionOutline } from './sections/sectionOutline'
+import { sectionFixedImage } from './sections/sectionFixedImage'
+import { sectionSpecs } from './sections/sectionSpecs'
 
 export const schemaTypes = [
   accessory,
@@ -56,4 +58,6 @@ export const schemaTypes = [
   sectionMediaLine,
   sectionFeatures,
   sectionOutline,
+  sectionFixedImage,
+  sectionSpecs,
 ]

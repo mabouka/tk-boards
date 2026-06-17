@@ -1,4 +1,4 @@
-.boardPresentation {
+.productPresentation {
   position: relative;
   
   margin: var(--space-2xl) 0 var(--space-4xl);
@@ -6,14 +6,20 @@
 }
 
 @media (max-width: 1023px) {
-  .boardPresentation {
+  .productPresentation {
     grid-template-columns: 1fr;
   }
 }
 
+/* First element on the page (no hero above) → clear the fixed header. */
+.productPresentation--atPageTop {
+  margin-top: 0;
+  padding-top: 148px;
+}
+
 /* ── Left panel (sticky) ── */
 
-.boardPresentation__left {
+.productPresentation__left {
   composes: u-span-6 from global;
   padding-left: calc(var(--col-gutter) + var(--col-width));
   position: sticky;
@@ -28,7 +34,7 @@
 }
 
 @media (max-width: 1023px) {
-  .boardPresentation__left {
+  .productPresentation__left {
     position: static;
     padding: var(--space-lg) var(--gutter);
   }
@@ -36,7 +42,7 @@
 
 /* ── Section label + rule ── */
 
-.boardPresentation__label {
+.productPresentation__label {
   display: block;
   font-size: 14px;
   font-family: var(--font-mono);
@@ -44,7 +50,7 @@
   text-transform: uppercase;
 }
 
-.boardPresentation__rule {
+.productPresentation__rule {
   margin-top: 6px;
   margin-bottom: 4px;
   width: 26px;
@@ -54,7 +60,7 @@
 
 /* ── Headline ── */
 
-.boardPresentation__headline {
+.productPresentation__headline {
   font-family: var(--font-display);
   font-size: clamp(1.625rem, 2.4vw, 2.25rem);
   font-weight: 500;
@@ -67,7 +73,7 @@
 
 /* ── Tags ── */
 
-.boardPresentation__tags {
+.productPresentation__tags {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
@@ -77,7 +83,7 @@
 
 /* ── Description ── */
 
-.boardPresentation__description {
+.productPresentation__description {
   margin-top: 24px;
   margin-bottom: 24px;
   composes: u-body from global;
@@ -85,17 +91,17 @@
   max-width: col(4);
 }
 
-.boardPresentation__description p {
+.productPresentation__description p {
   margin: 0 0 7px;
 }
 
-.boardPresentation__description p:last-child {
+.productPresentation__description p:last-child {
   margin-bottom: 0;
 }
 
 /* ── Specs ── */
 
-.boardPresentation__specs {
+.productPresentation__specs {
   display: flex;
   justify-content: space-between;
   max-width: 500px;
@@ -103,18 +109,18 @@
 }
 
 @media (max-width: 479px) {
-  .boardPresentation__specs {
+  .productPresentation__specs {
     gap: var(--space-md);
   }
 }
 
-.boardPresentation__spec {
+.productPresentation__spec {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.boardPresentation__specValue {
+.productPresentation__specValue {
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 2.4vw, 2.25rem);
   font-weight: 500;
@@ -123,12 +129,12 @@
   text-transform: uppercase;
 }
 
-.boardPresentation__specUnit {
+.productPresentation__specUnit {
   font-size: clamp(0.875rem, 1.2vw, 1.125rem);
   color: var(--color-white-80);
 }
 
-.boardPresentation__specLabel {
+.productPresentation__specLabel {
   font-family: var(--font-mono);
   font-size: 0.875rem;
   letter-spacing: 0.1em;
@@ -137,23 +143,61 @@
   margin-top: 6px;
 }
 
+/* ── Specifications (name/value list) ── */
+
+.productPresentation__specList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: 500px;
+}
+
+.productPresentation__specListRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.productPresentation__specListRow:last-child {
+  border-bottom: none;
+}
+
+.productPresentation__specListName {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-white-80);
+}
+
+.productPresentation__specListValue {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: var(--color-white);
+  text-align: right;
+}
+
 /* ── CTAs ── */
 
-.boardPresentation__ctas {
-  margin-top: 48px;
+.productPresentation__ctas {
+  margin-top: 24px;
   display: flex;
   gap: var(--space-sm);
 }
 
 @media (max-width: 479px) {
-  .boardPresentation__ctas {
+  .productPresentation__ctas {
     flex-direction: column;
   }
 }
 
 /* ── Perks ── */
 
-.boardPresentation__perks {
+.productPresentation__perks {
   margin-top: 24px;
   list-style: none;
   display: flex;
@@ -161,7 +205,7 @@
   gap: 8px;
 }
 
-.boardPresentation__perk {
+.productPresentation__perk {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   letter-spacing: 0.0625em;
@@ -172,7 +216,7 @@
   gap: 10px;
 }
 
-.boardPresentation__perk::before {
+.productPresentation__perk::before {
   content: '';
   display: inline-block;
   width: 16px;
@@ -184,7 +228,7 @@
 
 /* ── Right panel (gallery) ── */
 
-.boardPresentation__right {
+.productPresentation__right {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -194,7 +238,7 @@
 
 }
 
-.boardPresentation__galleryItem {
+.productPresentation__galleryItem {
   position: relative;
   display: block;
   width: 100%;
@@ -206,6 +250,17 @@
   cursor: zoom-in;
 }
 
-.boardPresentation__galleryItem img {
+.productPresentation__galleryItem img {
   object-fit: cover;
+}
+
+/* ── Image-left variant ──
+   The gallery is rendered first in the DOM, so it auto-places into the left
+   columns and the info panel falls to the right. Only the two-column layout
+   (≥1024px) needs the indent mirrored to the right edge. */
+@media (min-width: 1024px) {
+  .productPresentation--imageLeft .productPresentation__left {
+    padding-left: 0;
+    padding-right: calc(var(--col-gutter) + var(--col-width));
+  }
 }

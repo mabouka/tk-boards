@@ -1,0 +1,70 @@
+.section {
+  position: relative;
+}
+
+/* Each image is a full-screen panel. background-attachment: fixed keeps the image
+   put while the page scrolls over it, so the next image "appears" as you scroll. */
+.panel {
+  position: relative;
+  height: 100vh;
+  background-color: var(--color-dark);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  overflow: hidden;
+}
+
+/* Text block — placed horizontally by grid column and vertically by a 0–100 value.
+   top = v-pos% of the section, translateY = -v-pos% of the block's own height, so
+   0 = top-aligned, 50 = centered, 100 = bottom-aligned, always staying in view. */
+.content {
+  position: absolute;
+  top: calc(var(--v-pos) * 1%);
+  transform: translateY(calc(var(--v-pos) * -1%));
+  left: calc(var(--gutter) + (var(--start-col) - 1) * (var(--col-width) + var(--col-gutter)));
+  width: calc(4 * var(--col-width) + 3 * var(--col-gutter));
+  max-width: calc(100vw - 2 * var(--gutter) - (var(--start-col) - 1) * (var(--col-width) + var(--col-gutter)));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  color: var(--color-white);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.4vw, 48px);
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.text {
+  margin: 0;
+  max-width: 40ch;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-white-50);
+}
+
+.cta {
+  margin-top: 8px;
+}
+
+/* Mobile: background-attachment: fixed is ignored/janky (esp. iOS) → normal scroll,
+   and the text block spans the full width inside the gutters. */
+@media (max-width: 768px) {
+  .panel {
+    background-attachment: scroll;
+  }
+  .content {
+    left: var(--gutter);
+    right: var(--gutter);
+    width: auto;
+    max-width: none;
+  }
+}

@@ -8,6 +8,7 @@ import IconMenu from '@/components/icons/IconMenu'
 import IconCart from '@/components/icons/IconCart'
 import IconAccount from '@/components/icons/IconAccount'
 import { useMenu } from '@/components/menu/MenuContext'
+import { useCart } from '@/lib/use-cart'
 import styles from './Header.module.css'
 
 const COMPACT_HEIGHT = 60 // hauteur du header compact en mode fixed
@@ -17,6 +18,7 @@ const LOCALES = ['fr', 'en', 'es'] as const
 export default function Header({ locale }: { locale: string }) {
   const t = useTranslations('nav')
   const { open, setOpen } = useMenu()
+  const cart = useCart()
   const headerRef = useRef<HTMLElement>(null)
   const prevY = useRef(0)
   const offsetY = useRef(0)
@@ -133,10 +135,11 @@ export default function Header({ locale }: { locale: string }) {
             <span className={styles.header__lang_current}>{locale.toUpperCase()}</span>
           </div>
 
-          <Link href="/cart" className={styles.header__cart}>
+          <button type="button" className={styles.header__cart} onClick={() => cart.setOpen(true)}>
             <IconCart />
             <span>{t('cart')}</span>
-          </Link>
+            {cart.count > 0 && <span className={styles.header__cart_count}>{cart.count}</span>}
+          </button>
 
           <Link href="/account" className={styles.header__account}>
             <IconAccount />

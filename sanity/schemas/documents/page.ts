@@ -56,6 +56,8 @@ export const page = defineType({
         { type: 'sectionMediaLine' },
         { type: 'sectionFeatures' },
         { type: 'sectionOutline' },
+        { type: 'sectionFixedImage' },
+        { type: 'sectionSpecs' },
       ],
       group: 'content',
     }),

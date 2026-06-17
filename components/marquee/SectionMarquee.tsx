@@ -47,16 +47,12 @@ export default function SectionMarquee({ items }: Props) {
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         // Base loop: the track is duplicated, so -50% = one set → seamless.
-        // onReverseComplete keeps it looping when played BACKWARD (negative
-        // timeScale) instead of stopping at the start — jump the time forward.
-        let loop: gsap.core.Tween
-        loop = gsap.to(track, {
-          xPercent: -50,
-          repeat: -1,
-          ease: 'none',
-          duration: 30,
-          onReverseComplete: () => loop.totalTime(loop.totalTime() + loop.duration() * 100),
-        })
+        const loop = gsap.to(track, { xPercent: -50, repeat: -1, ease: 'none', duration: 30 })
+        // Keep it looping when played BACKWARD (negative timeScale) instead of
+        // stopping at the start — jump the time forward on reverse-complete.
+        loop.eventCallback('onReverseComplete', () =>
+          loop.totalTime(loop.totalTime() + loop.duration() * 100)
+        )
 
         // Scroll velocity drives speed + direction (down = faster, up = reverse),
         // only while the marquee is in view. `dir` is shared so the drift after

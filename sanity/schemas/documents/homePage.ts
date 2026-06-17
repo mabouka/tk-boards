@@ -35,6 +35,8 @@ export const homePage = defineType({
         { type: 'sectionMediaLine' },
         { type: 'sectionFeatures' },
         { type: 'sectionOutline' },
+        { type: 'sectionFixedImage' },
+        { type: 'sectionSpecs' },
       ],
       group: 'content',
     }),

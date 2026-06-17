@@ -95,6 +95,7 @@ export function ProductForm({
   const [name, setName] = useState(initial?.name ?? '')
   const [sku, setSku] = useState(initial?.sku ?? '')
   const [kind, setKind] = useState<'board' | 'accessory' | 'none'>(initial?.kind ?? 'none')
+  const [miniConfigurator, setMiniConfigurator] = useState(initial?.miniConfigurator ?? false)
   // Required fields flagged red after a failed publish/save attempt; cleared on edit.
   const [errors, setErrors] = useState<Set<string>>(new Set())
   const clearError = (field: string) =>
@@ -206,6 +207,7 @@ export function ProductForm({
       sku: skuUpper,
       kind: productKind,
       active,
+      miniConfigurator,
       options: validOptions,
       variants,
       addons: addons
@@ -665,6 +667,23 @@ export function ProductForm({
                   <SelectItem value="accessory">Accessoire</SelectItem>
                 </SelectContent>
               </Select>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Mini configurateur</CardTitle>
+              <CardDescription>Affiche un configurateur réduit pour ce produit.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="miniConfigurator"
+                  checked={miniConfigurator}
+                  onCheckedChange={(c) => setMiniConfigurator(c === true)}
+                />
+                <Label htmlFor="miniConfigurator">Activer</Label>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -4,33 +4,46 @@ import { useState } from 'react'
 import type { StorefrontProduct } from '@/lib/storefront/product'
 import { formatEur } from '@/lib/format-price'
 import { useCart } from '@/lib/use-cart'
+import { lineFromVariant } from '@/components/cart/cartLine'
 import Configurator, { type ConfiguratorLabels } from './Configurator'
+import MiniConfigurator from './MiniConfigurator'
 import styles from './BuyCta.module.css'
 
 type Props = {
   product: StorefrontProduct | null
   locale: string
   labels: ConfiguratorLabels
+  productName: string
   previewImage?: string | null
 }
 
-export default function BuyCta({ product, locale, labels, previewImage }: Props) {
+export default function BuyCta({ product, locale, labels, productName, previewImage }: Props) {
   const [open, setOpen] = useState(false)
-  const { addToCart, justAdded } = useCart()
+  const { addItem } = useCart()
 
-  // Board has a skuCode but no linked product in the admin yet → plain (stubbed) buttons, no price.
+  // Board has a skuCode but no linked product in the admin yet → placeholder buttons.
   if (!product) {
     return (
       <div className={styles.cta}>
         <div className={styles.btnRow}>
-          <button type="button" className="u-cta u-cta--white-fill" onClick={() => addToCart('—')}>
-            {labels.buy}
-          </button>
-          <button type="button" className="u-cta u-cta--white-outline" onClick={() => addToCart('—')}>
-            {labels.cart}
-          </button>
+          <button type="button" className="u-cta u-cta--white-fill">{labels.buy}</button>
+          <button type="button" className="u-cta u-cta--white-outline">{labels.cart}</button>
         </div>
-        {justAdded && <p className={styles.note}>{labels.cartStub}</p>}
+      </div>
+    )
+  }
+
+  // Has option axes AND mini configurator enabled → configure ALL axes inline.
+  if (product.hasVariants && product.miniConfigurator) {
+    return (
+      <div className={styles.cta}>
+        <MiniConfigurator
+          product={product}
+          locale={locale}
+          labels={labels}
+          productName={productName}
+          previewImage={previewImage}
+        />
       </div>
     )
   }
@@ -54,6 +67,7 @@ export default function BuyCta({ product, locale, labels, previewImage }: Props)
           product={product}
           locale={locale}
           labels={labels}
+          productName={productName}
           previewImage={previewImage}
           open={open}
           onClose={() => setOpen(false)}
@@ -65,28 +79,20 @@ export default function BuyCta({ product, locale, labels, previewImage }: Props)
   // Unique product (one variant, no axes) → direct buy/cart.
   const variant = product.variants[0]
   const price = variant ? (variant.salePrice ?? variant.price) : null
+  const add = () => {
+    if (variant) addItem(lineFromVariant(product, variant, variant.combo, productName, previewImage ?? ''))
+  }
   return (
     <div className={styles.cta}>
       {price != null && <p className={styles.price}>{formatEur(price, locale)}</p>}
       <div className={styles.btnRow}>
-        <button
-          type="button"
-          className="u-cta u-cta--white-fill"
-          disabled={!variant}
-          onClick={() => variant && addToCart(variant.sku)}
-        >
+        <button type="button" className="u-cta u-cta--white-fill" disabled={!variant} onClick={add}>
           {labels.buy}
         </button>
-        <button
-          type="button"
-          className="u-cta u-cta--white-outline"
-          disabled={!variant}
-          onClick={() => variant && addToCart(variant.sku)}
-        >
+        <button type="button" className="u-cta u-cta--white-outline" disabled={!variant} onClick={add}>
           {labels.cart}
         </button>
       </div>
-      {justAdded && <p className={styles.note}>{labels.cartStub}</p>}
     </div>
   )
 }

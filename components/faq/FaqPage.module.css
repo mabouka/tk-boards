@@ -1,0 +1,220 @@
+/* FAQ page — dark hero + sticky category sidebar + accordion content.
+   Relative so the top-right `data-halo` marker resolves against this page. */
+.page {
+  position: relative;
+  color: var(--color-white);
+  padding-inline: var(--gutter);
+  padding-top: 148px;
+  padding-bottom: var(--space-4xl);
+}
+
+/* ─── Hero ──────────────────────────────────────────────── */
+.hero {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--col-gutter);
+  margin-bottom: var(--space-2xl);
+}
+
+.heroTitle {
+  grid-column: 1 / 11;
+  composes: u-title u-title--96 from global;
+  margin: 0;
+}
+
+.heroIntro {
+  grid-column: 1 / 8;
+  margin-top: var(--space-md);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--color-white-72);
+}
+
+/* ─── Two-column layout ─────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--col-gutter);
+}
+
+/* ─── Sticky category sidebar ───────────────────────────── */
+.sidebar {
+  grid-column: 1 / 4;
+  align-self: start;
+  position: sticky;
+  top: 148px;
+}
+
+.sidebarList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.sidebarItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-white-50);
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.sidebarItem:hover {
+  color: var(--color-white);
+}
+
+.sidebarItemActive {
+  color: var(--color-white);
+  border-color: var(--color-white-50);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* ─── Content column ────────────────────────────────────── */
+.content {
+  grid-column: 5 / 13;
+}
+
+.group {
+  scroll-margin-top: 148px;
+}
+
+.group + .group {
+  margin-top: var(--space-2xl);
+}
+
+.groupTitle {
+  composes: u-title u-title--36 from global;
+  margin: 0 0 var(--space-md);
+  color: var(--color-white);
+}
+
+/* ─── Accordion ─────────────────────────────────────────── */
+.accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.rowHeading {
+  margin: 0;
+  font: inherit;
+}
+
+.question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  width: 100%;
+  padding: 24px 0;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-white);
+}
+
+.questionText {
+  flex: 1;
+}
+
+/* Plus / minus icon: a horizontal bar always; the vertical bar hides when open
+   so "+" becomes "−". */
+.icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+.iconBar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 2px;
+  background: var(--color-paulownia);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.iconBarVertical {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.iconBarHidden {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+/* Answer: collapsible region. `hidden` removes it for a11y/no-JS; when open the
+   inner padding gives breathing room. */
+.answer {
+  overflow: hidden;
+}
+
+.answerInner {
+  padding-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-width: 720px;
+}
+
+.answerText {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-white-72);
+  white-space: pre-line;
+}
+
+.answerImage {
+  position: relative;
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.answerImage img {
+  width: 100%;
+  height: auto;
+}
+
+/* ─── Responsive ────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .heroTitle {
+    grid-column: 1 / -1;
+  }
+  .heroIntro {
+    grid-column: 1 / -1;
+  }
+  .sidebar {
+    grid-column: 1 / -1;
+    position: static;
+    margin-bottom: var(--space-lg);
+  }
+  .sidebarList {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .sidebarItem {
+    width: auto;
+  }
+  .content {
+    grid-column: 1 / -1;
+  }
+}
