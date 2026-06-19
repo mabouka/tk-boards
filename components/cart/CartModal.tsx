@@ -1,4 +1,7 @@
+'use client'
+
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { formatEur } from '@/lib/format-price'
 import styles from './CartModal.module.css'
 
@@ -43,17 +46,18 @@ const TrashIcon = () => (
 )
 
 export default function CartModal({ lines, locale, onClose, onQty, onRemove }: Props) {
+  const t = useTranslations('cart')
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0)
 
   return (
-    <div className={styles.backdrop} role="dialog" aria-modal="true" aria-label="Panier">
+    <div className={styles.backdrop} role="dialog" aria-modal="true" aria-label={t('title')}>
       <div className={styles.panel}>
         {/* ── Header ── */}
         <header className={styles.header}>
-          <button type="button" className={styles.close} onClick={onClose} aria-label="Fermer">
+          <button type="button" className={styles.close} onClick={onClose} aria-label={t('close')}>
             <CloseIcon />
           </button>
-          <h2 className={styles.title}>Panier</h2>
+          <h2 className={styles.title}>{t('title')}</h2>
         </header>
 
         {/* ── Lines (scrollable) ── */}
@@ -83,18 +87,18 @@ export default function CartModal({ lines, locale, onClose, onQty, onRemove }: P
 
                 <div className={styles.actions}>
                   <div className={styles.stepper}>
-                    <button type="button" onClick={() => onQty?.(line.id, -1)} aria-label="Diminuer">−</button>
+                    <button type="button" onClick={() => onQty?.(line.id, -1)} aria-label={t('decrease')}>−</button>
                     <span>{line.qty}</span>
                     <button
                       type="button"
                       onClick={() => onQty?.(line.id, 1)}
                       disabled={line.maxQty != null && line.qty >= line.maxQty}
-                      aria-label="Augmenter"
+                      aria-label={t('increase')}
                     >
                       +
                     </button>
                   </div>
-                  <button type="button" className={styles.remove} onClick={() => onRemove?.(line.id)} aria-label="Supprimer">
+                  <button type="button" className={styles.remove} onClick={() => onRemove?.(line.id)} aria-label={t('remove')}>
                     <TrashIcon />
                   </button>
                 </div>
@@ -111,7 +115,7 @@ export default function CartModal({ lines, locale, onClose, onQty, onRemove }: P
                         </div>
                         <span className={styles.optionLabel}>{opt.label}</span>
                         <span className={styles.optionPrice}>
-                          {opt.price > 0 ? `+ ${formatEur(opt.price, locale)}` : 'Inclus'}
+                          {opt.price > 0 ? `+ ${formatEur(opt.price, locale)}` : t('included')}
                         </span>
                       </li>
                     ))}
@@ -142,11 +146,9 @@ export default function CartModal({ lines, locale, onClose, onQty, onRemove }: P
         {/* ── Footer ── */}
         <footer className={styles.footer}>
           <button type="button" className={`u-cta u-cta--white-fill ${styles.checkout}`}>
-            Commander · {formatEur(total, locale)}
+            {t('checkout')} · {formatEur(total, locale)}
           </button>
-          <p className={styles.note}>
-            Frais de livraison, taxes applicables et codes promo seront calculés au paiement.
-          </p>
+          <p className={styles.note}>{t('note')}</p>
         </footer>
       </div>
     </div>

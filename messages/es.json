@@ -150,5 +150,38 @@
     "claims_title": "Reclamaciones",
     "claims_empty": "Todavía no hay reclamaciones.",
     "soon": "Próximamente."
+  },
+  "contact": {
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "product": "Producto",
+    "message": "Mensaje",
+    "productPrompt": "¿De qué producto quieres hablar?",
+    "productOther": "Otro producto / aún no lo sé",
+    "send": "Enviar mensaje",
+    "sending": "Enviando…",
+    "success": "Gracias — tu mensaje está en camino. Te responderemos pronto.",
+    "errorRate": "Demasiados intentos — inténtalo de nuevo en unos minutos.",
+    "errorCaptcha": "La verificación anti-spam falló — inténtalo de nuevo.",
+    "errorSend": "Algo salió mal al enviar tu mensaje. Inténtalo de nuevo.",
+    "vFirstName": "El nombre es obligatorio.",
+    "vLastName": "El apellido es obligatorio.",
+    "vEmailRequired": "El correo electrónico es obligatorio.",
+    "vEmailInvalid": "Introduce un correo electrónico válido.",
+    "vMessage": "Escribe un mensaje breve.",
+    "vMessageLong": "El mensaje es demasiado largo (máx. 5000 caracteres).",
+    "vTooLong": "Demasiado largo."
+  },
+  "cart": {
+    "title": "Carrito",
+    "close": "Cerrar",
+    "decrease": "Disminuir",
+    "increase": "Aumentar",
+    "remove": "Eliminar",
+    "included": "Incluido",
+    "checkout": "Tramitar pedido",
+    "note": "Los gastos de envío, los impuestos aplicables y los códigos promocionales se calculan al finalizar la compra."
   }
 }
