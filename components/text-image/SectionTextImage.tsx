@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { PortableText } from 'next-sanity'
 import { urlFor } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue, Cta } from '@/sanity/lib/types'
+import { haloProps } from '@/components/halo/haloProps'
 import styles from './SectionTextImage.module.css'
 
 // Natural W×H encoded in the Sanity asset ref: image-<id>-<w>x<h>-<ext>
@@ -20,6 +21,8 @@ type Props = {
   theme?: 'light' | 'dark'
   imagePosition?: 'left' | 'right'
   layout?: 'full' | 'contained'
+  /** Optional forced image ratio (e.g. "1 / 1", "4 / 3"); empty = natural. */
+  aspectRatio?: string
 }
 
 export default function SectionTextImage({
@@ -31,6 +34,7 @@ export default function SectionTextImage({
   theme = 'light',
   imagePosition = 'left',
   layout = 'full',
+  aspectRatio,
 }: Props) {
   const isDark = theme === 'dark'
   const isContained = layout === 'contained'
@@ -52,20 +56,17 @@ export default function SectionTextImage({
     <section
       className={classList}
       {...(isDark
-        ? {
-          'data-halo': '',
-          'data-halo-rgb': '225, 255, 255',
-          'data-halo-opacity': '0.25',
-          'data-halo-w': '60vw',
-          'data-halo-h': '40vh',
-          'data-halo-spread': '29%',
-        }
+        ? haloProps({ rgb: '225, 255, 255', opacity: 0.25, w: '60vw', h: '40vh', spread: '29%' })
         : {})}
     >
       {image && (
         <div
           className={styles.textImage__image}
-          style={isContained ? { aspectRatio: refRatio(image) } : undefined}
+          style={
+            aspectRatio || isContained
+              ? { aspectRatio: aspectRatio || refRatio(image) }
+              : undefined
+          }
         >
           <Image
             src={urlFor(image).width(1200).quality(85).url()}

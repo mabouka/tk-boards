@@ -46,6 +46,21 @@ export const sectionTextImage = defineType({
       validation: (r) => r.required(),
     }),
     defineField({
+      name: 'aspectRatio',
+      title: 'Force image aspect ratio',
+      type: 'string',
+      description: 'Optional — overrides the image’s natural ratio. Leave empty to keep the original.',
+      options: {
+        list: [
+          { title: '1:1 — square', value: '1 / 1' },
+          { title: '4:3', value: '4 / 3' },
+          { title: '3:2', value: '3 / 2' },
+          { title: '4:5 — portrait', value: '4 / 5' },
+          { title: '16:9', value: '16 / 9' },
+        ],
+      },
+    }),
+    defineField({
       name: 'ctas',
       title: 'CTAs',
       type: 'array',

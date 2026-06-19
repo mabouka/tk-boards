@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { pageBuilderSections } from '../../lib/pageBuilderSections'
 
 export const homePage = defineType({
   name: 'homePage',
@@ -24,20 +25,7 @@ export const homePage = defineType({
       name: 'sections',
       title: 'Sections',
       type: 'array',
-      of: [
-        { type: 'sectionAboutPreview' },
-        { type: 'sectionBoards' },
-        { type: 'sectionMarquee' },
-        { type: 'sectionTextImage' },
-        { type: 'sectionTextGallery' },
-        { type: 'sectionFullMedia' },
-        { type: 'sectionBigQuote' },
-        { type: 'sectionMediaLine' },
-        { type: 'sectionFeatures' },
-        { type: 'sectionOutline' },
-        { type: 'sectionFixedImage' },
-        { type: 'sectionSpecs' },
-      ],
+      of: [...pageBuilderSections],
       group: 'content',
     }),
     defineField({ name: 'seoTitle', title: 'SEO Title', type: 'string', group: 'seo' }),

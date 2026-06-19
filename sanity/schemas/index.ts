@@ -14,6 +14,7 @@ import { contactPage } from './documents/contactPage'
 import { faqPage } from './documents/faqPage'
 import { whereToBuyPage } from './documents/whereToBuyPage'
 import { ourStoryPage } from './documents/ourStoryPage'
+import { tkIdPage } from './documents/tkIdPage'
 import { series } from './documents/series'
 import { seoSettings } from './documents/seoSettings'
 import { sectionAboutPreview } from './sections/sectionAboutPreview'
@@ -28,6 +29,8 @@ import { sectionFeatures } from './sections/sectionFeatures'
 import { sectionOutline } from './sections/sectionOutline'
 import { sectionFixedImage } from './sections/sectionFixedImage'
 import { sectionSpecs } from './sections/sectionSpecs'
+import { sectionWorkshop } from './sections/sectionWorkshop'
+import { sectionCenteredText } from './sections/sectionCenteredText'
 
 export const schemaTypes = [
   accessory,
@@ -46,6 +49,7 @@ export const schemaTypes = [
   faqPage,
   whereToBuyPage,
   ourStoryPage,
+  tkIdPage,
   series,
   seoSettings,
   sectionAboutPreview,
@@ -60,4 +64,6 @@ export const schemaTypes = [
   sectionOutline,
   sectionFixedImage,
   sectionSpecs,
+  sectionWorkshop,
+  sectionCenteredText,
 ]

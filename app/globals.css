@@ -191,10 +191,12 @@ main {
 /* ─── Body text utilities ───────────────────────────────── */
 
 .u-body {
-  font-size: 16px;
+  font-size: var(--body-size, 16px);
   line-height: 1.4em;
   color: rgba(0, 0, 0, 0.8);
 }
+
+.u-body--large { --body-size: 20px; }
 
 .u-body p {
   margin: 0;

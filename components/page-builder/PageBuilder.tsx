@@ -2,7 +2,7 @@ import dynamic from 'next/dynamic'
 import { getTranslations } from 'next-intl/server'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, resolveHeroImage } from '@/sanity/lib/image'
 import { seriesQuery } from '@/sanity/lib/queries'
 import type { SanityImage, Cta } from '@/sanity/lib/types'
 import type { PageBySlugQueryResult } from '@/sanity.types'
@@ -15,6 +15,8 @@ import SectionBigQuote from '@/components/big-quote/SectionBigQuote'
 import SectionMediaLine from '@/components/media-line/SectionMediaLine'
 import SectionFixedImage from '@/components/fixed-image/SectionFixedImage'
 import SectionSpecs from '@/components/specs/SectionSpecs'
+import SectionCenteredText from '@/components/centered-text/SectionCenteredText'
+import WorkshopSection from '@/components/contact/WorkshopSection'
 import type { FeatureItem } from '@/components/features/SectionFeatures'
 import type { OutlineMilestone } from '@/components/outline/SectionOutline'
 import type { FixedImageItem } from '@/components/fixed-image/SectionFixedImage'
@@ -67,13 +69,16 @@ function toCta(c: {
 export default async function PageBuilder({ sections, locale }: Props) {
   if (!sections?.length) return null
 
-  const t = await getTranslations('home')
-
-  // Pre-fetch data only for section types that are actually present
+  // Boards translations + series data are only needed when a boards section is
+  // present — load them (in parallel) only then, so other pages don't pay for
+  // the `home` namespace or the series query.
   const needsBoards = sections.some((s) => s._type === 'sectionBoards')
-  const rawSeries: RawSeries[] = needsBoards
-    ? await client.fetch<RawSeries[]>(seriesQuery, { locale }, sanityCache('series', 'board'))
-    : []
+  const [t, rawSeries] = needsBoards
+    ? await Promise.all([
+        getTranslations('home'),
+        client.fetch<RawSeries[]>(seriesQuery, { locale }, sanityCache('series', 'board')),
+      ])
+    : [null, [] as RawSeries[]]
 
   // Pre-resolve image URLs server-side so @sanity/image-url never reaches the client bundle
   const series = rawSeries.map((s) => ({
@@ -98,9 +103,9 @@ export default async function PageBuilder({ sections, locale }: Props) {
               <BoardsPreviewClient
                 key={section._key}
                 series={series}
-                title={section.title ?? t('boards_title')}
-                discoverCta={t('boards_discover')}
-                viewBoardLabel={t('view_board')}
+                title={section.title ?? t!('boards_title')}
+                discoverCta={t!('boards_discover')}
+                viewBoardLabel={t!('view_board')}
                 showFilters={section.showFilters ?? true}
                 filterBySeries={section.filterBySeries ?? true}
               />
@@ -135,6 +140,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
                 theme={section.theme ?? undefined}
                 imagePosition={section.imagePosition ?? undefined}
                 layout={section.layout ?? undefined}
+                aspectRatio={section.aspectRatio ?? undefined}
               />
             )
           case 'sectionTextGallery':
@@ -255,6 +261,29 @@ export default async function PageBuilder({ sections, locale }: Props) {
                   _key: r._key,
                   cells: (r.cells ?? []).map((c) => c ?? ''),
                 }))}
+              />
+            )
+          case 'sectionWorkshop':
+            return (
+              <WorkshopSection
+                key={section._key}
+                eyebrow={section.eyebrow ?? undefined}
+                title={section.title ?? ''}
+                body={typeof section.body === 'string' ? section.body : undefined}
+                imageUrl={resolveHeroImage(section.image) ?? '/samples/channel.jpg'}
+                imageAlt={section.title ?? ''}
+                mapsUrl={section.cta?.href ?? undefined}
+                mapsLabel={section.cta?.text ?? undefined}
+                theme={section.theme === 'dark' ? 'dark' : 'light'}
+                cardSide={section.cardSide === 'left' ? 'left' : 'right'}
+              />
+            )
+          case 'sectionCenteredText':
+            return (
+              <SectionCenteredText
+                key={section._key}
+                title={section.title ?? undefined}
+                body={section.body ?? undefined}
               />
             )
           default:

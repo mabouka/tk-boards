@@ -1,0 +1,90 @@
+/* Full-screen background image with a text card overlaid on the 12-col grid. */
+.workshop {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--col-gutter);
+  padding: var(--space-4xl) var(--gutter);
+  align-items: center;
+}
+
+/* Image — full-bleed, behind the card. */
+.image {
+  position: absolute;
+  inset: 0;
+}
+
+.image img {
+  object-fit: cover;
+}
+
+/* Card — overlays the image, right side by default (cols 8–12). */
+.card {
+  position: relative;
+  grid-column: 8 / 12;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-2xl) 60px;
+  background: var(--color-cream);
+  color: var(--color-black);
+}
+
+.workshop--left .card {
+  grid-column: 1 / 6;
+}
+
+.eyebrow {
+  composes: u-eyebrow from global;
+}
+
+.title {
+  composes: u-title u-title--36 from global;
+  --title-lh: 0.9;
+  margin-bottom: var(--space-md);
+  color: var(--color-black);
+  white-space: pre-line;
+}
+
+.body {
+  composes: u-body from global;
+  margin: 0 0 var(--space-md);
+  max-width: 42ch;
+}
+
+/* ── Dark theme — dark card, white text ── */
+.workshop--dark .card {
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.workshop--dark .eyebrow {
+  color: var(--color-white-72);
+}
+
+.workshop--dark .eyebrow::after {
+  background: var(--color-white-72);
+}
+
+.workshop--dark .title {
+  color: var(--color-white);
+}
+
+.workshop--dark .body {
+  color: var(--color-white-80);
+}
+
+/* ── Mobile: stack (image on top, card below, full width) ── */
+@media (max-width: 1023px) {
+  .workshop {
+    display: block;
+    padding: 0;
+  }
+  .image {
+    position: relative;
+    aspect-ratio: 16 / 10;
+  }
+  .card {
+    padding: 40px var(--gutter);
+  }
+}
