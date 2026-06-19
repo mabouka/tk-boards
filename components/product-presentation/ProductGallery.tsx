@@ -7,6 +7,7 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
 import { urlFor } from '@/sanity/lib/image'
 import type { SanityImage } from '@/sanity/lib/types'
+import { haloProps } from '@/components/halo/haloProps'
 import styles from './ProductPresentation.module.css'
 
 type GalleryImage = SanityImage & { alt?: string | null }
@@ -40,11 +41,7 @@ export default function ProductGallery({
               setOpen(true)
             }}
             aria-label={`Agrandir : ${img.alt ?? productName}`}
-            data-halo
-            data-halo-rgb="215, 215, 255"
-            data-halo-opacity="0.20"
-            data-halo-w="56vw"
-            data-halo-h="76vh"
+            {...haloProps({ rgb: '215, 215, 255', opacity: 0.2, w: '56vw', h: '76vh' })}
           >
             <Image
               src={urlFor(img).width(900).height(900).quality(85).url()}

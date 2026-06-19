@@ -3,6 +3,7 @@ import type { SanityImage, PortableTextValue } from '@/sanity/lib/types'
 import styles from './ProductPresentation.module.css'
 import ProductGallery from './ProductGallery'
 import BuyCta from '@/components/configurator/BuyCta'
+import { haloProps } from '@/components/halo/haloProps'
 import type { StorefrontProduct } from '@/lib/storefront/product'
 
 export type PresentationNumber = { value: string; unit?: string | null; label: string }
@@ -20,7 +21,6 @@ type Props = {
   cartLabel: string
   configureLabel: string
   fromLabel: string
-  cartStubLabel: string
   closeLabel: string
   product: StorefrontProduct | null
   locale: string
@@ -45,7 +45,6 @@ export default function ProductPresentation({
   cartLabel,
   configureLabel,
   fromLabel,
-  cartStubLabel,
   closeLabel,
   product,
   locale,
@@ -66,26 +65,18 @@ export default function ProductPresentation({
     .join(' ')
 
   return (
-    <section className={sectionClass}
-      data-halo
-      data-halo-rgb="215, 215, 255"
-      data-halo-opacity="0.10"
-      data-halo-w="250vw"
-      data-halo-h="200vh"
-      data-halo-spread="1%"
-      data-halo-anchor="bottom-left">
+    <section
+      className={sectionClass}
+      {...haloProps({ rgb: '215, 215, 255', opacity: 0.1, w: '250vw', h: '200vh', spread: '1%', anchor: 'bottom-left' })}
+    >
       {/* Gallery first in the DOM when it sits on the left (client island: zoomable lightbox) */}
       {isImageLeft && <ProductGallery images={gallery} productName={productName} />}
 
       {/* Sticky info panel */}
-      <div className={styles.productPresentation__left}
-        data-halo
-        data-halo-rgb="215, 215, 255"
-        data-halo-opacity="0.10"
-        data-halo-w="250vw"
-        data-halo-h="200vh"
-        data-halo-spread="1%"
-        data-halo-anchor="top-left">
+      <div
+        className={styles.productPresentation__left}
+        {...haloProps({ rgb: '215, 215, 255', opacity: 0.1, w: '250vw', h: '200vh', spread: '1%', anchor: 'top-left' })}
+      >
         {sectionLabel && (
           <>
             <span className={styles.productPresentation__label}>{sectionLabel}</span>
@@ -151,7 +142,6 @@ export default function ProductPresentation({
               cart: cartLabel,
               configure: configureLabel,
               from: fromLabel,
-              cartStub: cartStubLabel,
               close: closeLabel,
             }}
           />

@@ -33,5 +33,6 @@ export function lineFromVariant(
     price: variant.salePrice ?? variant.price,
     oldPrice: variant.salePrice != null ? variant.price : undefined,
     qty: 1,
+    maxQty: variant.stock,
   }
 }

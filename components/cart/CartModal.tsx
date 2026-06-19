@@ -16,6 +16,8 @@ export type CartLine = {
   price: number
   oldPrice?: number
   qty: number
+  /** Available stock at add-time — caps the quantity stepper. Undefined = uncapped. */
+  maxQty?: number
   options?: CartOption[]
   linked?: CartLinked[]
 }
@@ -83,7 +85,14 @@ export default function CartModal({ lines, locale, onClose, onQty, onRemove }: P
                   <div className={styles.stepper}>
                     <button type="button" onClick={() => onQty?.(line.id, -1)} aria-label="Diminuer">−</button>
                     <span>{line.qty}</span>
-                    <button type="button" onClick={() => onQty?.(line.id, 1)} aria-label="Augmenter">+</button>
+                    <button
+                      type="button"
+                      onClick={() => onQty?.(line.id, 1)}
+                      disabled={line.maxQty != null && line.qty >= line.maxQty}
+                      aria-label="Augmenter"
+                    >
+                      +
+                    </button>
                   </div>
                   <button type="button" className={styles.remove} onClick={() => onRemove?.(line.id)} aria-label="Supprimer">
                     <TrashIcon />

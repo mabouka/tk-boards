@@ -192,6 +192,11 @@
   cursor: pointer;
 }
 
+.stepper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .stepper span {
   min-width: 32px;
   text-align: center;

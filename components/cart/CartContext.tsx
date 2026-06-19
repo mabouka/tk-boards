@@ -14,15 +14,36 @@ let items: CartLine[] = EMPTY
 let loaded = false
 const listeners = new Set<() => void>()
 
+function isCartLine(l: unknown): l is CartLine {
+  return (
+    typeof l === 'object' &&
+    l !== null &&
+    typeof (l as CartLine).id === 'string' &&
+    typeof (l as CartLine).price === 'number' &&
+    typeof (l as CartLine).qty === 'number'
+  )
+}
+
 function loadOnce() {
   if (loaded) return
   loaded = true
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) items = JSON.parse(raw) as CartLine[]
+    if (!raw) return
+    const parsed: unknown = JSON.parse(raw)
+    // Validate shape: a non-array or malformed lines (old schema, manual edit,
+    // another tab on the same origin) would otherwise crash count/total → the
+    // whole CartProvider subtree (header + page + drawer).
+    if (Array.isArray(parsed)) items = parsed.filter(isCartLine)
   } catch {
     /* ignore malformed storage */
   }
+}
+
+/** Clamp a quantity to [1, maxQty]; uncapped when maxQty is absent (<1 ignored). */
+function clampQty(qty: number, maxQty?: number): number {
+  const q = Math.max(1, qty)
+  return maxQty != null && maxQty >= 1 ? Math.min(q, maxQty) : q
 }
 
 function commit(next: CartLine[]) {
@@ -48,10 +69,12 @@ const getServerSnapshot = () => EMPTY
 function addToStore(item: CartLine) {
   const qty = item.qty || 1
   const i = items.findIndex((l) => l.id === item.id)
-  if (i === -1) commit([...items, { ...item, qty }])
+  if (i === -1) commit([...items, { ...item, qty: clampQty(qty, item.maxQty) }])
   else {
     const next = [...items]
-    next[i] = { ...next[i], qty: next[i].qty + qty }
+    // Refresh the stock cap from the latest add, then clamp the bumped quantity.
+    const maxQty = item.maxQty ?? next[i].maxQty
+    next[i] = { ...next[i], maxQty, qty: clampQty(next[i].qty + qty, maxQty) }
     commit(next)
   }
 }
@@ -79,7 +102,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setOpen(true)
   }, [])
   const setQty = useCallback((id: string, qty: number) => {
-    commit(items.map((l) => (l.id === id ? { ...l, qty: Math.max(1, qty) } : l)))
+    commit(items.map((l) => (l.id === id ? { ...l, qty: clampQty(qty, l.maxQty) } : l)))
   }, [])
   const removeItem = useCallback((id: string) => {
     commit(items.filter((l) => l.id !== id))
