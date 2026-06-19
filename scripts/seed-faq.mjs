@@ -1,22 +1,28 @@
 /**
- * Seed the FAQ page content (title / intro / items) for all three locales.
+ * Seed the FAQ page content (title / intro / categories) for all three locales.
  *
  * Mirrors scripts/migrate-settings.mjs: @sanity/client write client, env from
  * .env.local, needs SANITY_API_WRITE_TOKEN (Editor).
  *
- * Categories (sidebar order): GENERAL, DESIGN & CONSTRUCTION, MAINTENANCE, WARRANTY.
- * The English question wording is taken from Figma (node 93-3170); MAINTENANCE
- * and WARRANTY questions are written here (the design only showed placeholders
- * there). fr/es are faithful translations, category labels included.
+ * The FAQ is modelled as nested categories — each category is a tab on the page
+ * and owns its own questions (faqPage.categories[].questions[]). Tab order:
+ * GENERAL, DESIGN & CONSTRUCTION, MAINTENANCE, WARRANTY. The English question
+ * wording is taken from Figma (node 93-3170); MAINTENANCE and WARRANTY questions
+ * are written here (the design only showed placeholders there). fr/es are
+ * faithful translations, category labels included.
  *
- * Only PATCHes title/intro/items on the PUBLISHED faqPage docs — never touches
- * slug/language/SEO, never replaces or deletes the doc.
+ * Only PATCHes title/intro/categories on the PUBLISHED faqPage docs (and unsets
+ * the legacy flat `items` field) — never touches slug/language/SEO, never
+ * replaces or deletes the doc.
  *
  * Run:  node --env-file=.env.local scripts/seed-faq.mjs
  */
 import { createClient } from '@sanity/client'
 
-// Stable, readable _key from the question text (kept unique per item array).
+// Tab order — drives the order categories appear on the page.
+const CATEGORY_ORDER = ['general', 'design', 'maintenance', 'warranty']
+
+// Stable, readable _key from the question text (kept unique per questions array).
 const keyOf = (s) =>
   s
     .toLowerCase()
@@ -26,17 +32,26 @@ const keyOf = (s) =>
     .replace(/^-+|-+$/g, '')
     .slice(0, 60)
 
-const item = (category, question, answer) => ({
+// `answer` is now Portable Text — wrap the seed string in a single text block.
+const item = (question, answer) => ({
   _type: 'faqItem',
   _key: keyOf(question),
-  category,
   question,
-  answer,
+  answer: [
+    {
+      _type: 'block',
+      _key: 'a0',
+      style: 'normal',
+      markDefs: [],
+      children: [{ _type: 'span', _key: 's0', text: answer, marks: [] }],
+    },
+  ],
 })
 
 const content = {
   en: {
     title: 'Frequently asked questions',
+    heroTitle: 'Frequently\nAsked\nQuestions',
     intro: 'Everything you need to know about TK boards — how they ride, how they are built, and how to look after them.',
     cat: { general: 'GENERAL', design: 'DESIGN & CONSTRUCTION', maintenance: 'MAINTENANCE', warranty: 'WARRANTY' },
     items: [
@@ -90,6 +105,7 @@ const content = {
 
   fr: {
     title: 'Foire aux questions',
+    heroTitle: 'Foire\naux\nquestions',
     intro: 'Tout ce qu’il faut savoir sur les boards TK — comment elles se comportent, comment elles sont fabriquées et comment en prendre soin.',
     cat: { general: 'GÉNÉRAL', design: 'DESIGN & CONSTRUCTION', maintenance: 'ENTRETIEN', warranty: 'GARANTIE' },
     items: [
@@ -143,6 +159,7 @@ const content = {
 
   es: {
     title: 'Preguntas frecuentes',
+    heroTitle: 'Preguntas\nfrecuentes',
     intro: 'Todo lo que necesitas saber sobre las boards TK: cómo navegan, cómo se fabrican y cómo cuidarlas.',
     cat: { general: 'GENERAL', design: 'DISEÑO Y CONSTRUCCIÓN', maintenance: 'MANTENIMIENTO', warranty: 'GARANTÍA' },
     items: [
@@ -220,27 +237,44 @@ async function main() {
       console.error(`✗ [${lang}] No published faqPage doc found — aborting (nothing written).`)
       process.exit(1)
     }
-    const items = c.items.map(([catKey, q, a]) => item(c.cat[catKey], q, a))
-    // _keys must be unique within the array.
-    const keys = new Set(items.map((i) => i._key))
-    if (keys.size !== items.length) {
-      console.error(`✗ [${lang}] Duplicate _key detected — aborting (nothing written).`)
-      process.exit(1)
+    // Build nested categories in tab order; each owns its filtered questions.
+    const categories = CATEGORY_ORDER.map((catKey) => ({
+      _type: 'faqCategory',
+      _key: catKey,
+      title: c.cat[catKey],
+      questions: c.items.filter(([k]) => k === catKey).map(([, q, a]) => item(q, a)),
+    }))
+    // _keys must be unique within each questions array. Keep the readable slug
+    // for the first occurrence; suffix any later slug-collision with -2/-3…
+    // (instead of aborting) so two questions sharing a 60-char prefix are safe.
+    for (const cat of categories) {
+      const seen = new Map()
+      for (const q of cat.questions) {
+        const n = (seen.get(q._key) ?? 0) + 1
+        seen.set(q._key, n)
+        if (n > 1) q._key = `${q._key}-${n}`
+      }
     }
-    planned.push({ lang, id: doc._id, set: { title: c.title, intro: c.intro, items }, items })
+    planned.push({
+      lang,
+      id: doc._id,
+      set: { title: c.title, heroTitle: c.heroTitle, intro: c.intro, categories },
+      categories,
+    })
   }
 
   // Phase 2 — commit all three locales in ONE transaction (all-or-nothing).
+  // `unset(['items'])` drops the legacy flat field now that data lives nested.
   const tx = planned.reduce(
-    (t, p) => t.patch(p.id, (patch) => patch.set(p.set)),
+    (t, p) => t.patch(p.id, (patch) => patch.set(p.set).unset(['items'])),
     client.transaction(),
   )
   await tx.commit()
 
   for (const p of planned) {
-    const byCat = {}
-    for (const i of p.items) byCat[i.category] = (byCat[i.category] || 0) + 1
-    console.log(`✓ [${p.lang}] ${p.id} — ${p.items.length} items:`, JSON.stringify(byCat))
+    const counts = p.categories.map((cat) => `${cat.title}:${cat.questions.length}`)
+    const total = p.categories.reduce((n, cat) => n + cat.questions.length, 0)
+    console.log(`✓ [${p.lang}] ${p.id} — ${p.categories.length} categories, ${total} questions:`, counts.join(' '))
   }
   console.log('Done. Page updates after cache revalidation (sanityCache revalidate 3600 / webhook).')
 }

@@ -8,6 +8,7 @@ import { accessoryBySlugQuery } from '@/sanity/lib/queries'
 import { getStorefrontProduct } from '@/lib/storefront/product'
 import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
+import { LocalePathsSync } from '@/components/i18n/LocalePaths'
 import ProductPresentation from '@/components/product-presentation/ProductPresentation'
 
 type Props = {
@@ -47,11 +48,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AccessoryPage({ params }: Props) {
   const { locale, slug } = await params
-  const t = await getTranslations('boards')
-
-  const accessory = await getAccessory(locale, slug)
+  const [t, accessory] = await Promise.all([
+    getTranslations('boards'),
+    getAccessory(locale, slug),
+  ])
 
   if (!accessory) notFound()
+
+  // Per-locale paths for the header language switcher.
+  const localePaths: Record<string, string> = {}
+  for (const tr of Array.isArray(accessory.translations) ? accessory.translations : []) {
+    if (tr?.lang && tr?.slug) localePaths[tr.lang] = `/accessories/${tr.slug}`
+  }
 
   const product = accessory.skuCode ? await getStorefrontProduct(accessory.skuCode, locale) : null
   const previewImage = accessory.mainImage
@@ -69,6 +77,7 @@ export default async function AccessoryPage({ params }: Props) {
 
   return (
     <div>
+      <LocalePathsSync paths={localePaths} />
       <ProductPresentation
         imageSide="left"
         atPageTop
@@ -81,7 +90,6 @@ export default async function AccessoryPage({ params }: Props) {
         cartLabel={t('add_to_cart')}
         configureLabel={t('configure')}
         fromLabel={t('from_price')}
-        cartStubLabel={t('cart_stub')}
         closeLabel={t('close')}
         product={product}
         locale={locale}

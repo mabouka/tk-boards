@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
-import { Link } from '@/i18n/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
+import { useLocalePaths } from '@/components/i18n/LocalePaths'
 import LogoTK from '@/components/icons/LogoTK'
 import IconMenu from '@/components/icons/IconMenu'
 import IconCart from '@/components/icons/IconCart'
@@ -19,6 +20,11 @@ export default function Header({ locale }: { locale: string }) {
   const t = useTranslations('nav')
   const { open, setOpen } = useMenu()
   const cart = useCart()
+  const pathname = usePathname()
+  // Per-locale paths published by the current page (CMS pages / products whose
+  // slug differs per locale). Falls back to the current pathname for static and
+  // same-slug pages.
+  const localePaths = useLocalePaths()
   const headerRef = useRef<HTMLElement>(null)
   const prevY = useRef(0)
   const offsetY = useRef(0)
@@ -127,7 +133,16 @@ export default function Header({ locale }: { locale: string }) {
           <div className={styles.header__lang}>
             <div className={styles.header__lang_others}>
               {LOCALES.filter((l) => l !== locale).map((l) => (
-                <Link key={l} href="/" locale={l} className={styles.header__lang_option}>
+                <Link
+                  key={l}
+                  // A page that publishes localePaths (slug differs per locale): use
+                  // the translated path, or home if that locale has no translation —
+                  // never the current-locale slug under another locale (404). Static
+                  // same-slug pages don't publish paths → the current pathname is right.
+                  href={localePaths ? (localePaths[l] ?? '/') : pathname}
+                  locale={l}
+                  className={styles.header__lang_option}
+                >
                   {l.toUpperCase()}
                 </Link>
               ))}

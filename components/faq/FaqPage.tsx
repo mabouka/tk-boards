@@ -1,230 +1,185 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Image from 'next/image'
+import { PortableText } from 'next-sanity'
+import type { PortableTextComponents } from '@portabletext/react'
+import type { PortableTextValue } from '@/sanity/lib/types'
+import { haloProps } from '@/components/halo/haloProps'
 import styles from './FaqPage.module.css'
 
-/** A single Q&A, with its image already resolved to a URL by the server. */
-export type FaqItem = {
+/** A single Q&A — `answer` is Portable Text (paragraphs, images, YouTube). */
+export type FaqQuestion = {
   question: string
-  answer: string
-  category: string | null
-  imageUrl: string | null
-  imageAlt: string | null
+  answer: PortableTextValue
+}
+
+export type FaqCategory = {
+  id: string
+  title: string
+  questions: FaqQuestion[]
 }
 
 type Props = {
   title: string
-  intro: string | null
-  items: FaqItem[]
+  heroTitle: string | null
+  categories: FaqCategory[]
 }
 
-type CategoryGroup = {
-  /** Slugified id used for the anchor + observer. */
-  id: string
-  /** Display name (the raw category, uppercased for the heading). */
-  name: string
-  items: FaqItem[]
+/** Extract the 11-char id from any YouTube URL (watch, youtu.be, shorts, embed). */
+function youtubeId(url?: string): string | null {
+  if (!url) return null
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([\w-]{11})/)
+  return m ? m[1] : null
 }
 
-const UNCATEGORIZED = 'General'
-
-function slugifyCategory(name: string): string {
-  return (
-    name
-      .toLowerCase()
-      .replace(/&/g, ' and ')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'category'
-  )
+/** Serializers for the answer rich text: inline images + YouTube embeds. */
+const answerComponents: PortableTextComponents = {
+  types: {
+    image: ({ value }) => {
+      const v = value as { url?: string; alt?: string }
+      return v.url ? (
+        <figure className={styles.answerImage}>
+          {/* URL is pre-resolved in GROQ, so a plain img keeps the client bundle lean. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={v.url} alt={v.alt ?? ''} loading="lazy" />
+        </figure>
+      ) : null
+    },
+    youtube: ({ value }) => {
+      const id = youtubeId((value as { url?: string }).url)
+      return id ? (
+        <div className={styles.answerVideo}>
+          <iframe
+            src={`https://www.youtube.com/embed/${id}`}
+            title="YouTube video"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      ) : null
+    },
+  },
 }
 
-/**
- * Groups the flat item list into categories in first-appearance order. Items
- * without a category fall into a single "General" bucket. Returns the grouped
- * sections plus a flat (group, item) index so the first item overall can be the
- * default-open accordion.
- */
-function groupByCategory(items: FaqItem[]): CategoryGroup[] {
-  const order: string[] = []
-  const byName = new Map<string, FaqItem[]>()
+export default function FaqPage({ title, heroTitle, categories }: Props) {
+  const cats = useMemo(() => categories ?? [], [categories])
+  const [activeId, setActiveId] = useState<string>(cats[0]?.id ?? '')
+  // Open accordion row, keyed `${catId}::${index}`.
+  const [openKey, setOpenKey] = useState<string | null>(null)
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
 
-  for (const item of items) {
-    const name = item.category?.trim() || UNCATEGORIZED
-    if (!byName.has(name)) {
-      byName.set(name, [])
-      order.push(name)
-    }
-    byName.get(name)!.push(item)
-  }
-
-  return order.map((name) => ({
-    id: slugifyCategory(name),
-    name,
-    items: byName.get(name)!,
-  }))
-}
-
-export default function FaqPage({ title, intro, items }: Props) {
-  const groups = useMemo(() => groupByCategory(items ?? []), [items])
-
-  // Open accordion: keyed by `${groupId}::${index}`. First item open by default.
-  const firstKey = groups[0]?.items.length ? `${groups[0].id}::0` : null
-  const [openKey, setOpenKey] = useState<string | null>(firstKey)
-
-  // Active category for the sidebar highlight.
-  const [activeId, setActiveId] = useState<string | null>(groups[0]?.id ?? null)
-  const sectionRefs = useRef<Map<string, HTMLElement>>(new Map())
-
-  // Highlight the category whose section is closest to the top of the viewport.
+  // Highlight the sidebar entry for whichever category is currently in view.
   useEffect(() => {
-    const nodes = Array.from(sectionRefs.current.values())
-    if (nodes.length === 0) return
+    const sections = cats
+      .map((c) => sectionRefs.current[c.id])
+      .filter((el): el is HTMLElement => el != null)
+    if (sections.length === 0) return
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // Among the sections currently intersecting, pick the topmost.
-        const visible = entries
+        const top = entries
           .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-        if (visible[0]) {
-          const id = visible[0].target.getAttribute('data-cat-id')
-          if (id) setActiveId(id)
-        }
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+        const id = top?.target instanceof HTMLElement ? top.target.dataset.catId : undefined
+        if (id) setActiveId(id)
       },
-      { rootMargin: '-20% 0px -65% 0px', threshold: 0 }
+      { rootMargin: '-148px 0px -60% 0px', threshold: 0 }
     )
-
-    nodes.forEach((node) => observer.observe(node))
+    sections.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
-  }, [groups])
+  }, [cats])
 
-  const handleCategoryClick = (id: string) => {
+  const scrollTo = (id: string) => {
+    sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     setActiveId(id)
-    const node = sectionRefs.current.get(id)
-    if (node) node.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
-
-  const registerSection = (id: string) => (node: HTMLElement | null) => {
-    if (node) sectionRefs.current.set(id, node)
-    else sectionRefs.current.delete(id)
-  }
-
-  if (!groups.length) {
-    return (
-      <main className={styles.page}>
-        <header className={styles.hero}>
-          <h1 className={styles.heroTitle}>{title}</h1>
-          {intro && <p className={styles.heroIntro}>{intro}</p>}
-        </header>
-      </main>
-    )
-  }
-
-  const showSidebar = groups.length > 1 || groups[0]?.name !== UNCATEGORIZED
 
   return (
-    <main
-      className={styles.page}
-      data-halo
-      data-halo-rgb="139, 26, 26"
-      data-halo-opacity="0.35"
-      data-halo-w="60vw"
-      data-halo-h="55vh"
-      data-halo-spread="2%"
-      data-halo-anchor="top-right"
-    >
+    <main className={styles.page}>
       <header className={styles.hero}>
-        <h1 className={styles.heroTitle}>{title}</h1>
-        {intro && <p className={styles.heroIntro}>{intro}</p>}
+        <h1
+          className={styles.heroTitle}
+          {...haloProps({ rgb: '225, 255, 255', opacity: 0.29, w: '75vw', h: '76vh', spread: '1%', anchor: 'bottom-left' })}
+        >
+          {heroTitle || title}
+        </h1>
       </header>
 
-      <div className={styles.layout}>
-        {showSidebar && (
-          <nav className={styles.sidebar} aria-label="FAQ categories">
-            <ul className={styles.sidebarList}>
-              {groups.map((group) => {
-                const isActive = group.id === activeId
-                return (
-                  <li key={group.id}>
-                    <button
-                      type="button"
-                      className={`${styles.sidebarItem} ${isActive ? styles.sidebarItemActive : ''}`}
-                      aria-current={isActive ? 'true' : undefined}
-                      onClick={() => handleCategoryClick(group.id)}
-                    >
-                      {group.name}
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
-        )}
+      {cats.length > 0 && (
+        <div className={styles.layout}>
+          <aside className={styles.sidebar}>
+            <nav className={styles.sidebarList}>
+              {cats.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`${styles.sidebarItem}${c.id === activeId ? ` ${styles.sidebarItemActive}` : ''}`}
+                  onClick={() => scrollTo(c.id)}
+                >
+                  {c.title}
+                </button>
+              ))}
+            </nav>
+          </aside>
 
-        <div className={styles.content}>
-          {groups.map((group) => (
-            <section
-              key={group.id}
-              ref={registerSection(group.id)}
-              data-cat-id={group.id}
-              className={styles.group}
-              aria-labelledby={`faq-cat-${group.id}`}
-            >
-              <h2 id={`faq-cat-${group.id}`} className={styles.groupTitle}>
-                {group.name}
-              </h2>
-
-              <ul className={styles.accordion}>
-                {group.items.map((item, index) => {
-                  const key = `${group.id}::${index}`
-                  const isOpen = key === openKey
-                  return (
-                    <li key={key} className={styles.row}>
-                      <h3 className={styles.rowHeading}>
-                        <button
-                          type="button"
-                          className={styles.question}
-                          aria-expanded={isOpen}
-                          onClick={() => setOpenKey(isOpen ? null : key)}
-                        >
-                          <span className={styles.questionText}>{item.question}</span>
-                          <span className={styles.icon} aria-hidden="true">
-                            <span className={styles.iconBar} />
+          <div className={styles.content}>
+            {cats.map((c) => (
+              <section
+                key={c.id}
+                data-cat-id={c.id}
+                ref={(el) => {
+                  sectionRefs.current[c.id] = el
+                }}
+                className={styles.group}
+              >
+                <h2 className={styles.groupTitle}>{c.title}</h2>
+                <ul
+                  className={styles.accordion}
+                  {...haloProps({ rgb: '225, 255, 255', opacity: 0.12, w: '87vw', h: '70vh', spread: '1%' })}
+                >
+                  {c.questions.map((q, index) => {
+                    const key = `${c.id}::${index}`
+                    const isOpen = key === openKey
+                    return (
+                      <li key={key} className={styles.row}>
+                        <h3 className={styles.rowHeading}>
+                          <button
+                            type="button"
+                            className={styles.question}
+                            aria-expanded={isOpen}
+                            onClick={() => setOpenKey(isOpen ? null : key)}
+                          >
+                            <span className={styles.questionText}>{q.question}</span>
                             <span
-                              className={`${styles.iconBar} ${styles.iconBarVertical} ${isOpen ? styles.iconBarHidden : ''}`}
-                            />
-                          </span>
-                        </button>
-                      </h3>
+                              className={`${styles.icon} ${isOpen ? styles.iconOpen : ''}`}
+                              aria-hidden="true"
+                            >
+                              <span className={styles.iconBar} />
+                              <span className={`${styles.iconBar} ${styles.iconBarVertical}`} />
+                            </span>
+                          </button>
+                        </h3>
 
-                      <div
-                        className={`${styles.answer} ${isOpen ? styles.answerOpen : ''}`}
-                        hidden={!isOpen}
-                      >
-                        <div className={styles.answerInner}>
-                          <p className={styles.answerText}>{item.answer}</p>
-                          {item.imageUrl && (
-                            <div className={styles.answerImage}>
-                              <Image
-                                src={item.imageUrl}
-                                alt={item.imageAlt ?? item.question}
-                                width={960}
-                                height={540}
-                                sizes="(min-width: 1024px) 50vw, 100vw"
-                              />
+                        <div
+                          className={`${styles.answer} ${isOpen ? styles.answerOpen : ''}`}
+                          aria-hidden={!isOpen}
+                        >
+                          <div className={styles.answerInner}>
+                            <div className={styles.answerText}>
+                              <PortableText value={q.answer} components={answerComponents} />
                             </div>
-                          )}
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            </section>
-          ))}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </main>
   )
 }

@@ -3,11 +3,18 @@ import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
-import { cmsPageBySlugQuery, faqPageQuery } from '@/sanity/lib/queries'
-import { urlFor } from '@/sanity/lib/image'
+import {
+  cmsPageBySlugQuery,
+  faqPageQuery,
+  contactPageQuery,
+  contactSettingsQuery,
+} from '@/sanity/lib/queries'
+import { resolveHeroImage } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import BigTitle from '@/components/placeholder/BigTitle'
 import FaqPage from '@/components/faq/FaqPage'
+import ContactPage from '@/components/contact/ContactPage'
+import { LocalePathsSync } from '@/components/i18n/LocalePaths'
 
 type Props = { params: Promise<{ locale: string; slug: string }> }
 
@@ -21,6 +28,14 @@ const getCmsPage = cache((locale: string, slug: string) =>
 
 const getFaqPage = cache((locale: string, slug: string) =>
   client.fetch(faqPageQuery, { slug, locale }, sanityCache('faqPage'))
+)
+
+const getContactPage = cache((locale: string, slug: string) =>
+  client.fetch(contactPageQuery, { slug, locale }, sanityCache('contactPage'))
+)
+
+const getContactSettings = cache(() =>
+  client.fetch(contactSettingsQuery, {}, sanityCache('contactSettings'))
 )
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -60,24 +75,68 @@ export default async function CmsPage({ params }: Props) {
   const page = await getCmsPage(locale, slug)
   if (!page) notFound()
 
+  // Per-locale paths for the header language switcher (slugs differ per locale).
+  const localePaths: Record<string, string> = {}
+  for (const tr of Array.isArray(page.translations) ? page.translations : []) {
+    if (tr?.lang && tr?.slug) localePaths[tr.lang] = `/${tr.slug}`
+  }
+
+  if (page._type === 'contactPage') {
+    const [contact, settings] = await Promise.all([
+      getContactPage(locale, slug),
+      getContactSettings(),
+    ])
+    const heroImageUrl = resolveHeroImage(contact?.heroImage)
+
+    return (
+      <>
+        <LocalePathsSync paths={localePaths} />
+        <ContactPage
+          heroTitle={contact?.heroTitle}
+          heroSubtitle={contact?.heroSubtitle}
+          heroImageUrl={heroImageUrl}
+          heroImageAlt={contact?.heroImage?.alt}
+          introEyebrow={contact?.introEyebrow}
+          introTitle={contact?.introTitle}
+          intro={contact?.intro}
+          whatsapp={settings?.whatsapp}
+          email={settings?.email}
+          sections={contact?.sections}
+          locale={locale}
+        />
+      </>
+    )
+  }
+
   if (page._type === 'faqPage') {
     const faq = await getFaqPage(locale, slug)
     if (!faq) notFound()
 
-    // Resolve image URLs server-side so the client component never ships
-    // @sanity/image-url (consistent with the other product/section routes).
-    const items = (faq.items ?? []).map((item) => ({
-      question: item.question,
-      answer: item.answer,
-      category: item.category,
-      imageUrl: item.image?.asset
-        ? urlFor(item.image).width(960).quality(85).auto('format').url()
-        : null,
-      imageAlt: item.image?.alt ?? null,
-    }))
+    // Answer rich text is Portable Text; its images are resolved to URLs in GROQ
+    // (asset->url) so the client component never ships @sanity/image-url.
+    const categories = (faq.categories ?? [])
+      .filter((c): c is typeof c & { title: string } => Boolean(c?.title))
+      .map((c) => ({
+        id: c._key,
+        title: c.title,
+        questions: (c.questions ?? []).map((q) => ({
+          question: q.question,
+          answer: q.answer ?? [],
+        })),
+      }))
 
-    return <FaqPage title={faq.title} intro={faq.intro} items={items} />
+    return (
+      <>
+        <LocalePathsSync paths={localePaths} />
+        <FaqPage title={faq.title} heroTitle={faq.heroTitle} categories={categories} />
+      </>
+    )
   }
 
-  return <BigTitle>{page.title}</BigTitle>
+  return (
+    <>
+      <LocalePathsSync paths={localePaths} />
+      <BigTitle>{page.title}</BigTitle>
+    </>
+  )
 }
