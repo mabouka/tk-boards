@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { PortableText } from 'next-sanity'
 import { urlFor } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue } from '@/sanity/lib/types'
+import { haloProps } from '@/components/halo/haloProps'
 import styles from './SectionTextGallery.module.css'
 
 type GalleryImage = SanityImage & { alt?: string | null }
@@ -44,14 +45,7 @@ export default function SectionTextGallery({
       {/* Main image — all slides stacked, crossfaded via opacity on active change */}
       <div className={styles.textGallery__image}
         {...(isDark
-          ? {
-            'data-halo': '',
-            'data-halo-rgb': '225, 225, 255',
-            'data-halo-opacity': '0.30',
-            'data-halo-w': '83vw',
-            'data-halo-h': '60vh',
-            'data-halo-spread': '5%',
-          }
+          ? haloProps({ rgb: '225, 225, 255', opacity: 0.3, w: '83vw', h: '60vh', spread: '5%' })
           : {})}
       >
         {gallery.map((img, i) => (

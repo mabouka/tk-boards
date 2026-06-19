@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
+import { haloProps } from '@/components/halo/haloProps'
 import styles from './BoardsPreview.module.css'
 
 type Board = {
@@ -75,12 +76,7 @@ export default function BoardsPreviewClient({ series, title, discoverCta, viewBo
       <div className={styles.boards__scroll}>
         <div
           className={styles.boards__track}
-          data-halo
-          data-halo-rgb="215, 215, 255"
-          data-halo-opacity="0.39"
-          data-halo-w="74vw"
-          data-halo-h="71vh"
-          data-halo-spread="13%"
+          {...haloProps({ rgb: '215, 215, 255', opacity: 0.39, w: '74vw', h: '71vh', spread: '13%' })}
         >
           {boards.map(board => (
             <Link

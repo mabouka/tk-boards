@@ -1,3 +1,4 @@
+import { haloProps } from '@/components/halo/haloProps'
 import styles from './SectionSpecs.module.css'
 
 export type SpecRow = {
@@ -16,13 +17,10 @@ export default function SectionSpecs({ eyebrow, title, columns, rows }: Props) {
   if (!columns?.length || !rows?.length) return null
 
   return (
-    <section className={styles.section} data-halo
-      data-halo-rgb="225, 255, 255"
-      data-halo-opacity="0.20"
-      data-halo-w="250vw"
-      data-halo-h="66vh"
-      data-halo-spread="1%"
-      data-halo-anchor="top-left">
+    <section
+      className={styles.section}
+      {...haloProps({ rgb: '225, 255, 255', opacity: 0.2, w: '250vw', h: '66vh', spread: '1%', anchor: 'top-left' })}
+    >
       {(eyebrow || title) && (
         <header className={styles.head}>
           {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}

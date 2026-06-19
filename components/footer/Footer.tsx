@@ -13,6 +13,7 @@ import IconTikTok from '@/components/icons/IconTikTok'
 import IconWhatsapp from '@/components/icons/IconWhatsapp'
 import IconX from '@/components/icons/IconX'
 import IconYoutube from '@/components/icons/IconYoutube'
+import { haloProps } from '@/components/halo/haloProps'
 import styles from './Footer.module.css'
 
 type Props = { locale: string }
@@ -47,13 +48,7 @@ export default async function Footer({ locale }: Props) {
     <footer className={styles.footer}>
       <div
         className={styles.footer__grid}
-        data-halo
-        data-halo-rgb="225, 225, 255"
-        data-halo-opacity="0.20"
-        data-halo-w="122vw"
-        data-halo-h="47vh"
-        data-halo-spread="2%"
-        data-halo-anchor="bottom-right"
+        {...haloProps({ rgb: '225, 225, 255', opacity: 0.2, w: '122vw', h: '47vh', spread: '2%', anchor: 'bottom-right' })}
       >
 
         {/* ── Col 1 : Logo + Social ── */}
