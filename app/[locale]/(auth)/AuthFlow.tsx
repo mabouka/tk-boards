@@ -6,12 +6,10 @@ import { useLocale, useTranslations } from 'next-intl'
 import { login, signup, signInWithGoogle, signInWithFacebook, resendVerification } from './actions'
 import PasswordField from './PasswordField'
 import { AtIcon, GoogleIcon, FacebookIcon } from '@/components/auth/icons'
+import { EMAIL_RE } from '@/lib/email-validation'
 import styles from './auth.module.css'
 
 type Step = 'email' | 'signin' | 'signup' | 'oauth'
-
-// Stricter than HTML5 type="email" (which accepts "a@b"): require a dotted domain.
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 export default function AuthFlow({
   flash,

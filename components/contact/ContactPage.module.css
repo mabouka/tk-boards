@@ -1,0 +1,331 @@
+/* Contact page — left pitch + right form card on the 12-col grid.
+   Relative so the `data-halo` marker resolves against this page. */
+.main {
+  color: var(--color-white);
+}
+
+/* Form section below the hero (the hero already clears the fixed header). */
+.page {
+  position: relative;
+  color: var(--color-white);
+  padding-inline: var(--gutter);
+  padding-top: var(--space-4xl);
+  padding-bottom: var(--space-4xl);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--col-gutter);
+  align-items: start;
+}
+
+/* ─── Left: pitch ───────────────────────────────────────── */
+.intro {
+  grid-column: 2 / 6;
+  align-self: center;
+}
+
+.eyebrow {
+  composes: u-eyebrow from global;
+  color: var(--color-white-50);
+}
+
+.title {
+  composes: u-title u-title--48 from global;
+  margin: 0;
+}
+
+.lead {
+  margin: 24px 0 0;
+  max-width: 46ch;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-white-72);
+}
+
+.lead p + p {
+  margin-top: 10px;
+}
+
+/* Contact action buttons (WhatsApp / Email) under the intro. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: var(--space-lg);
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border: 1px solid var(--color-white-50);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.actionBtn:hover {
+  border-color: var(--color-white);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.actionIcon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.iconWa {
+  color: #25d366;
+}
+
+/* ─── Right: form card ──────────────────────────────────── */
+.card {
+  grid-column: 7 / 12;
+  border: 1px solid #ffffff14;
+  padding: 40px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Honeypot — off-screen, skipped by AT/keyboard; only bots fill it. */
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Labels kept for screen readers only — the design relies on placeholders. */
+.label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Underline text fields — border-bottom only, transparent. */
+.input,
+.select {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 1px solid var(--color-white-50);
+  background: none;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--color-white);
+  transition: border-color 0.2s;
+}
+
+.input::placeholder {
+  color: var(--color-white-50);
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--color-white);
+}
+
+/* Keep the dark theme on browser autofill (mask the blue/yellow background). */
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus,
+.textarea:-webkit-autofill,
+.textarea:-webkit-autofill:hover,
+.textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-white);
+  transition: background-color 9999s ease-in-out 0s;
+  caret-color: var(--color-white);
+}
+
+/* Message keeps a full box. */
+.textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px;
+  border: 1px solid var(--color-white-50);
+  background: none;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--color-white);
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.textarea::placeholder {
+  color: var(--color-white-50);
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-white);
+}
+
+/* Per-field validation errors. */
+.input[aria-invalid='true'],
+.textarea[aria-invalid='true'] {
+  border-color: var(--color-red);
+}
+
+.fieldError {
+  margin-top: 6px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-white);
+}
+
+/* Select with a custom chevron (native arrow removed). */
+.selectWrap {
+  position: relative;
+}
+
+.select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 24px;
+}
+
+.select:has(option[value=""]:checked) {
+  color: var(--color-white-50);
+}
+
+.selectChevron {
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid var(--color-white-50);
+  border-bottom: 1.5px solid var(--color-white-50);
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+}
+
+/* ─── Phone (react-international-phone) — underline style ── */
+.fieldPhone {
+  position: relative;
+  border-bottom: 1px solid var(--color-white-50);
+  transition: border-color 0.2s;
+}
+
+.fieldPhone:focus-within {
+  border-color: var(--color-white);
+}
+
+.phone {
+  --react-international-phone-height: 40px;
+  --react-international-phone-font-size: 16px;
+  --react-international-phone-background-color: transparent;
+  --react-international-phone-text-color: var(--color-white-50);
+  --react-international-phone-border-color: transparent;
+  --react-international-phone-country-selector-border-color: transparent;
+  --react-international-phone-border-radius: 0;
+  --react-international-phone-country-selector-background-color: transparent;
+  --react-international-phone-country-selector-background-color-hover: rgba(255, 255, 255, 0.06);
+  --react-international-phone-country-selector-arrow-color: var(--color-white-50);
+  --react-international-phone-dropdown-top: 44px;
+  --react-international-phone-dropdown-item-background-color: var(--color-dark);
+  --react-international-phone-dropdown-item-text-color: var(--color-white);
+  --react-international-phone-dropdown-item-dial-code-color: var(--color-white-50);
+  --react-international-phone-selected-dropdown-item-background-color: rgba(255, 255, 255, 0.08);
+  --react-international-phone-selected-dropdown-item-text-color: var(--color-white);
+  --react-international-phone-dropdown-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  width: 100%;
+}
+
+.phone :global(.react-international-phone-input-container) {
+  width: 100%;
+}
+
+.phoneFilled {
+  --react-international-phone-text-color: var(--color-white);
+}
+
+.phone :global(.react-international-phone-input) {
+  flex: 1;
+}
+
+.phone :global(.react-international-phone-input):-webkit-autofill,
+.phone :global(.react-international-phone-input):-webkit-autofill:hover,
+.phone :global(.react-international-phone-input):-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-white);
+  transition: background-color 9999s ease-in-out 0s;
+  caret-color: var(--color-white);
+}
+
+.phone :global(.react-international-phone-country-selector-button__flag-emoji) {
+  margin: 0 4px 0 0;
+}
+
+.submit {
+  align-self: flex-start;
+  margin-top: var(--space-sm);
+}
+
+.submit:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.success {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-white);
+}
+
+.error {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-red);
+}
+
+/* ─── Responsive ────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .intro,
+  .card {
+    grid-column: 1 / -1;
+  }
+  .card {
+    margin-top: var(--space-2xl);
+    padding: 28px;
+  }
+  .row2 {
+    grid-template-columns: 1fr;
+  }
+}
