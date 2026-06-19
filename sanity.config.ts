@@ -29,6 +29,7 @@ export const TRANSLATABLE_TYPES = [
   'faqPage',
   'whereToBuyPage',
   'ourStoryPage',
+  'tkIdPage',
 ]
 
 // Singletons: exactly one document, edited from a fixed structure pane.
@@ -41,6 +42,7 @@ const BESPOKE_PAGES: ReadonlyArray<readonly [type: string, title: string]> = [
   ['contactPage', 'Contact'],
   ['faqPage', 'FAQ'],
   ['whereToBuyPage', 'Where to buy'],
+  ['tkIdPage', 'TK ID'],
 ]
 
 // One bespoke i18n singleton opened directly as its fixed per-locale document.
@@ -248,6 +250,7 @@ export default defineConfig({
         'homePage',
         'ourStoryPage',
         'contactPage',
+        'tkIdPage',
         'faqPage',
         'whereToBuyPage',
         'boardsPageSettings',
