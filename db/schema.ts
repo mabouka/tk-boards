@@ -111,6 +111,7 @@ export const products = pgTable(
     name: text('name').notNull(), // internal admin name (marketing lives in Sanity)
     kind: text('kind').notNull(), // 'board' | 'accessory' — admin filter only
     active: boolean('active').notNull().default(true),
+    miniConfigurator: boolean('mini_configurator').notNull().default(false),
     createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date' })
       .notNull()

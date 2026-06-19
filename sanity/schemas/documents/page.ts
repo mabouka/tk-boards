@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity'
 import { pageSlugField } from '../../lib/pageSlug'
+import { pageBuilderSections } from '../../lib/pageBuilderSections'
 
 export const page = defineType({
   name: 'page',
@@ -45,18 +46,7 @@ export const page = defineType({
       name: 'sections',
       title: 'Sections',
       type: 'array',
-      of: [
-        { type: 'sectionAboutPreview' },
-        { type: 'sectionBoards' },
-        { type: 'sectionMarquee' },
-        { type: 'sectionTextImage' },
-        { type: 'sectionTextGallery' },
-        { type: 'sectionFullMedia' },
-        { type: 'sectionBigQuote' },
-        { type: 'sectionMediaLine' },
-        { type: 'sectionFeatures' },
-        { type: 'sectionOutline' },
-      ],
+      of: [...pageBuilderSections],
       group: 'content',
     }),
     defineField({

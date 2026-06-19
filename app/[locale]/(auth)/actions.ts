@@ -11,13 +11,13 @@ import { createEmailToken, consumeEmailToken, applyPasswordReset } from '@/lib/a
 import { sendVerificationEmail, sendPasswordResetEmail } from '@/lib/email'
 import { rateLimit } from '@/lib/rate-limit'
 import { clientIp } from '@/lib/client-ip'
+import { EMAIL_RE } from '@/lib/email-validation'
 
 const LOCALES = ['fr', 'en', 'es'] as const
 type Locale = (typeof LOCALES)[number]
 function safeLocale(value: FormDataEntryValue | null): Locale {
   return LOCALES.includes(value as Locale) ? (value as Locale) : 'en'
 }
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 export type AuthState = { error?: string; notice?: string } | null
 

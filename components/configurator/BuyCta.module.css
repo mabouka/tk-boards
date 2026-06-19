@@ -1,4 +1,4 @@
-/* Board purchase CTA (price + buttons) — lives in BoardPresentation and just
+/* Product purchase CTA (price + buttons) — lives in ProductPresentation and just
    opens the configurator. Buttons use the global u-cta utilities. */
 .cta {
   display: flex;
@@ -8,10 +8,12 @@
 }
 
 .price {
-  font-family: var(--font-display);
-  font-size: clamp(22px, 2.4vw, 30px);
+  font-family: var(--font-body); /* Space Grotesk */
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1;
   color: var(--color-white);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.5px;
 }
 
 .priceFrom {

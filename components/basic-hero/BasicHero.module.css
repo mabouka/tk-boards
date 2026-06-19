@@ -1,0 +1,62 @@
+/* Full-bleed image hero — centered title + subtitle, legible via text-shadow.
+   The fixed (transparent) header overlays the top. */
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: clamp(440px, 64vh, 700px);
+  overflow: hidden;
+  color: var(--color-white);
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.12));
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding-inline: var(--gutter);
+}
+
+.title {
+  composes: u-title u-title--96 from global;
+  margin: 0;
+  text-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.subtitle {
+  composes: u-title u-title--24 from global;
+  margin: var(--space-sm) 0 0;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-shadow: 0 4px 23px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 700px) {
+  .hero {
+    height: clamp(360px, 70vh, 520px);
+  }
+  .title {
+    --title-size: 48px;
+  }
+  .subtitle {
+    --title-size: 16px;
+  }
+}

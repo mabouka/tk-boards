@@ -1,0 +1,151 @@
+/* Inline mini configurator — lives in the product CTA, configures ALL axes in
+   place (no drawer). Reuses the configurator's value-pill look + price styles. */
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.groupLabel {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-cream);
+}
+
+.values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* select-type pill — mirrors Configurator.module.css .value/.valueSelected */
+.value {
+  min-width: 48px;
+  padding: 10px 16px;
+  border-radius: 0;
+  border: 1px solid var(--color-white-50);
+  background: transparent;
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.value:hover:not(:disabled) {
+  border-color: var(--color-white);
+}
+
+.valueSelected {
+  border-color: var(--color-white);
+  background: var(--color-white);
+  color: var(--color-dark);
+}
+
+.value:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* swatch-type — mirrors Configurator.module.css .swatch/.swatchSelected */
+.swatch {
+  width: 36px;
+  height: 36px;
+  min-width: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--color-black);
+  box-shadow: 0 0 0 1px var(--color-white-50);
+  cursor: pointer;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(0, 0, 0, 0.14));
+  transition: box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.swatch:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.swatchSelected {
+  box-shadow: 0 0 0 2px var(--color-white);
+  border-color: var(--color-dark);
+}
+
+.swatch:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* ── Price block ── */
+.priceRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+.price {
+  font-family: var(--font-body); /* Space Grotesk */
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1;
+  color: var(--color-white);
+  letter-spacing: 0.5px;
+}
+
+.priceOld {
+  font-family: var(--font-body); /* Space Grotesk */
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--color-white);
+  opacity: 0.5;
+  letter-spacing: 1.5px;
+  text-decoration: line-through;
+}
+
+/* Gold outline savings badge — e.g. "− 200€" */
+.savings {
+  align-self: center;
+  padding: 8px 10px;
+  border: 1px solid var(--color-gold);
+  color: var(--color-gold);
+  font-family: var(--font-mono); /* Space Mono */
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.btnRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+.note {
+  font-family: var(--font-mono, var(--font-body));
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-gold);
+}

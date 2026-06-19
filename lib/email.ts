@@ -4,6 +4,7 @@ import { render } from '@react-email/components'
 import { Resend } from 'resend'
 import VerifyEmail from '@/emails/verify-email'
 import ResetPasswordEmail from '@/emails/reset-password'
+import ContactEmail from '@/emails/contact-email'
 import { emailT } from '@/lib/email-i18n'
 
 const FROM = process.env.EMAIL_FROM || 'TK Boards <onboarding@resend.dev>'
@@ -27,6 +28,7 @@ async function send(opts: {
   html: string
   text: string
   devNote: string
+  replyTo?: string
 }) {
   if (!KEY) {
     console.log(`\n📧 [email:dev] → ${opts.to}\n   ${opts.subject}\n   ${opts.devNote}\n`)
@@ -44,6 +46,7 @@ async function send(opts: {
     subject: opts.subject,
     html: opts.html,
     text: opts.text,
+    ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
   })
   if (error) throw new Error(error.message)
 }
@@ -63,6 +66,27 @@ export async function sendVerificationEmail(opts: {
     html,
     text,
     devNote: `verify → ${url}`,
+  })
+}
+
+export async function sendContactEmail(data: {
+  firstName: string
+  lastName: string
+  email: string
+  phone?: string
+  product?: string
+  message: string
+}) {
+  // Submissions land in the TK inbox; falls back to the from-address if unset.
+  const to = process.env.CONTACT_EMAIL || FROM
+  const { html, text } = await renderBoth(createElement(ContactEmail, data))
+  await send({
+    to,
+    subject: `New contact — ${data.firstName} ${data.lastName}`,
+    html,
+    text,
+    replyTo: data.email,
+    devNote: `contact from ${data.email}: ${data.message.slice(0, 80)}`,
   })
 }
 

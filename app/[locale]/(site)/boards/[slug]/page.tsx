@@ -10,8 +10,9 @@ import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { productGraph } from '@/lib/structured-data'
 import JsonLd from '@/components/json-ld/JsonLd'
+import { LocalePathsSync } from '@/components/i18n/LocalePaths'
 import HeroBoard from '@/components/hero-board/HeroBoard'
-import BoardPresentation from '@/components/board-presentation/BoardPresentation'
+import ProductPresentation from '@/components/product-presentation/ProductPresentation'
 import PageBuilder from '@/components/page-builder/PageBuilder'
 
 type Props = {
@@ -51,15 +52,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BoardPage({ params }: Props) {
   const { locale, slug } = await params
-  const [t, tNav] = await Promise.all([
+  const [t, tNav, board] = await Promise.all([
     getTranslations('boards'),
     getTranslations('nav'),
+    getBoard(locale, slug),
   ])
 
-
-  const board = await getBoard(locale, slug)
-
   if (!board) notFound()
+
+  // Per-locale paths for the header language switcher.
+  const localePaths: Record<string, string> = {}
+  for (const tr of Array.isArray(board.translations) ? board.translations : []) {
+    if (tr?.lang && tr?.slug) localePaths[tr.lang] = `/boards/${tr.slug}`
+  }
 
   const product = board.skuCode ? await getStorefrontProduct(board.skuCode, locale) : null
   const previewImage = board.mainImage
@@ -77,6 +82,7 @@ export default async function BoardPage({ params }: Props) {
 
   return (
     <div>
+      <LocalePathsSync paths={localePaths} />
       <JsonLd
         data={productGraph(board, locale, { home: tNav('home'), boards: t('title') })}
       />
@@ -87,7 +93,7 @@ export default async function BoardPage({ params }: Props) {
         backgroundImage={board.heroImage}
       />
 
-      <BoardPresentation
+      <ProductPresentation
         sectionLabel={t('section_presentation')}
         title={board.presentationTitle}
         text={board.presentationText}
@@ -97,14 +103,13 @@ export default async function BoardPage({ params }: Props) {
         cartLabel={t('add_to_cart')}
         configureLabel={t('configure')}
         fromLabel={t('from_price')}
-        cartStubLabel={t('cart_stub')}
         closeLabel={t('close')}
         product={product}
         locale={locale}
         previewImage={previewImage}
         perks={[t('perk_shipping'), t('perk_warranty'), t('perk_payment')]}
         gallery={gallery}
-        boardName={board.name}
+        productName={board.name}
       />
 
       <PageBuilder sections={board.sections ?? []} locale={locale} />

@@ -1,0 +1,95 @@
+.section {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--col-gutter);
+  padding-inline: var(--gutter);
+  padding-block: var(--space-4xl);
+  color: var(--color-white);
+}
+
+.head {
+  grid-column: 3 / 11;
+  margin-bottom: 36px;
+}
+
+/* Eyebrow + title styled like the Text/Image section (global utilities). */
+.eyebrow {
+  composes: u-eyebrow from global;
+}
+
+.head .eyebrow {
+  margin-bottom: 4px;
+  color: var(--color-white);
+  &:after{
+    color: var(--color-paulownia);
+
+  }
+}
+
+.title {
+  composes: u-title u-title--36 from global;
+}
+
+.head .title {
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* Content is capped to the centered middle 8 columns; the table scrolls
+   horizontally on narrow screens. */
+.tableWrap {
+  grid-column: 3 / 11;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  padding: 14px 24px 14px 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-cream);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-white-50);
+}
+
+.table td {
+  padding: 18px 24px 18px 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-white);
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* First column (the size) is emphasized. */
+.table td:first-child {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.01em;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .head,
+  .tableWrap {
+    grid-column: 1 / -1;
+  }
+  .table th,
+  .table td {
+    padding-right: 18px;
+  }
+  .table td:first-child {
+    font-size: 17px;
+  }
+}

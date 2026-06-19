@@ -11,6 +11,9 @@ import SectionBigQuote from '@/components/big-quote/SectionBigQuote'
 import SectionMediaLine from '@/components/media-line/SectionMediaLine'
 import SectionFeatures from '@/components/features/SectionFeatures'
 import SectionOutline from '@/components/outline/SectionOutline'
+import SectionFixedImage from '@/components/fixed-image/SectionFixedImage'
+import SectionSpecs from '@/components/specs/SectionSpecs'
+import CartPreview from '@/components/cart/CartPreview'
 
 export default async function DesignSystemPage({
   params,
@@ -318,6 +321,59 @@ export default async function DesignSystemPage({
           finalImageUrl="/samples/rocket.png"
           finalLabel={{ title: 'TK Rocket', subtitle: 'Freestyle Strapless' }}
         />
+      </div>
+
+      {/* Fixed Image — multiple full-screen images, each with its own text.
+          Scroll: text over image 1, then image 2 appears, etc. */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <SectionFixedImage
+          items={[
+            {
+              imageUrl: '/samples/channel.jpg',
+              title: 'A custom-made\nchannel',
+              text: 'This channel, carved straight into the paulownia core, drains water off the board for an optimal glide.',
+              startColumn: 2,
+              verticalPosition: 70,
+              cta: { text: 'Discover', href: '#' },
+            },
+            {
+              imageUrl: galleryPreview[0]
+                ? urlFor(galleryPreview[0]).width(2000).quality(85).url()
+                : '/samples/rocket.png',
+              title: 'Paulownia core',
+              text: 'Un coeur en bois de paulownia, léger et réactif.',
+              startColumn: 6,
+              verticalPosition: 40,
+            },
+            {
+              imageUrl: galleryPreview[1]
+                ? urlFor(galleryPreview[1]).width(2000).quality(85).url()
+                : '/samples/rocket.png',
+              title: 'Centered block',
+              text: 'startColumn 5, verticalPosition 50.',
+              startColumn: 5,
+              verticalPosition: 50,
+            },
+          ]}
+        />
+      </div>
+
+      {/* Specs table — editor-defined columns + rows. */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <SectionSpecs
+          eyebrow="Tech specs"
+          title="Sizes & specs"
+          columns={['Size', 'Dimensions', 'Imperial', 'Weight']}
+          rows={[
+            { cells: ["5'2", '157 × 45 × 5,4 cm', "5'2 × 17.7″ × 2.1″", '2.65 kg'] },
+            { cells: ["5'4", '162 × 46 × 5,5 cm', "5'4 × 18.1″ × 2.2″", '2.74 kg'] },
+          ]}
+        />
+      </div>
+
+      {/* Cart modal — HTML/CSS preview (mock data, not yet wired to real cart state) */}
+      <div style={{ position: 'relative', zIndex: 1, padding: '40px 48px' }}>
+        <CartPreview locale={locale} />
       </div>
     </>
   )

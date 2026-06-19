@@ -8,6 +8,13 @@
       "when": 1781112476183,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781822745680,
+      "tag": "0001_add_mini_configurator",
+      "breakpoints": true
     }
   ]
 }

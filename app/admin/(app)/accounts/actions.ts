@@ -6,8 +6,8 @@ import bcrypt from 'bcryptjs'
 import { db } from '@/db'
 import { users, addresses } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
+import { EMAIL_RE } from '@/lib/email-validation'
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 const LOCALES = ['fr', 'en', 'es']
 
 export type RoleResult = { ok: true } | { ok: false; error: string }

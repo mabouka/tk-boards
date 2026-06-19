@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { haloProps } from './haloProps'
 import styles from './Halos.module.css'
 
 export type HaloAnchor =
@@ -81,13 +82,14 @@ export default function Halos({ halos }: { halos: Halo[] }) {
               left: h.x ? `calc(${a.left} + ${h.x})` : a.left,
               top: h.y ? `calc(${a.top} + ${h.y})` : a.top,
             }}
-            data-halo
-            data-halo-anchor="center"
-            data-halo-rgb={h.rgb ?? '212, 172, 251'}
-            data-halo-opacity={String(h.opacity ?? 0.36)}
-            data-halo-w={h.w ?? '67vw'}
-            data-halo-h={h.h ?? '64vh'}
-            data-halo-spread={h.spread ?? '1%'}
+            {...haloProps({
+              anchor: 'center',
+              rgb: h.rgb ?? '212, 172, 251',
+              opacity: h.opacity ?? 0.36,
+              w: h.w ?? '67vw',
+              h: h.h ?? '64vh',
+              spread: h.spread ?? '1%',
+            })}
           />
         )
       })}

@@ -34,6 +34,7 @@ export type StorefrontVariant = {
 export type StorefrontProduct = {
   sku: string
   hasVariants: boolean
+  miniConfigurator: boolean // render the inline mini configurator instead of the drawer
   fromPrice: number | null // min effective price across active variants
   attributes: StorefrontAttribute[]
   variants: StorefrontVariant[]
@@ -50,7 +51,11 @@ export type StorefrontProduct = {
 export const getStorefrontProduct = cache(
   async (sku: string, locale: string): Promise<StorefrontProduct | null> => {
     const [product] = await db
-      .select({ id: products.id, sku: products.sku })
+      .select({
+        id: products.id,
+        sku: products.sku,
+        miniConfigurator: products.miniConfigurator,
+      })
       .from(products)
       .where(eq(products.sku, sku))
       .limit(1)
@@ -131,6 +136,7 @@ export const getStorefrontProduct = cache(
       sku: product.sku,
       // Configurable only when there are axes AND at least one active variant to pick.
       hasVariants: attributes.length > 0 && storefrontVariants.length > 0,
+      miniConfigurator: product.miniConfigurator,
       fromPrice,
       attributes,
       variants: storefrontVariants,

@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity'
 import { isUniqueSlugPerLanguage } from '../../lib/isUniqueSlugPerLanguage'
+import { pageBuilderSections } from '../../lib/pageBuilderSections'
 
 const TAG_STYLES = [
   { title: 'Cream (light fill)', value: 'cream' },
@@ -216,18 +217,7 @@ export const board = defineType({
       title: 'Sections',
       type: 'array',
       description: 'Flexible content sections shown below the presentation.',
-      of: [
-        { type: 'sectionAboutPreview' },
-        { type: 'sectionBoards' },
-        { type: 'sectionMarquee' },
-        { type: 'sectionTextImage' },
-        { type: 'sectionTextGallery' },
-        { type: 'sectionFullMedia' },
-        { type: 'sectionBigQuote' },
-        { type: 'sectionMediaLine' },
-        { type: 'sectionFeatures' },
-        { type: 'sectionOutline' },
-      ],
+      of: [...pageBuilderSections],
       group: 'content',
     }),
     defineField({

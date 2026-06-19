@@ -1,0 +1,28 @@
+/* Centered editorial text block, max-width 850px, with an optional title. */
+.section {
+  padding: var(--space-3xl) var(--gutter);
+}
+
+.inner {
+  max-width: 850px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.title {
+  composes: u-title u-title--36 from global;
+  --title-lh: 0.9;
+  margin-bottom: var(--space-md);
+  white-space: pre-line;
+}
+
+.body {
+  composes: u-body u-body--large from global;
+  color: var(--color-white-80);
+}
+
+@media (max-width: 1023px) {
+  .section {
+    padding: var(--space-2xl) var(--gutter);
+  }
+}

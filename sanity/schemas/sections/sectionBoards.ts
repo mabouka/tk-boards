@@ -17,6 +17,13 @@ export const sectionBoards = defineType({
       type: 'boolean',
       initialValue: true,
     }),
+    defineField({
+      name: 'filterBySeries',
+      title: 'Filter by series',
+      description: 'On: group / filter boards by series. Off: show all boards.',
+      type: 'boolean',
+      initialValue: true,
+    }),
   ],
   preview: {
     prepare: () => ({ title: 'Boards Preview' }),

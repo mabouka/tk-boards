@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { PortableText } from 'next-sanity'
 import { urlFor } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue, Cta } from '@/sanity/lib/types'
+import { haloProps } from '@/components/halo/haloProps'
 import styles from './SectionAboutPreview.module.css'
 
 type Props = {
@@ -16,13 +17,7 @@ export default function SectionAboutPreview({ eyebrow, title, image, body, cta }
   return (
     <section
       className={styles.aboutPreview}
-      data-halo
-      data-halo-rgb="215, 215, 255"
-      data-halo-opacity="0.23"
-      data-halo-w="143vw"
-      data-halo-h="46vh"
-      data-halo-spread="11%"
-      data-halo-anchor="top-right"
+      {...haloProps({ rgb: '215, 215, 255', opacity: 0.23, w: '143vw', h: '46vh', spread: '11%', anchor: 'top-right' })}
     >
 
       {/* ── Row 1 : eyebrow + titre animé ── */}
@@ -33,13 +28,7 @@ export default function SectionAboutPreview({ eyebrow, title, image, body, cta }
       {image && (
         <div
           className={styles.aboutPreview__image}
-          data-halo
-          data-halo-rgb="215, 215, 255"
-          data-halo-opacity="0.22"
-          data-halo-w="87vw"
-          data-halo-h="44vh"
-          data-halo-spread="1%"
-          data-halo-anchor="bottom-left"
+          {...haloProps({ rgb: '215, 215, 255', opacity: 0.22, w: '87vw', h: '44vh', spread: '1%', anchor: 'bottom-left' })}
         >
           <Image
             src={urlFor(image).width(800).url()}

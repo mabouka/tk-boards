@@ -82,6 +82,7 @@ export const productInputSchema = z.object({
     .transform((s) => s.toUpperCase()),
   kind: z.enum(['board', 'accessory']),
   active: z.boolean(),
+  miniConfigurator: z.boolean().default(false),
   options: z.array(optionSchema), // variant axes (→ product_attribute)
   variants: z.array(editorVariantSchema).min(1, 'Au moins une variante'),
   addons: z.array(addonSchema).default([]), // paid add-ons (→ product_option)

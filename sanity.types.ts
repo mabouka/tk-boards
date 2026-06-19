@@ -55,6 +55,14 @@ export type FeatureVideoPoster = {
   _type: "image";
 };
 
+export type FixedImageImage = {
+  asset?: SanityImageAssetReference;
+  media?: unknown; // Unable to locate the referenced type "fixedImage.image.media" in schema
+  hotspot?: SanityImageHotspot;
+  crop?: SanityImageCrop;
+  _type: "image";
+};
+
 export type OgImage = {
   asset?: SanityImageAssetReference;
   media?: unknown; // Unable to locate the referenced type "ogImage.media" in schema
@@ -62,6 +70,73 @@ export type OgImage = {
   crop?: SanityImageCrop;
   alt?: string;
   _type: "image";
+};
+
+export type SectionCenteredText = {
+  _type: "sectionCenteredText";
+  title?: string;
+  body: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+};
+
+export type SectionWorkshop = {
+  _type: "sectionWorkshop";
+  image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  eyebrow?: string;
+  title: string;
+  body?: string;
+  cta?: Link;
+  theme?: "light" | "dark";
+  cardSide?: "right" | "left";
+};
+
+export type SectionSpecs = {
+  _type: "sectionSpecs";
+  eyebrow?: string;
+  title?: string;
+  columns?: Array<string>;
+  rows?: Array<{
+    cells?: Array<string>;
+    _type: "specRow";
+    _key: string;
+  }>;
+};
+
+export type SectionFixedImage = {
+  _type: "sectionFixedImage";
+  items?: Array<{
+    image: FixedImageImage;
+    title?: string;
+    text?: string;
+    startColumn: number;
+    verticalPosition: number;
+    cta?: Link;
+    _type: "fixedImage";
+    _key: string;
+  }>;
 };
 
 export type SectionOutline = {
@@ -217,6 +292,7 @@ export type SectionTextImage = {
     crop?: SanityImageCrop;
     _type: "image";
   };
+  aspectRatio?: "1 / 1" | "4 / 3" | "3 / 2" | "4 / 5" | "16 / 9";
   ctas?: Array<
     {
       _key: string;
@@ -239,6 +315,7 @@ export type SectionBoards = {
   _type: "sectionBoards";
   title?: string;
   showFilters?: boolean;
+  filterBySeries?: boolean;
 };
 
 export type SectionAboutPreview = {
@@ -360,6 +437,7 @@ export type ContactSettings = {
   _rev: string;
   email?: string;
   phone?: string;
+  whatsapp?: string;
   address?: string;
 };
 
@@ -482,6 +560,13 @@ export type OurStoryPageReference = {
   [internalGroqTypeReferenceTo]?: "ourStoryPage";
 };
 
+export type TkIdPageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "tkIdPage";
+};
+
 export type InternationalizedArrayReferenceValue = {
   _type: "internationalizedArrayReferenceValue";
   value?:
@@ -493,7 +578,8 @@ export type InternationalizedArrayReferenceValue = {
     | ContactPageReference
     | FaqPageReference
     | WhereToBuyPageReference
-    | OurStoryPageReference;
+    | OurStoryPageReference
+    | TkIdPageReference;
   language: string;
 };
 
@@ -574,24 +660,7 @@ export type Accessory = {
   title: string;
   slug: Slug;
   category?: AccessoryCategoryReference;
-  text?: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
+  skuCode?: string;
   mainImage?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -600,9 +669,50 @@ export type Accessory = {
     alt: string;
     _type: "image";
   };
+  presentationTitle?: string;
+  text?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal";
+    listItem?: never;
+    markDefs?: null;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  presentationNumbers?: Array<{
+    value: string;
+    unit?: string;
+    label: string;
+    _key: string;
+  }>;
+  presentationTags?: Array<{
+    text: string;
+    style?:
+      | "cream"
+      | "dark"
+      | "amber"
+      | "red"
+      | "outline-light"
+      | "outline-muted";
+    _key: string;
+  }>;
   specifications?: Array<{
     name?: string;
     value?: string;
+    _key: string;
+  }>;
+  gallery?: Array<{
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
     _key: string;
   }>;
   sizes?: Array<string>;
@@ -742,6 +852,18 @@ export type Board = {
     | ({
         _key: string;
       } & SectionOutline)
+    | ({
+        _key: string;
+      } & SectionFixedImage)
+    | ({
+        _key: string;
+      } & SectionSpecs)
+    | ({
+        _key: string;
+      } & SectionWorkshop)
+    | ({
+        _key: string;
+      } & SectionCenteredText)
   >;
   weight?: number;
   price?: number;
@@ -787,6 +909,7 @@ export type Link = {
     | HomePageReference
     | OurStoryPageReference
     | ContactPageReference
+    | TkIdPageReference
     | FaqPageReference
     | WhereToBuyPageReference
     | BoardsPageSettingsReference
@@ -877,17 +1000,144 @@ export type FaqPage = {
   _rev: string;
   title: string;
   slug: Slug;
+  heroTitle?: string;
   intro?: string;
-  items?: Array<{
-    question: string;
-    answer: string;
-    category?: string;
-    _type: "faqItem";
+  categories?: Array<{
+    title: string;
+    questions?: Array<{
+      question: string;
+      answer: Array<
+        | {
+            children?: Array<{
+              marks?: Array<string>;
+              text?: string;
+              _type: "span";
+              _key: string;
+            }>;
+            style?:
+              | "normal"
+              | "h1"
+              | "h2"
+              | "h3"
+              | "h4"
+              | "h5"
+              | "h6"
+              | "blockquote";
+            listItem?: "bullet" | "number";
+            markDefs?: Array<{
+              href?: string;
+              _type: "link";
+              _key: string;
+            }>;
+            level?: number;
+            _type: "block";
+            _key: string;
+          }
+        | {
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            alt?: string;
+            _type: "image";
+            _key: string;
+          }
+        | {
+            url: string;
+            _type: "youtube";
+            _key: string;
+          }
+      >;
+      _type: "faqItem";
+      _key: string;
+    }>;
+    _type: "faqCategory";
     _key: string;
   }>;
   seoTitle?: string;
   seoDescription?: string;
-  ogImage?: OgImage;
+  ogImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  language: string;
+};
+
+export type TkIdPage = {
+  _id: string;
+  _type: "tkIdPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  sections?: Array<
+    | ({
+        _key: string;
+      } & SectionAboutPreview)
+    | ({
+        _key: string;
+      } & SectionBoards)
+    | ({
+        _key: string;
+      } & SectionMarquee)
+    | ({
+        _key: string;
+      } & SectionTextImage)
+    | ({
+        _key: string;
+      } & SectionTextGallery)
+    | ({
+        _key: string;
+      } & SectionFullMedia)
+    | ({
+        _key: string;
+      } & SectionBigQuote)
+    | ({
+        _key: string;
+      } & SectionMediaLine)
+    | ({
+        _key: string;
+      } & SectionFeatures)
+    | ({
+        _key: string;
+      } & SectionOutline)
+    | ({
+        _key: string;
+      } & SectionFixedImage)
+    | ({
+        _key: string;
+      } & SectionSpecs)
+    | ({
+        _key: string;
+      } & SectionWorkshop)
+    | ({
+        _key: string;
+      } & SectionCenteredText)
+  >;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
   language: string;
 };
 
@@ -899,15 +1149,73 @@ export type ContactPage = {
   _rev: string;
   title: string;
   slug: Slug;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
+  introEyebrow?: string;
+  introTitle?: string;
   intro?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  hours?: string;
-  mapUrl?: string;
+  sections?: Array<
+    | ({
+        _key: string;
+      } & SectionAboutPreview)
+    | ({
+        _key: string;
+      } & SectionBoards)
+    | ({
+        _key: string;
+      } & SectionMarquee)
+    | ({
+        _key: string;
+      } & SectionTextImage)
+    | ({
+        _key: string;
+      } & SectionTextGallery)
+    | ({
+        _key: string;
+      } & SectionFullMedia)
+    | ({
+        _key: string;
+      } & SectionBigQuote)
+    | ({
+        _key: string;
+      } & SectionMediaLine)
+    | ({
+        _key: string;
+      } & SectionFeatures)
+    | ({
+        _key: string;
+      } & SectionOutline)
+    | ({
+        _key: string;
+      } & SectionFixedImage)
+    | ({
+        _key: string;
+      } & SectionSpecs)
+    | ({
+        _key: string;
+      } & SectionWorkshop)
+    | ({
+        _key: string;
+      } & SectionCenteredText)
+  >;
   seoTitle?: string;
   seoDescription?: string;
-  ogImage?: OgImage;
+  ogImage?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  };
   language: string;
 };
 
@@ -992,6 +1300,18 @@ export type HomePage = {
     | ({
         _key: string;
       } & SectionOutline)
+    | ({
+        _key: string;
+      } & SectionFixedImage)
+    | ({
+        _key: string;
+      } & SectionSpecs)
+    | ({
+        _key: string;
+      } & SectionWorkshop)
+    | ({
+        _key: string;
+      } & SectionCenteredText)
   >;
   seoTitle?: string;
   seoDescription?: string;
@@ -1054,6 +1374,18 @@ export type Page = {
     | ({
         _key: string;
       } & SectionOutline)
+    | ({
+        _key: string;
+      } & SectionFixedImage)
+    | ({
+        _key: string;
+      } & SectionSpecs)
+    | ({
+        _key: string;
+      } & SectionWorkshop)
+    | ({
+        _key: string;
+      } & SectionCenteredText)
   >;
   seoTitle?: string;
   seoDescription?: string;
@@ -1180,7 +1512,12 @@ export type AllSanitySchemaTypes =
   | VideoPoster
   | FeatureImage
   | FeatureVideoPoster
+  | FixedImageImage
   | OgImage
+  | SectionCenteredText
+  | SectionWorkshop
+  | SectionSpecs
+  | SectionFixedImage
   | SectionOutline
   | SectionFeatures
   | SectionMediaLine
@@ -1213,6 +1550,7 @@ export type AllSanitySchemaTypes =
   | FaqPageReference
   | WhereToBuyPageReference
   | OurStoryPageReference
+  | TkIdPageReference
   | InternationalizedArrayReferenceValue
   | BoardsPageSettingsReference
   | AccessoriesPageSettingsReference
@@ -1230,6 +1568,7 @@ export type AllSanitySchemaTypes =
   | BoardsPageSettings
   | WhereToBuyPage
   | FaqPage
+  | TkIdPage
   | ContactPage
   | OurStoryPage
   | HomePage
@@ -1270,7 +1609,7 @@ export type BoardsQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: boardBySlugQuery
-// Query: *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {    _id,    name,    slug,    skuCode,    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },    heroTitle,    heroTagline,    heroImage,    presentationTitle,    presentationText,    presentationNumbers[]{ value, unit, label },    presentationTags[]{ text, style },    gallery[]{      asset,      alt,      hotspot,      crop    },    mainImage,    style,    weight,    price,    currency,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      intro,      "milestones": milestones[]{ year, name, tag, svgPath },      finalImage,      finalLabelTitle,      finalLabelSubtitle,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,          "openInNewTab": openInNewTab,          "href": select(            type == "internal" && internalLink->_type == "homePage" => "/",            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",            type == "internal" => "/" + internalLink->slug.current,            type == "external" => url,            type == "email" => "mailto:" + email,            type == "phone" => "tel:" + phone          )        }      }    },    seoTitle,    seoDescription,    ogImage,    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
+// Query: *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {    _id,    name,    slug,    skuCode,    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },    heroTitle,    heroTagline,    heroImage,    presentationTitle,    presentationText,    presentationNumbers[]{ value, unit, label },    presentationTags[]{ text, style },    gallery[]{      asset,      alt,      hotspot,      crop    },    mainImage,    style,    weight,    price,    currency,    sections[] {      _type,      _key,      title,      showFilters,      filterBySeries,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      cardSide,      quote,      authorName,      authorRole,      intro,      "milestones": milestones[]{ year, name, tag, svgPath },      finalImage,      finalLabelTitle,      finalLabelSubtitle,      columns,      "rows": rows[]{ _key, cells },      "cta": cta {        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "ctas": ctas[] {        _key,        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      },      "fixedImages": items[]{        _key,        image,        title,        text,        startColumn,        verticalPosition,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      }    },    seoTitle,    seoDescription,    ogImage,    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
 export type BoardBySlugQueryResult = {
   _id: string;
   name: string;
@@ -1346,6 +1685,7 @@ export type BoardBySlugQueryResult = {
         _key: string;
         title: string | null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: string | null;
         label: null;
@@ -1383,6 +1723,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -1391,19 +1732,30 @@ export type BoardBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: {
           text: string | null;
           openInNewTab: null;
-          href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
         } | null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionBigQuote";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: null;
@@ -1422,6 +1774,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: string;
         authorName: string | null;
         authorRole: string | null;
@@ -1430,15 +1783,19 @@ export type BoardBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionBoards";
         _key: string;
         title: string | null;
         showFilters: boolean | null;
+        filterBySeries: boolean | null;
         items: null;
         eyebrow: null;
         label: null;
@@ -1457,6 +1814,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -1465,15 +1823,84 @@ export type BoardBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionCenteredText";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }>;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionFeatures";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: Array<{
           mediaType?: "image" | "video";
           image?: FeatureImage;
@@ -1502,6 +1929,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -1510,6 +1938,8 @@ export type BoardBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: Array<{
@@ -1522,7 +1952,121 @@ export type BoardBySlugQueryResult = {
           cta: {
             text: string | null;
             openInNewTab: null;
-            href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FeatureImage | null;
+          title: string;
+          text: string;
+          startColumn: null;
+          verticalPosition: null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+      }
+    | {
+        _type: "sectionFixedImage";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: Array<{
+          image: FixedImageImage;
+          title?: string;
+          text?: string;
+          startColumn: number;
+          verticalPosition: number;
+          cta?: Link;
+          _type: "fixedImage";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: FixedImageImage;
+          videoUrl: null;
+          videoPoster: null;
+          title: string | null;
+          text: string | null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FixedImageImage;
+          title: string | null;
+          text: string | null;
+          startColumn: number;
+          verticalPosition: number;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
           } | null;
         }> | null;
       }
@@ -1531,6 +2075,7 @@ export type BoardBySlugQueryResult = {
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: null;
@@ -1562,6 +2107,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -1570,15 +2116,19 @@ export type BoardBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionMarquee";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: Array<{
           text?: string;
           accent?: boolean;
@@ -1601,6 +2151,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -1609,6 +2160,8 @@ export type BoardBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: Array<{
@@ -1620,12 +2173,22 @@ export type BoardBySlugQueryResult = {
           text: string | null;
           cta: null;
         }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: null;
+          title: null;
+          text: string | null;
+          startColumn: null;
+          verticalPosition: null;
+          cta: null;
+        }> | null;
       }
     | {
         _type: "sectionMediaLine";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: null;
@@ -1652,6 +2215,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -1660,15 +2224,19 @@ export type BoardBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionOutline";
         _key: string;
         title: string;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: string | null;
         label: null;
@@ -1687,6 +2255,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -1706,15 +2275,62 @@ export type BoardBySlugQueryResult = {
         } | null;
         finalLabelTitle: string | null;
         finalLabelSubtitle: string | null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionSpecs";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: Array<string> | null;
+        rows: Array<{
+          _key: string;
+          cells: Array<string> | null;
+        }> | null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionTextGallery";
         _key: string;
         title: string;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: string | null;
@@ -1766,6 +2382,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: "left" | "right" | null;
         layout: null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -1774,15 +2391,19 @@ export type BoardBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionTextImage";
         _key: string;
         title: string;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: string | null;
@@ -1822,7 +2443,7 @@ export type BoardBySlugQueryResult = {
         gallery: null;
         mediaType: null;
         size: null;
-        aspectRatio: null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
         media: null;
         videoUrl: null;
         videoPoster: null;
@@ -1832,6 +2453,7 @@ export type BoardBySlugQueryResult = {
         imagePosition: "left" | "right" | null;
         layout: "contained" | "full" | null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -1840,16 +2462,161 @@ export type BoardBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: Array<{
           _key: string;
           text: string | null;
           openInNewTab: null;
-          href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
         }> | null;
         features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionWorkshop";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: string | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: "left" | "right" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: {
+          text: string | null;
+          openInNewTab: null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
+        } | null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
       }
   > | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  ogImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  translations: Array<{
+    lang: string | null;
+    slug: string | null;
+  }> | null;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: accessoryBySlugQuery
+// Query: *[_type == "accessory" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {    _id,    title,    slug,    skuCode,    presentationTitle,    text,    presentationNumbers[]{ value, unit, label },    presentationTags[]{ text, style },    specifications[]{ name, value },    gallery[]{      asset,      alt,      hotspot,      crop    },    mainImage,    sizes,    price,    originalPrice,    currency,    seoTitle,    seoDescription,    ogImage,    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
+export type AccessoryBySlugQueryResult = {
+  _id: string;
+  title: string;
+  slug: Slug;
+  skuCode: string | null;
+  presentationTitle: string | null;
+  text: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal";
+    listItem?: never;
+    markDefs?: null;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }> | null;
+  presentationNumbers: Array<{
+    value: string;
+    unit: string | null;
+    label: string;
+  }> | null;
+  presentationTags: Array<{
+    text: string;
+    style:
+      | "amber"
+      | "cream"
+      | "dark"
+      | "outline-light"
+      | "outline-muted"
+      | "red"
+      | null;
+  }> | null;
+  specifications: Array<{
+    name: string | null;
+    value: string | null;
+  }> | null;
+  gallery: Array<{
+    asset: SanityImageAssetReference | null;
+    alt: string;
+    hotspot: SanityImageHotspot | null;
+    crop: SanityImageCrop | null;
+  }> | null;
+  mainImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt: string;
+    _type: "image";
+  } | null;
+  sizes: Array<string> | null;
+  price: number | null;
+  originalPrice: number | null;
+  currency: "EUR" | "GBP" | "USD" | null;
   seoTitle: string | null;
   seoDescription: string | null;
   ogImage: {
@@ -1899,7 +2666,7 @@ export type SeriesQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: siteSettingsQuery
-// Query: {  "brandName": *[_type == "seoSettings"][0].brandName,  "siteTitle": coalesce(    *[_type == "seoSettings"][0].defaultTitle[language == $locale][0].value,    *[_type == "seoSettings"][0].defaultTitle[language == "en"][0].value,    *[_type == "seoSettings"][0].defaultTitle[0].value  ),  "seoDescription": coalesce(    *[_type == "seoSettings"][0].defaultDescription[language == $locale][0].value,    *[_type == "seoSettings"][0].defaultDescription[language == "en"][0].value,    *[_type == "seoSettings"][0].defaultDescription[0].value  ),  "logo": *[_type == "seoSettings"][0].logo,  "ogImage": *[_type == "seoSettings"][0].ogImage,  "contact": *[_type == "contactSettings"][0]{ email, phone, address },  "social": *[_type == "footerSettings"][0].social,  "footer": *[_type == "footerSettings"][0]{ copyright, privacyPolicyUrl, cookiePolicyUrl }}
+// Query: {  "brandName": *[_type == "seoSettings"][0].brandName,  "siteTitle": coalesce(    *[_type == "seoSettings"][0].defaultTitle[language == $locale][0].value,    *[_type == "seoSettings"][0].defaultTitle[language == "en"][0].value,    *[_type == "seoSettings"][0].defaultTitle[0].value  ),  "seoDescription": coalesce(    *[_type == "seoSettings"][0].defaultDescription[language == $locale][0].value,    *[_type == "seoSettings"][0].defaultDescription[language == "en"][0].value,    *[_type == "seoSettings"][0].defaultDescription[0].value  ),  "logo": *[_type == "seoSettings"][0].logo,  "ogImage": *[_type == "seoSettings"][0].ogImage,  "contact": *[_type == "contactSettings"][0]{ email, phone, whatsapp, address },  "social": *[_type == "footerSettings"][0].social,  "footer": *[_type == "footerSettings"][0]{ copyright, privacyPolicyUrl, cookiePolicyUrl }}
 export type SiteSettingsQueryResult = {
   brandName: string | null;
   siteTitle: string | null;
@@ -1923,6 +2690,7 @@ export type SiteSettingsQueryResult = {
   contact: {
     email: string | null;
     phone: string | null;
+    whatsapp: string | null;
     address: string | null;
   } | null;
   social: {
@@ -2008,7 +2776,7 @@ export type SitemapHomePagesQueryResult = Array<{
 
 // Source: sanity/lib/queries.ts
 // Variable: homePageByLocaleQuery
-// Query: coalesce(    *[_type == "homePage" && language == $locale && !(_id in path("drafts.**"))][0],    *[_type == "homePage" && language == "fr" && !(_id in path("drafts.**"))][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      intro,      "milestones": milestones[]{ year, name, tag, svgPath },      finalImage,      finalLabelTitle,      finalLabelSubtitle,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,          "openInNewTab": openInNewTab,          "href": select(            type == "internal" && internalLink->_type == "homePage" => "/",            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",            type == "internal" => "/" + internalLink->slug.current,            type == "external" => url,            type == "email" => "mailto:" + email,            type == "phone" => "tel:" + phone          )        }      }    }  }
+// Query: coalesce(    *[_type == "homePage" && language == $locale && !(_id in path("drafts.**"))][0],    *[_type == "homePage" && language == "fr" && !(_id in path("drafts.**"))][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      filterBySeries,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      cardSide,      quote,      authorName,      authorRole,      intro,      "milestones": milestones[]{ year, name, tag, svgPath },      finalImage,      finalLabelTitle,      finalLabelSubtitle,      columns,      "rows": rows[]{ _key, cells },      "cta": cta {        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "ctas": ctas[] {        _key,        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      },      "fixedImages": items[]{        _key,        image,        title,        text,        startColumn,        verticalPosition,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      }    }  }
 export type HomePageByLocaleQueryResult = {
   _id: string;
   title: string;
@@ -2037,6 +2805,7 @@ export type HomePageByLocaleQueryResult = {
         _key: string;
         title: string | null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: string | null;
         label: null;
@@ -2074,6 +2843,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2082,19 +2852,30 @@ export type HomePageByLocaleQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: {
           text: string | null;
           openInNewTab: null;
-          href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
         } | null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionBigQuote";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: null;
@@ -2113,6 +2894,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: null;
         layout: null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: string;
         authorName: string | null;
         authorRole: string | null;
@@ -2121,15 +2903,19 @@ export type HomePageByLocaleQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionBoards";
         _key: string;
         title: string | null;
         showFilters: boolean | null;
+        filterBySeries: boolean | null;
         items: null;
         eyebrow: null;
         label: null;
@@ -2148,6 +2934,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2156,15 +2943,84 @@ export type HomePageByLocaleQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionCenteredText";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }>;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionFeatures";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: Array<{
           mediaType?: "image" | "video";
           image?: FeatureImage;
@@ -2193,6 +3049,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: null;
         layout: null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2201,6 +3058,8 @@ export type HomePageByLocaleQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: Array<{
@@ -2213,7 +3072,121 @@ export type HomePageByLocaleQueryResult = {
           cta: {
             text: string | null;
             openInNewTab: null;
-            href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FeatureImage | null;
+          title: string;
+          text: string;
+          startColumn: null;
+          verticalPosition: null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+      }
+    | {
+        _type: "sectionFixedImage";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: Array<{
+          image: FixedImageImage;
+          title?: string;
+          text?: string;
+          startColumn: number;
+          verticalPosition: number;
+          cta?: Link;
+          _type: "fixedImage";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: FixedImageImage;
+          videoUrl: null;
+          videoPoster: null;
+          title: string | null;
+          text: string | null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FixedImageImage;
+          title: string | null;
+          text: string | null;
+          startColumn: number;
+          verticalPosition: number;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
           } | null;
         }> | null;
       }
@@ -2222,6 +3195,7 @@ export type HomePageByLocaleQueryResult = {
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: null;
@@ -2253,6 +3227,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2261,15 +3236,19 @@ export type HomePageByLocaleQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionMarquee";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: Array<{
           text?: string;
           accent?: boolean;
@@ -2292,6 +3271,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2300,6 +3280,8 @@ export type HomePageByLocaleQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: Array<{
@@ -2311,12 +3293,22 @@ export type HomePageByLocaleQueryResult = {
           text: string | null;
           cta: null;
         }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: null;
+          title: null;
+          text: string | null;
+          startColumn: null;
+          verticalPosition: null;
+          cta: null;
+        }> | null;
       }
     | {
         _type: "sectionMediaLine";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: null;
@@ -2343,6 +3335,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2351,15 +3344,19 @@ export type HomePageByLocaleQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionOutline";
         _key: string;
         title: string;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: string | null;
         label: null;
@@ -2378,6 +3375,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2397,15 +3395,62 @@ export type HomePageByLocaleQueryResult = {
         } | null;
         finalLabelTitle: string | null;
         finalLabelSubtitle: string | null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionSpecs";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: Array<string> | null;
+        rows: Array<{
+          _key: string;
+          cells: Array<string> | null;
+        }> | null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionTextGallery";
         _key: string;
         title: string;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: string | null;
@@ -2457,6 +3502,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: "left" | "right" | null;
         layout: null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2465,15 +3511,19 @@ export type HomePageByLocaleQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionTextImage";
         _key: string;
         title: string;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: string | null;
@@ -2513,7 +3563,7 @@ export type HomePageByLocaleQueryResult = {
         gallery: null;
         mediaType: null;
         size: null;
-        aspectRatio: null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
         media: null;
         videoUrl: null;
         videoPoster: null;
@@ -2523,6 +3573,7 @@ export type HomePageByLocaleQueryResult = {
         imagePosition: "left" | "right" | null;
         layout: "contained" | "full" | null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2531,14 +3582,82 @@ export type HomePageByLocaleQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: Array<{
           _key: string;
           text: string | null;
           openInNewTab: null;
-          href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
         }> | null;
         features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionWorkshop";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: string | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: "left" | "right" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: {
+          text: string | null;
+          openInNewTab: null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
+        } | null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
       }
   > | null;
 } | null;
@@ -2552,8 +3671,22 @@ export type CmsPageBySlugQueryResult =
       title: string;
       seoTitle: string | null;
       seoDescription: string | null;
-      ogImage: OgImage | null;
-      heroImage: null;
+      ogImage: {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt?: string;
+        _type: "image";
+      } | null;
+      heroImage: {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt?: string;
+        _type: "image";
+      } | null;
       translations: Array<{
         lang: string | null;
         slug: string | null;
@@ -2564,7 +3697,14 @@ export type CmsPageBySlugQueryResult =
       title: string;
       seoTitle: string | null;
       seoDescription: string | null;
-      ogImage: OgImage | null;
+      ogImage: {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt?: string;
+        _type: "image";
+      } | null;
       heroImage: null;
       translations: Array<{
         lang: string | null;
@@ -2623,58 +3763,62 @@ export type CmsPageBySlugQueryResult =
   | null;
 
 // Source: sanity/lib/queries.ts
-// Variable: navigationQuery
-// Query: *[_type == "navigation" && location == $location && language == $locale][0] {    items[] {      _key,      label,      openInNewTab,      "href": select(        defined(internalLink) && internalLink->_type == "homePage" => "/",        defined(internalLink) && internalLink->_type == "boardsPageSettings" => "/boards",        defined(internalLink) && internalLink->_type == "accessoriesPageSettings" => "/accessories",        defined(internalLink) && internalLink->_type == "accountPageSettings" => "/account",        defined(internalLink) => "/" + internalLink->slug.current,        externalUrl      ),    },    featured[] {      _key,      "name": board->name,      "slug": board->slug.current,      image,    }  }
-export type NavigationQueryResult = {
-  items: Array<{
-    _key: string;
-    label: string;
-    openInNewTab: boolean | null;
-    href: string | "/" | "/accessories" | "/account" | "/boards" | null;
-  }> | null;
-  featured: Array<{
-    _key: string;
-    name: string | null;
-    slug: string | null;
-    image: {
-      asset?: SanityImageAssetReference;
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      _type: "image";
-    } | null;
-  }> | null;
-} | null;
-
-// Source: sanity/lib/queries.ts
-// Variable: footerSeriesQuery
-// Query: *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) [0..1] {    _id,    "name": coalesce(      name[language == $locale][0].value,      name[language == "en"][0].value,      name[0].value    ),    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {      _id,      name,      slug    }  }
-export type FooterSeriesQueryResult = Array<{
-  _id: string;
-  name: string | null;
-  boards: Array<{
-    _id: string;
-    name: string;
-    slug: Slug;
-  }>;
-}>;
-
-// Source: sanity/lib/queries.ts
-// Variable: pageBySlugQuery
-// Query: coalesce(    *[_type == "page" && slug.current == $slug && language == $locale][0],    *[_type == "page" && slug.current == $slug && language == "fr"][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    slug,    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      quote,      authorName,      authorRole,      intro,      "milestones": milestones[]{ year, name, tag, svgPath },      finalImage,      finalLabelTitle,      finalLabelSubtitle,      "cta": cta {        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "ctas": ctas[] {        _key,        "text": text,        "openInNewTab": openInNewTab,        "href": select(          type == "internal" && internalLink->_type == "homePage" => "/",          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",          type == "internal" => "/" + internalLink->slug.current,          type == "external" => url,          type == "email" => "mailto:" + email,          type == "phone" => "tel:" + phone        )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,          "openInNewTab": openInNewTab,          "href": select(            type == "internal" && internalLink->_type == "homePage" => "/",            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",            type == "internal" => "/" + internalLink->slug.current,            type == "external" => url,            type == "email" => "mailto:" + email,            type == "phone" => "tel:" + phone          )        }      }    }  }
-export type PageBySlugQueryResult = {
-  _id: string;
+// Variable: faqPageQuery
+// Query: *[_type == "faqPage" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {    title,    heroTitle,    "categories": categories[]{      _key,      title,      "questions": questions[]{        _key,        question,        "answer": answer[]{          ...,          _type == "image" => { ..., "url": asset->url + "?w=1280&q=85&auto=format" }        }      }    },    seoTitle,    seoDescription,    ogImage,    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
+export type FaqPageQueryResult = {
   title: string;
-  heroImage: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  } | null;
   heroTitle: string | null;
-  heroSubtitle: string | null;
-  slug: Slug;
+  categories: Array<{
+    _key: string;
+    title: string;
+    questions: Array<{
+      _key: string;
+      question: string;
+      answer: Array<
+        | {
+            children?: Array<{
+              marks?: Array<string>;
+              text?: string;
+              _type: "span";
+              _key: string;
+            }>;
+            style?:
+              | "blockquote"
+              | "h1"
+              | "h2"
+              | "h3"
+              | "h4"
+              | "h5"
+              | "h6"
+              | "normal";
+            listItem?: "bullet" | "number";
+            markDefs?: Array<{
+              href?: string;
+              _type: "link";
+              _key: string;
+            }>;
+            level?: number;
+            _type: "block";
+            _key: string;
+          }
+        | {
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            alt?: string;
+            _type: "image";
+            _key: string;
+            url: string | null;
+          }
+        | {
+            url: string;
+            _type: "youtube";
+            _key: string;
+          }
+      >;
+    }> | null;
+  }> | null;
   seoTitle: string | null;
   seoDescription: string | null;
   ogImage: {
@@ -2685,12 +3829,37 @@ export type PageBySlugQueryResult = {
     alt?: string;
     _type: "image";
   } | null;
+  translations: Array<{
+    lang: string | null;
+    slug: string | null;
+  }> | null;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: contactPageQuery
+// Query: *[_type == "contactPage" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {    title,    heroTitle,    heroSubtitle,    heroImage,    introEyebrow,    introTitle,    intro,    sections[] {      _type,      _key,      title,      showFilters,      filterBySeries,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      cardSide,      quote,      authorName,      authorRole,      intro,      "milestones": milestones[]{ year, name, tag, svgPath },      finalImage,      finalLabelTitle,      finalLabelSubtitle,      columns,      "rows": rows[]{ _key, cells },      "cta": cta {        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "ctas": ctas[] {        _key,        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      },      "fixedImages": items[]{        _key,        image,        title,        text,        startColumn,        verticalPosition,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      }    }  }
+export type ContactPageQueryResult = {
+  title: string;
+  heroTitle: string | null;
+  heroSubtitle: string | null;
+  heroImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  introEyebrow: string | null;
+  introTitle: string | null;
+  intro: string | null;
   sections: Array<
     | {
         _type: "sectionAboutPreview";
         _key: string;
         title: string | null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: string | null;
         label: null;
@@ -2728,6 +3897,7 @@ export type PageBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2736,19 +3906,30 @@ export type PageBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: {
           text: string | null;
           openInNewTab: null;
-          href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
         } | null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionBigQuote";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: null;
@@ -2767,6 +3948,7 @@ export type PageBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: string;
         authorName: string | null;
         authorRole: string | null;
@@ -2775,15 +3957,19 @@ export type PageBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionBoards";
         _key: string;
         title: string | null;
         showFilters: boolean | null;
+        filterBySeries: boolean | null;
         items: null;
         eyebrow: null;
         label: null;
@@ -2802,6 +3988,7 @@ export type PageBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2810,15 +3997,84 @@ export type PageBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionCenteredText";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }>;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionFeatures";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: Array<{
           mediaType?: "image" | "video";
           image?: FeatureImage;
@@ -2847,6 +4103,7 @@ export type PageBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2855,6 +4112,8 @@ export type PageBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: Array<{
@@ -2867,7 +4126,121 @@ export type PageBySlugQueryResult = {
           cta: {
             text: string | null;
             openInNewTab: null;
-            href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FeatureImage | null;
+          title: string;
+          text: string;
+          startColumn: null;
+          verticalPosition: null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+      }
+    | {
+        _type: "sectionFixedImage";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: Array<{
+          image: FixedImageImage;
+          title?: string;
+          text?: string;
+          startColumn: number;
+          verticalPosition: number;
+          cta?: Link;
+          _type: "fixedImage";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: FixedImageImage;
+          videoUrl: null;
+          videoPoster: null;
+          title: string | null;
+          text: string | null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FixedImageImage;
+          title: string | null;
+          text: string | null;
+          startColumn: number;
+          verticalPosition: number;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
           } | null;
         }> | null;
       }
@@ -2876,6 +4249,7 @@ export type PageBySlugQueryResult = {
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: null;
@@ -2907,6 +4281,7 @@ export type PageBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2915,15 +4290,19 @@ export type PageBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionMarquee";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: Array<{
           text?: string;
           accent?: boolean;
@@ -2946,6 +4325,7 @@ export type PageBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -2954,6 +4334,8 @@ export type PageBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: Array<{
@@ -2965,12 +4347,22 @@ export type PageBySlugQueryResult = {
           text: string | null;
           cta: null;
         }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: null;
+          title: null;
+          text: string | null;
+          startColumn: null;
+          verticalPosition: null;
+          cta: null;
+        }> | null;
       }
     | {
         _type: "sectionMediaLine";
         _key: string;
         title: null;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: null;
@@ -2997,6 +4389,7 @@ export type PageBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -3005,15 +4398,19 @@ export type PageBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionOutline";
         _key: string;
         title: string;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: string | null;
         label: null;
@@ -3032,6 +4429,7 @@ export type PageBySlugQueryResult = {
         imagePosition: null;
         layout: null;
         theme: null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -3051,15 +4449,62 @@ export type PageBySlugQueryResult = {
         } | null;
         finalLabelTitle: string | null;
         finalLabelSubtitle: string | null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionSpecs";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: Array<string> | null;
+        rows: Array<{
+          _key: string;
+          cells: Array<string> | null;
+        }> | null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionTextGallery";
         _key: string;
         title: string;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: string | null;
@@ -3111,6 +4556,7 @@ export type PageBySlugQueryResult = {
         imagePosition: "left" | "right" | null;
         layout: null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -3119,15 +4565,19 @@ export type PageBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: null;
         features: null;
+        fixedImages: null;
       }
     | {
         _type: "sectionTextImage";
         _key: string;
         title: string;
         showFilters: null;
+        filterBySeries: null;
         items: null;
         eyebrow: null;
         label: string | null;
@@ -3167,7 +4617,7 @@ export type PageBySlugQueryResult = {
         gallery: null;
         mediaType: null;
         size: null;
-        aspectRatio: null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
         media: null;
         videoUrl: null;
         videoPoster: null;
@@ -3177,6 +4627,7 @@ export type PageBySlugQueryResult = {
         imagePosition: "left" | "right" | null;
         layout: "contained" | "full" | null;
         theme: "dark" | "light" | null;
+        cardSide: null;
         quote: null;
         authorName: null;
         authorRole: null;
@@ -3185,14 +4636,1909 @@ export type PageBySlugQueryResult = {
         finalImage: null;
         finalLabelTitle: null;
         finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
         cta: null;
         ctas: Array<{
           _key: string;
           text: string | null;
           openInNewTab: null;
-          href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
         }> | null;
         features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionWorkshop";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: string | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: "left" | "right" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: {
+          text: string | null;
+          openInNewTab: null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
+        } | null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+  > | null;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: tkIdPageByLocaleQuery
+// Query: coalesce(    *[_type == "tkIdPage" && language == $locale && !(_id in path("drafts.**"))][0],    *[_type == "tkIdPage" && language == "en" && !(_id in path("drafts.**"))][0]  ) {    _id,    title,    heroTitle,    heroSubtitle,    heroImage,    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      filterBySeries,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      cardSide,      quote,      authorName,      authorRole,      intro,      "milestones": milestones[]{ year, name, tag, svgPath },      finalImage,      finalLabelTitle,      finalLabelSubtitle,      columns,      "rows": rows[]{ _key, cells },      "cta": cta {        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "ctas": ctas[] {        _key,        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      },      "fixedImages": items[]{        _key,        image,        title,        text,        startColumn,        verticalPosition,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      }    },    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{      "lang": value->language,      "slug": value->slug.current    }  }
+export type TkIdPageByLocaleQueryResult = {
+  _id: string;
+  title: string;
+  heroTitle: string | null;
+  heroSubtitle: string | null;
+  heroImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  ogImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  sections: Array<
+    | {
+        _type: "sectionAboutPreview";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?: "normal";
+          listItem?: never;
+          markDefs?: null;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: {
+          text: string | null;
+          openInNewTab: null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
+        } | null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionBigQuote";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: null;
+        quote: string;
+        authorName: string | null;
+        authorRole: string | null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionBoards";
+        _key: string;
+        title: string | null;
+        showFilters: boolean | null;
+        filterBySeries: boolean | null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionCenteredText";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }>;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionFeatures";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: Array<{
+          mediaType?: "image" | "video";
+          image?: FeatureImage;
+          videoUrl?: string;
+          videoPoster?: FeatureVideoPoster;
+          title: string;
+          text: string;
+          cta?: Link;
+          _type: "feature";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: "image" | "video" | null;
+          image: FeatureImage | null;
+          videoUrl: string | null;
+          videoPoster: FeatureVideoPoster | null;
+          title: string;
+          text: string;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FeatureImage | null;
+          title: string;
+          text: string;
+          startColumn: null;
+          verticalPosition: null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+      }
+    | {
+        _type: "sectionFixedImage";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: Array<{
+          image: FixedImageImage;
+          title?: string;
+          text?: string;
+          startColumn: number;
+          verticalPosition: number;
+          cta?: Link;
+          _type: "fixedImage";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: FixedImageImage;
+          videoUrl: null;
+          videoPoster: null;
+          title: string | null;
+          text: string | null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FixedImageImage;
+          title: string | null;
+          text: string | null;
+          startColumn: number;
+          verticalPosition: number;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+      }
+    | {
+        _type: "sectionFullMedia";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: "image" | "video" | null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: string | null;
+        videoPoster: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        videoWidth: number | null;
+        videoHeight: number | null;
+        controls: boolean | null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionMarquee";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: Array<{
+          text?: string;
+          accent?: boolean;
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: null;
+          videoUrl: null;
+          videoPoster: null;
+          title: null;
+          text: string | null;
+          cta: null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: null;
+          title: null;
+          text: string | null;
+          startColumn: null;
+          verticalPosition: null;
+          cta: null;
+        }> | null;
+      }
+    | {
+        _type: "sectionMediaLine";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
+        media: Array<{
+          mediaType?: "image" | "video";
+          image?: MediaItemImage;
+          videoUrl?: string;
+          videoPoster?: VideoPoster;
+          controls?: boolean;
+          _type: "mediaItem";
+          _key: string;
+        }> | null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionOutline";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: string | null;
+        milestones: Array<{
+          year: string;
+          name: string;
+          tag: string | null;
+          svgPath: string;
+        }> | null;
+        finalImage: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        finalLabelTitle: string | null;
+        finalLabelSubtitle: string | null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionSpecs";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: Array<string> | null;
+        rows: Array<{
+          _key: string;
+          cells: Array<string> | null;
+        }> | null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionTextGallery";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: string | null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: null;
+        gallery: Array<{
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+          _key: string;
+        }> | null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: "left" | "right" | null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionTextImage";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: string | null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        };
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: "left" | "right" | null;
+        layout: "contained" | "full" | null;
+        theme: "dark" | "light" | null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: Array<{
+          _key: string;
+          text: string | null;
+          openInNewTab: null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
+        }> | null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionWorkshop";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: string | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: "left" | "right" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: {
+          text: string | null;
+          openInNewTab: null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
+        } | null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+  > | null;
+  translations: Array<{
+    lang: string | null;
+    slug: string | null;
+  }> | null;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: contactSettingsQuery
+// Query: *[_type == "contactSettings"][0] { email, whatsapp }
+export type ContactSettingsQueryResult = {
+  email: string | null;
+  whatsapp: string | null;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: navigationQuery
+// Query: *[_type == "navigation" && location == $location && language == $locale][0] {    items[] {      _key,      label,      openInNewTab,      "href": select(        defined(internalLink) && internalLink->_type == "homePage" => "/",        defined(internalLink) && internalLink->_type == "boardsPageSettings" => "/boards",        defined(internalLink) && internalLink->_type == "accessoriesPageSettings" => "/accessories",        defined(internalLink) && internalLink->_type == "accountPageSettings" => "/account",        defined(internalLink) && internalLink->_type == "tkIdPage" => "/tk-id",        defined(internalLink) => "/" + internalLink->slug.current,        externalUrl      ),    },    featured[] {      _key,      "name": board->name,      "slug": board->slug.current,      image,    }  }
+export type NavigationQueryResult = {
+  items: Array<{
+    _key: string;
+    label: string;
+    openInNewTab: boolean | null;
+    href: string | "/" | "/accessories" | "/account" | "/boards" | null;
+  }> | null;
+  featured: Array<{
+    _key: string;
+    name: string | null;
+    slug: string | null;
+    image: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+  }> | null;
+} | null;
+
+// Source: sanity/lib/queries.ts
+// Variable: footerSeriesQuery
+// Query: *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) [0..1] {    _id,    "name": coalesce(      name[language == $locale][0].value,      name[language == "en"][0].value,      name[0].value    ),    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {      _id,      name,      slug    }  }
+export type FooterSeriesQueryResult = Array<{
+  _id: string;
+  name: string | null;
+  boards: Array<{
+    _id: string;
+    name: string;
+    slug: Slug;
+  }>;
+}>;
+
+// Source: sanity/lib/queries.ts
+// Variable: pageBySlugQuery
+// Query: coalesce(    *[_type == "page" && slug.current == $slug && language == $locale][0],    *[_type == "page" && slug.current == $slug && language == "fr"][0]  ) {    _id,    title,    heroImage,    heroTitle,    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),    slug,    seoTitle,    seoDescription,    ogImage,    sections[] {      _type,      _key,      title,      showFilters,      filterBySeries,      items,      eyebrow,      label,      body,      image,      gallery,      mediaType,      size,      aspectRatio,      media,      videoUrl,      videoPoster,      videoWidth,      videoHeight,      controls,      imagePosition,      layout,      theme,      cardSide,      quote,      authorName,      authorRole,      intro,      "milestones": milestones[]{ year, name, tag, svgPath },      finalImage,      finalLabelTitle,      finalLabelSubtitle,      columns,      "rows": rows[]{ _key, cells },      "cta": cta {        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "ctas": ctas[] {        _key,        "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )      },      "features": items[]{        mediaType,        image,        videoUrl,        videoPoster,        title,        text,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      },      "fixedImages": items[]{        _key,        image,        title,        text,        startColumn,        verticalPosition,        "cta": cta {          "text": text,    "openInNewTab": openInNewTab,    "href": select(      type == "internal" && internalLink->_type == "homePage" => "/",      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",      type == "internal" => "/" + internalLink->slug.current,      type == "external" => url,      type == "email" => "mailto:" + email,      type == "phone" => "tel:" + phone    )        }      }    }  }
+export type PageBySlugQueryResult = {
+  _id: string;
+  title: string;
+  heroImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  heroTitle: string | null;
+  heroSubtitle: string | null;
+  slug: Slug;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  ogImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  sections: Array<
+    | {
+        _type: "sectionAboutPreview";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?: "normal";
+          listItem?: never;
+          markDefs?: null;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: {
+          text: string | null;
+          openInNewTab: null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
+        } | null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionBigQuote";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: null;
+        quote: string;
+        authorName: string | null;
+        authorRole: string | null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionBoards";
+        _key: string;
+        title: string | null;
+        showFilters: boolean | null;
+        filterBySeries: boolean | null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionCenteredText";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }>;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionFeatures";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: Array<{
+          mediaType?: "image" | "video";
+          image?: FeatureImage;
+          videoUrl?: string;
+          videoPoster?: FeatureVideoPoster;
+          title: string;
+          text: string;
+          cta?: Link;
+          _type: "feature";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: "image" | "video" | null;
+          image: FeatureImage | null;
+          videoUrl: string | null;
+          videoPoster: FeatureVideoPoster | null;
+          title: string;
+          text: string;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FeatureImage | null;
+          title: string;
+          text: string;
+          startColumn: null;
+          verticalPosition: null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+      }
+    | {
+        _type: "sectionFixedImage";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: Array<{
+          image: FixedImageImage;
+          title?: string;
+          text?: string;
+          startColumn: number;
+          verticalPosition: number;
+          cta?: Link;
+          _type: "fixedImage";
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: FixedImageImage;
+          videoUrl: null;
+          videoPoster: null;
+          title: string | null;
+          text: string | null;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: FixedImageImage;
+          title: string | null;
+          text: string | null;
+          startColumn: number;
+          verticalPosition: number;
+          cta: {
+            text: string | null;
+            openInNewTab: null;
+            href:
+              | string
+              | "/"
+              | "/accessories"
+              | "/account"
+              | "/boards"
+              | "/tk-id"
+              | null;
+          } | null;
+        }> | null;
+      }
+    | {
+        _type: "sectionFullMedia";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: "image" | "video" | null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: string | null;
+        videoPoster: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        videoWidth: number | null;
+        videoHeight: number | null;
+        controls: boolean | null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionMarquee";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: Array<{
+          text?: string;
+          accent?: boolean;
+          _key: string;
+        }> | null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: Array<{
+          mediaType: null;
+          image: null;
+          videoUrl: null;
+          videoPoster: null;
+          title: null;
+          text: string | null;
+          cta: null;
+        }> | null;
+        fixedImages: Array<{
+          _key: string;
+          image: null;
+          title: null;
+          text: string | null;
+          startColumn: null;
+          verticalPosition: null;
+          cta: null;
+        }> | null;
+      }
+    | {
+        _type: "sectionMediaLine";
+        _key: string;
+        title: null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: "full" | "in-grid" | null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
+        media: Array<{
+          mediaType?: "image" | "video";
+          image?: MediaItemImage;
+          videoUrl?: string;
+          videoPoster?: VideoPoster;
+          controls?: boolean;
+          _type: "mediaItem";
+          _key: string;
+        }> | null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionOutline";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: string | null;
+        milestones: Array<{
+          year: string;
+          name: string;
+          tag: string | null;
+          svgPath: string;
+        }> | null;
+        finalImage: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        finalLabelTitle: string | null;
+        finalLabelSubtitle: string | null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionSpecs";
+        _key: string;
+        title: string | null;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: null;
+        image: null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: Array<string> | null;
+        rows: Array<{
+          _key: string;
+          cells: Array<string> | null;
+        }> | null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionTextGallery";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: string | null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: null;
+        gallery: Array<{
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          _type: "image";
+          _key: string;
+        }> | null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: "left" | "right" | null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionTextImage";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: null;
+        label: string | null;
+        body: Array<{
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }> | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        };
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: "1 / 1" | "16 / 9" | "3 / 2" | "4 / 3" | "4 / 5" | null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: "left" | "right" | null;
+        layout: "contained" | "full" | null;
+        theme: "dark" | "light" | null;
+        cardSide: null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: null;
+        ctas: Array<{
+          _key: string;
+          text: string | null;
+          openInNewTab: null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
+        }> | null;
+        features: null;
+        fixedImages: null;
+      }
+    | {
+        _type: "sectionWorkshop";
+        _key: string;
+        title: string;
+        showFilters: null;
+        filterBySeries: null;
+        items: null;
+        eyebrow: string | null;
+        label: null;
+        body: string | null;
+        image: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          _type: "image";
+        } | null;
+        gallery: null;
+        mediaType: null;
+        size: null;
+        aspectRatio: null;
+        media: null;
+        videoUrl: null;
+        videoPoster: null;
+        videoWidth: null;
+        videoHeight: null;
+        controls: null;
+        imagePosition: null;
+        layout: null;
+        theme: "dark" | "light" | null;
+        cardSide: "left" | "right" | null;
+        quote: null;
+        authorName: null;
+        authorRole: null;
+        intro: null;
+        milestones: null;
+        finalImage: null;
+        finalLabelTitle: null;
+        finalLabelSubtitle: null;
+        columns: null;
+        rows: null;
+        cta: {
+          text: string | null;
+          openInNewTab: null;
+          href:
+            | string
+            | "/"
+            | "/accessories"
+            | "/account"
+            | "/boards"
+            | "/tk-id"
+            | null;
+        } | null;
+        ctas: null;
+        features: null;
+        fixedImages: null;
       }
   > | null;
 } | null;
@@ -3202,17 +6548,22 @@ import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
     '\n  *[_type == "board" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {\n    _id,\n    name,\n    slug,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    style,\n    weight,\n    mainImage\n  }\n': BoardsQueryResult;
-    '\n  *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    _id,\n    name,\n    slug,\n    skuCode,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    heroTitle,\n    heroTagline,\n    heroImage,\n    presentationTitle,\n    presentationText,\n    presentationNumbers[]{ value, unit, label },\n    presentationTags[]{ text, style },\n    gallery[]{\n      asset,\n      alt,\n      hotspot,\n      crop\n    },\n    mainImage,\n    style,\n    weight,\n    price,\n    currency,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      intro,\n      "milestones": milestones[]{ year, name, tag, svgPath },\n      finalImage,\n      finalLabelTitle,\n      finalLabelSubtitle,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n          "openInNewTab": openInNewTab,\n          "href": select(\n            type == "internal" && internalLink->_type == "homePage" => "/",\n            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n            type == "internal" => "/" + internalLink->slug.current,\n            type == "external" => url,\n            type == "email" => "mailto:" + email,\n            type == "phone" => "tel:" + phone\n          )\n        }\n      }\n    },\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': BoardBySlugQueryResult;
+    '\n  *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    _id,\n    name,\n    slug,\n    skuCode,\n    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },\n    heroTitle,\n    heroTagline,\n    heroImage,\n    presentationTitle,\n    presentationText,\n    presentationNumbers[]{ value, unit, label },\n    presentationTags[]{ text, style },\n    gallery[]{\n      asset,\n      alt,\n      hotspot,\n      crop\n    },\n    mainImage,\n    style,\n    weight,\n    price,\n    currency,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      filterBySeries,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      cardSide,\n      quote,\n      authorName,\n      authorRole,\n      intro,\n      "milestones": milestones[]{ year, name, tag, svgPath },\n      finalImage,\n      finalLabelTitle,\n      finalLabelSubtitle,\n      columns,\n      "rows": rows[]{ _key, cells },\n      "cta": cta {\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      },\n      "fixedImages": items[]{\n        _key,\n        image,\n        title,\n        text,\n        startColumn,\n        verticalPosition,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      }\n    },\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': BoardBySlugQueryResult;
+    '\n  *[_type == "accessory" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    _id,\n    title,\n    slug,\n    skuCode,\n    presentationTitle,\n    text,\n    presentationNumbers[]{ value, unit, label },\n    presentationTags[]{ text, style },\n    specifications[]{ name, value },\n    gallery[]{\n      asset,\n      alt,\n      hotspot,\n      crop\n    },\n    mainImage,\n    sizes,\n    price,\n    originalPrice,\n    currency,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': AccessoryBySlugQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    slug,\n    tagVariant,\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug,\n      style,\n      mainImage\n    }\n  }[count(boards) > 0]\n': SeriesQueryResult;
-    '{\n  "brandName": *[_type == "seoSettings"][0].brandName,\n  "siteTitle": coalesce(\n    *[_type == "seoSettings"][0].defaultTitle[language == $locale][0].value,\n    *[_type == "seoSettings"][0].defaultTitle[language == "en"][0].value,\n    *[_type == "seoSettings"][0].defaultTitle[0].value\n  ),\n  "seoDescription": coalesce(\n    *[_type == "seoSettings"][0].defaultDescription[language == $locale][0].value,\n    *[_type == "seoSettings"][0].defaultDescription[language == "en"][0].value,\n    *[_type == "seoSettings"][0].defaultDescription[0].value\n  ),\n  "logo": *[_type == "seoSettings"][0].logo,\n  "ogImage": *[_type == "seoSettings"][0].ogImage,\n  "contact": *[_type == "contactSettings"][0]{ email, phone, address },\n  "social": *[_type == "footerSettings"][0].social,\n  "footer": *[_type == "footerSettings"][0]{ copyright, privacyPolicyUrl, cookiePolicyUrl }\n}': SiteSettingsQueryResult;
+    '{\n  "brandName": *[_type == "seoSettings"][0].brandName,\n  "siteTitle": coalesce(\n    *[_type == "seoSettings"][0].defaultTitle[language == $locale][0].value,\n    *[_type == "seoSettings"][0].defaultTitle[language == "en"][0].value,\n    *[_type == "seoSettings"][0].defaultTitle[0].value\n  ),\n  "seoDescription": coalesce(\n    *[_type == "seoSettings"][0].defaultDescription[language == $locale][0].value,\n    *[_type == "seoSettings"][0].defaultDescription[language == "en"][0].value,\n    *[_type == "seoSettings"][0].defaultDescription[0].value\n  ),\n  "logo": *[_type == "seoSettings"][0].logo,\n  "ogImage": *[_type == "seoSettings"][0].ogImage,\n  "contact": *[_type == "contactSettings"][0]{ email, phone, whatsapp, address },\n  "social": *[_type == "footerSettings"][0].social,\n  "footer": *[_type == "footerSettings"][0]{ copyright, privacyPolicyUrl, cookiePolicyUrl }\n}': SiteSettingsQueryResult;
     '\n  *[_type == "authPage"][0]{\n    "tagline": coalesce(tagline[language == $locale][0].value, tagline[language == "en"][0].value, tagline[0].value),\n    "paragraph": coalesce(paragraph[language == $locale][0].value, paragraph[language == "en"][0].value, paragraph[0].value),\n    "seoTitle": coalesce(seoTitle[language == $locale][0].value, seoTitle[language == "en"][0].value, seoTitle[0].value),\n    "seoDescription": coalesce(seoDescription[language == $locale][0].value, seoDescription[language == "en"][0].value, seoDescription[0].value),\n    backgroundImage,\n    ogImage\n  }\n': AuthPageQueryResult;
     '\n  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {\n    "seoTitle": coalesce(\n      seoTitle[language == $locale][0].value,\n      seoTitle[language == "en"][0].value,\n      seoTitle[0].value\n    ),\n    "seoDescription": coalesce(\n      seoDescription[language == $locale][0].value,\n      seoDescription[language == "en"][0].value,\n      seoDescription[0].value\n    ),\n    ogImage\n  }\n': BoardsPageSettingsQueryResult;
     '\n  *[_type == "board" && defined(slug.current) && !(_id in path("drafts.**"))] | order(_updatedAt desc) {\n    "slug": slug.current,\n    language,\n    _updatedAt,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': SitemapBoardsQueryResult;
     '\n  *[_type == "homePage" && !(_id in path("drafts.**"))] {\n    language,\n    _updatedAt\n  }\n': SitemapHomePagesQueryResult;
-    '\n  coalesce(\n    *[_type == "homePage" && language == $locale && !(_id in path("drafts.**"))][0],\n    *[_type == "homePage" && language == "fr" && !(_id in path("drafts.**"))][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      intro,\n      "milestones": milestones[]{ year, name, tag, svgPath },\n      finalImage,\n      finalLabelTitle,\n      finalLabelSubtitle,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n          "openInNewTab": openInNewTab,\n          "href": select(\n            type == "internal" && internalLink->_type == "homePage" => "/",\n            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n            type == "internal" => "/" + internalLink->slug.current,\n            type == "external" => url,\n            type == "email" => "mailto:" + email,\n            type == "phone" => "tel:" + phone\n          )\n        }\n      }\n    }\n  }\n': HomePageByLocaleQueryResult;
+    '\n  coalesce(\n    *[_type == "homePage" && language == $locale && !(_id in path("drafts.**"))][0],\n    *[_type == "homePage" && language == "fr" && !(_id in path("drafts.**"))][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      filterBySeries,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      cardSide,\n      quote,\n      authorName,\n      authorRole,\n      intro,\n      "milestones": milestones[]{ year, name, tag, svgPath },\n      finalImage,\n      finalLabelTitle,\n      finalLabelSubtitle,\n      columns,\n      "rows": rows[]{ _key, cells },\n      "cta": cta {\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      },\n      "fixedImages": items[]{\n        _key,\n        image,\n        title,\n        text,\n        startColumn,\n        verticalPosition,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      }\n    }\n  }\n': HomePageByLocaleQueryResult;
     '\n  *[\n    _type in ["page", "ourStoryPage", "contactPage", "faqPage", "whereToBuyPage"]\n    && slug.current == $slug\n    && language == $locale\n    && !(_id in path("drafts.**"))\n  ][0] {\n    _type,\n    title,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    heroImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0]\n      .translations[]{ "lang": value->language, "slug": value->slug.current }\n  }\n': CmsPageBySlugQueryResult;
-    '\n  *[_type == "navigation" && location == $location && language == $locale][0] {\n    items[] {\n      _key,\n      label,\n      openInNewTab,\n      "href": select(\n        defined(internalLink) && internalLink->_type == "homePage" => "/",\n        defined(internalLink) && internalLink->_type == "boardsPageSettings" => "/boards",\n        defined(internalLink) && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n        defined(internalLink) && internalLink->_type == "accountPageSettings" => "/account",\n        defined(internalLink) => "/" + internalLink->slug.current,\n        externalUrl\n      ),\n    },\n    featured[] {\n      _key,\n      "name": board->name,\n      "slug": board->slug.current,\n      image,\n    }\n  }\n': NavigationQueryResult;
+    '\n  *[_type == "faqPage" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    title,\n    heroTitle,\n    "categories": categories[]{\n      _key,\n      title,\n      "questions": questions[]{\n        _key,\n        question,\n        "answer": answer[]{\n          ...,\n          _type == "image" => { ..., "url": asset->url + "?w=1280&q=85&auto=format" }\n        }\n      }\n    },\n    seoTitle,\n    seoDescription,\n    ogImage,\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': FaqPageQueryResult;
+    '\n  *[_type == "contactPage" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {\n    title,\n    heroTitle,\n    heroSubtitle,\n    heroImage,\n    introEyebrow,\n    introTitle,\n    intro,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      filterBySeries,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      cardSide,\n      quote,\n      authorName,\n      authorRole,\n      intro,\n      "milestones": milestones[]{ year, name, tag, svgPath },\n      finalImage,\n      finalLabelTitle,\n      finalLabelSubtitle,\n      columns,\n      "rows": rows[]{ _key, cells },\n      "cta": cta {\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      },\n      "fixedImages": items[]{\n        _key,\n        image,\n        title,\n        text,\n        startColumn,\n        verticalPosition,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      }\n    }\n  }\n': ContactPageQueryResult;
+    '\n  coalesce(\n    *[_type == "tkIdPage" && language == $locale && !(_id in path("drafts.**"))][0],\n    *[_type == "tkIdPage" && language == "en" && !(_id in path("drafts.**"))][0]\n  ) {\n    _id,\n    title,\n    heroTitle,\n    heroSubtitle,\n    heroImage,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      filterBySeries,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      cardSide,\n      quote,\n      authorName,\n      authorRole,\n      intro,\n      "milestones": milestones[]{ year, name, tag, svgPath },\n      finalImage,\n      finalLabelTitle,\n      finalLabelSubtitle,\n      columns,\n      "rows": rows[]{ _key, cells },\n      "cta": cta {\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      },\n      "fixedImages": items[]{\n        _key,\n        image,\n        title,\n        text,\n        startColumn,\n        verticalPosition,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      }\n    },\n    "translations": *[_type == "translation.metadata" && references(^._id)][0].translations[]{\n      "lang": value->language,\n      "slug": value->slug.current\n    }\n  }\n': TkIdPageByLocaleQueryResult;
+    '\n  *[_type == "contactSettings"][0] { email, whatsapp }\n': ContactSettingsQueryResult;
+    '\n  *[_type == "navigation" && location == $location && language == $locale][0] {\n    items[] {\n      _key,\n      label,\n      openInNewTab,\n      "href": select(\n        defined(internalLink) && internalLink->_type == "homePage" => "/",\n        defined(internalLink) && internalLink->_type == "boardsPageSettings" => "/boards",\n        defined(internalLink) && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n        defined(internalLink) && internalLink->_type == "accountPageSettings" => "/account",\n        defined(internalLink) && internalLink->_type == "tkIdPage" => "/tk-id",\n        defined(internalLink) => "/" + internalLink->slug.current,\n        externalUrl\n      ),\n    },\n    featured[] {\n      _key,\n      "name": board->name,\n      "slug": board->slug.current,\n      image,\n    }\n  }\n': NavigationQueryResult;
     '\n  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) [0..1] {\n    _id,\n    "name": coalesce(\n      name[language == $locale][0].value,\n      name[language == "en"][0].value,\n      name[0].value\n    ),\n    "boards": *[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      slug\n    }\n  }\n': FooterSeriesQueryResult;
-    '\n  coalesce(\n    *[_type == "page" && slug.current == $slug && language == $locale][0],\n    *[_type == "page" && slug.current == $slug && language == "fr"][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    slug,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      quote,\n      authorName,\n      authorRole,\n      intro,\n      "milestones": milestones[]{ year, name, tag, svgPath },\n      finalImage,\n      finalLabelTitle,\n      finalLabelSubtitle,\n      "cta": cta {\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n        "openInNewTab": openInNewTab,\n        "href": select(\n          type == "internal" && internalLink->_type == "homePage" => "/",\n          type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n          type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n          type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n          type == "internal" => "/" + internalLink->slug.current,\n          type == "external" => url,\n          type == "email" => "mailto:" + email,\n          type == "phone" => "tel:" + phone\n        )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n          "openInNewTab": openInNewTab,\n          "href": select(\n            type == "internal" && internalLink->_type == "homePage" => "/",\n            type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n            type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n            type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n            type == "internal" => "/" + internalLink->slug.current,\n            type == "external" => url,\n            type == "email" => "mailto:" + email,\n            type == "phone" => "tel:" + phone\n          )\n        }\n      }\n    }\n  }\n': PageBySlugQueryResult;
+    '\n  coalesce(\n    *[_type == "page" && slug.current == $slug && language == $locale][0],\n    *[_type == "page" && slug.current == $slug && language == "fr"][0]\n  ) {\n    _id,\n    title,\n    heroImage,\n    heroTitle,\n    "heroSubtitle": coalesce(heroSubtitle[language == $locale][0].value, heroSubtitle[0].value, heroSubtitle),\n    slug,\n    seoTitle,\n    seoDescription,\n    ogImage,\n    sections[] {\n      _type,\n      _key,\n      title,\n      showFilters,\n      filterBySeries,\n      items,\n      eyebrow,\n      label,\n      body,\n      image,\n      gallery,\n      mediaType,\n      size,\n      aspectRatio,\n      media,\n      videoUrl,\n      videoPoster,\n      videoWidth,\n      videoHeight,\n      controls,\n      imagePosition,\n      layout,\n      theme,\n      cardSide,\n      quote,\n      authorName,\n      authorRole,\n      intro,\n      "milestones": milestones[]{ year, name, tag, svgPath },\n      finalImage,\n      finalLabelTitle,\n      finalLabelSubtitle,\n      columns,\n      "rows": rows[]{ _key, cells },\n      "cta": cta {\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "ctas": ctas[] {\n        _key,\n        "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n      },\n      "features": items[]{\n        mediaType,\n        image,\n        videoUrl,\n        videoPoster,\n        title,\n        text,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      },\n      "fixedImages": items[]{\n        _key,\n        image,\n        title,\n        text,\n        startColumn,\n        verticalPosition,\n        "cta": cta {\n          "text": text,\n    "openInNewTab": openInNewTab,\n    "href": select(\n      type == "internal" && internalLink->_type == "homePage" => "/",\n      type == "internal" && internalLink->_type == "boardsPageSettings" => "/boards",\n      type == "internal" && internalLink->_type == "accessoriesPageSettings" => "/accessories",\n      type == "internal" && internalLink->_type == "accountPageSettings" => "/account",\n      type == "internal" && internalLink->_type == "tkIdPage" => "/tk-id",\n      type == "internal" => "/" + internalLink->slug.current,\n      type == "external" => url,\n      type == "email" => "mailto:" + email,\n      type == "phone" => "tel:" + phone\n    )\n        }\n      }\n    }\n  }\n': PageBySlugQueryResult;
   }
 }
