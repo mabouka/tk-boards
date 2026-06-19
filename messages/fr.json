@@ -150,5 +150,38 @@
     "claims_title": "Réclamations",
     "claims_empty": "Aucune réclamation pour l'instant.",
     "soon": "Bientôt disponible."
+  },
+  "contact": {
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "product": "Produit",
+    "message": "Message",
+    "productPrompt": "De quel produit veux-tu parler ?",
+    "productOther": "Un autre produit / je ne sais pas encore",
+    "send": "Envoyer le message",
+    "sending": "Envoi…",
+    "success": "Merci — ton message est en route. Nous te répondrons vite.",
+    "errorRate": "Trop de tentatives — réessaie dans quelques minutes.",
+    "errorCaptcha": "Échec de la vérification anti-spam — réessaie.",
+    "errorSend": "Une erreur est survenue à l'envoi de ton message. Réessaie.",
+    "vFirstName": "Le prénom est requis.",
+    "vLastName": "Le nom est requis.",
+    "vEmailRequired": "L'e-mail est requis.",
+    "vEmailInvalid": "Saisis une adresse e-mail valide.",
+    "vMessage": "Écris un court message.",
+    "vMessageLong": "Le message est trop long (5000 caractères max).",
+    "vTooLong": "Trop long."
+  },
+  "cart": {
+    "title": "Panier",
+    "close": "Fermer",
+    "decrease": "Diminuer",
+    "increase": "Augmenter",
+    "remove": "Supprimer",
+    "included": "Inclus",
+    "checkout": "Commander",
+    "note": "Frais de livraison, taxes applicables et codes promo seront calculés au paiement."
   }
 }

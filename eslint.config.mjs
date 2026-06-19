@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     ".next-e2e/**", // isolated E2E build output
     "out/**",
     "build/**",
+    ".vercel/**", // local `vercel build` / `vercel pull` output (build artifacts + pulled env)
     "next-env.d.ts",
     // Playwright artifacts
     "test-results/**",

@@ -150,5 +150,38 @@
     "claims_title": "Claims",
     "claims_empty": "No claim yet.",
     "soon": "Coming soon."
+  },
+  "contact": {
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "phone": "Phone",
+    "product": "Product",
+    "message": "Message",
+    "productPrompt": "What product do you want to talk about?",
+    "productOther": "Another product / not sure yet",
+    "send": "Send Message",
+    "sending": "Sending…",
+    "success": "Thanks — your message is on its way. We’ll get back to you soon.",
+    "errorRate": "Too many attempts — please try again in a few minutes.",
+    "errorCaptcha": "Anti-spam check failed — please try again.",
+    "errorSend": "Something went wrong sending your message. Please try again.",
+    "vFirstName": "First name is required.",
+    "vLastName": "Last name is required.",
+    "vEmailRequired": "Email is required.",
+    "vEmailInvalid": "Enter a valid email address.",
+    "vMessage": "Please write a short message.",
+    "vMessageLong": "Message is too long (5000 characters max).",
+    "vTooLong": "Too long."
+  },
+  "cart": {
+    "title": "Cart",
+    "close": "Close",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "remove": "Remove",
+    "included": "Included",
+    "checkout": "Checkout",
+    "note": "Shipping, applicable taxes and promo codes are calculated at checkout."
   }
 }

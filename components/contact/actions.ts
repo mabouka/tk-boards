@@ -1,6 +1,7 @@
 'use server'
 
 import { z } from 'zod'
+import { getTranslations } from 'next-intl/server'
 import { rateLimit } from '@/lib/rate-limit'
 import { clientIp } from '@/lib/client-ip'
 import { verifyTurnstile } from '@/lib/turnstile'
@@ -8,26 +9,8 @@ import { sendContactEmail } from '@/lib/email'
 import { productLabel } from './products'
 import { EMAIL_RE } from '@/lib/email-validation'
 
-const ContactSchema = z.object({
-  firstName: z.string().trim().min(1, 'First name is required.').max(100, 'Too long.'),
-  lastName: z.string().trim().min(1, 'Last name is required.').max(100, 'Too long.'),
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .min(1, 'Email is required.')
-    .max(200, 'Too long.')
-    .regex(EMAIL_RE, 'Enter a valid email address.'),
-  phone: z.string().trim().max(40, 'Too long.').optional().default(''),
-  product: z.string().trim().max(60).optional().default(''),
-  message: z
-    .string()
-    .trim()
-    .min(1, 'Please write a short message.')
-    .max(5000, 'Message is too long (5000 characters max).'),
-})
-
-type Field = keyof z.infer<typeof ContactSchema>
+const LOCALES = ['fr', 'en', 'es']
+type Field = 'firstName' | 'lastName' | 'email' | 'phone' | 'product' | 'message'
 
 export type ContactState = {
   ok?: true
@@ -62,7 +45,26 @@ export async function submitContact(_prev: ContactState, formData: FormData): Pr
     return { formError: 'captcha', values }
   }
 
-  const parsed = ContactSchema.safeParse(values)
+  // Localized validation messages — locale comes from a hidden form field.
+  const rawLocale = String(formData.get('locale') ?? 'en')
+  const locale = LOCALES.includes(rawLocale) ? rawLocale : 'en'
+  const t = await getTranslations({ locale, namespace: 'contact' })
+  const schema = z.object({
+    firstName: z.string().trim().min(1, t('vFirstName')).max(100, t('vTooLong')),
+    lastName: z.string().trim().min(1, t('vLastName')).max(100, t('vTooLong')),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .min(1, t('vEmailRequired'))
+      .max(200, t('vTooLong'))
+      .regex(EMAIL_RE, t('vEmailInvalid')),
+    phone: z.string().trim().max(40, t('vTooLong')).optional().default(''),
+    product: z.string().trim().max(60).optional().default(''),
+    message: z.string().trim().min(1, t('vMessage')).max(5000, t('vMessageLong')),
+  })
+
+  const parsed = schema.safeParse(values)
   if (!parsed.success) {
     const fieldErrors: Partial<Record<Field, string>> = {}
     for (const issue of parsed.error.issues) {
