@@ -11,4 +11,8 @@ export const client = createClient({
   // (see sanity/lib/fetch.ts), which caches them in Next so we don't pay the
   // uncached API latency on every request.
   useCdn: false,
+  // Stega stays OFF by default (no invisible chars in production output); it's
+  // enabled per-fetch only in draft/Presentation mode (see sanity/lib/loadQuery.ts).
+  // `studioUrl` lets visual-editing overlays build "open in Studio" links.
+  stega: { studioUrl: '/studio' },
 })

@@ -3,7 +3,9 @@ import { cache } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
+import { loadQuery } from '@/sanity/lib/loadQuery'
 import { homePageByLocaleQuery } from '@/sanity/lib/queries'
+import type { HomePageByLocaleQueryResult } from '@/sanity.types'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import Hero from '@/components/hero/Hero'
 import PageBuilder from '@/components/page-builder/PageBuilder'
@@ -35,7 +37,12 @@ export default async function HomePage({ params }: Props) {
   const { locale } = await params
   const t = await getTranslations('home')
 
-  const page = await getHomePage(locale)
+  // Draft-aware read (stega + drafts in Presentation; published + cache otherwise).
+  const page = await loadQuery<HomePageByLocaleQueryResult>(
+    homePageByLocaleQuery,
+    { locale },
+    ['homePage']
+  )
 
   return (
     <>

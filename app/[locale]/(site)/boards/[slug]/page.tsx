@@ -4,7 +4,9 @@ import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
+import { loadQuery } from '@/sanity/lib/loadQuery'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
+import type { BoardBySlugQueryResult } from '@/sanity.types'
 import { getStorefrontProduct } from '@/lib/storefront/product'
 import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
@@ -52,11 +54,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BoardPage({ params }: Props) {
   const { locale, slug } = await params
-  const [t, tNav, board] = await Promise.all([
+  const [t, tNav] = await Promise.all([
     getTranslations('boards'),
     getTranslations('nav'),
-    getBoard(locale, slug),
   ])
+  // Draft-aware read (Presentation overlays in preview; published + cache otherwise).
+  const board = await loadQuery<BoardBySlugQueryResult>(boardBySlugQuery, { locale, slug }, ['board'])
 
   if (!board) notFound()
 

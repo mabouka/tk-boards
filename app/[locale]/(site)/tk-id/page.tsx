@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import { cache } from 'react'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
+import { loadQuery } from '@/sanity/lib/loadQuery'
 import { tkIdPageByLocaleQuery } from '@/sanity/lib/queries'
+import type { TkIdPageByLocaleQueryResult } from '@/sanity.types'
 import { resolveHeroImage } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import BasicHero from '@/components/basic-hero/BasicHero'
@@ -31,7 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TkIdPage({ params }: Props) {
   const { locale } = await params
-  const page = await getTkIdPage(locale)
+  // Draft-aware read (Presentation overlays in preview; published + cache otherwise).
+  const page = await loadQuery<TkIdPageByLocaleQueryResult>(tkIdPageByLocaleQuery, { locale }, ['tkIdPage'])
 
   const heroImageUrl = resolveHeroImage(page?.heroImage) ?? '/samples/channel.jpg'
 
