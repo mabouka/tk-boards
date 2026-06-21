@@ -10,6 +10,10 @@ import { sanityCache } from '@/sanity/lib/fetch'
 import { navigationQuery } from '@/sanity/lib/queries'
 import { urlFor } from '@/sanity/lib/image'
 import { getSiteSettings } from '@/lib/metadata'
+import { draftMode } from 'next/headers'
+import { VisualEditing } from 'next-sanity/visual-editing'
+import LiveRefresh from '@/components/visual-editing/LiveRefresh'
+import DraftModeBanner from '@/components/visual-editing/DraftModeBanner'
 
 type Props = {
   children: React.ReactNode
@@ -47,6 +51,7 @@ function toNavItems(items: unknown) {
 
 export default async function SiteLayout({ children, params }: Props) {
   const { locale } = await params
+  const { isEnabled: isDraft } = await draftMode()
 
   // Main menu = the navigation document whose Location is "Header". Falls back to
   // built-in lists inside <MainMenu /> when none is published.
@@ -89,6 +94,13 @@ export default async function SiteLayout({ children, params }: Props) {
           socials={socials}
         />
         <CartDrawer locale={locale} />
+        {isDraft && (
+          <>
+            <LiveRefresh token={process.env.SANITY_API_READ_TOKEN} />
+            <VisualEditing />
+            <DraftModeBanner />
+          </>
+        )}
       </MenuProvider>
     </CartProvider>
   )

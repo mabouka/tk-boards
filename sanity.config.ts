@@ -1,6 +1,7 @@
 import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
 import type { StructureBuilder } from 'sanity/structure'
+import { presentationTool, defineLocations } from 'sanity/presentation'
 import { visionTool } from '@sanity/vision'
 import { documentInternationalization } from '@sanity/document-internationalization'
 import { internationalizedArray } from 'sanity-plugin-internationalized-array'
@@ -242,6 +243,73 @@ export default defineConfig({
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production',
   plugins: [
     structureTool({ structure }),
+    presentationTool({
+      previewUrl: {
+        previewMode: { enable: '/api/draft-mode/enable' },
+      },
+      resolve: {
+        // Map each document to its front-end URL(s). i18n docs build /{language}/…
+        locations: {
+          homePage: defineLocations({
+            select: { language: 'language' },
+            resolve: (doc) => ({ locations: [{ title: 'Home', href: `/${doc?.language ?? 'en'}` }] }),
+          }),
+          board: defineLocations({
+            select: { name: 'name', slug: 'slug.current', language: 'language' },
+            resolve: (doc) =>
+              doc?.slug
+                ? { locations: [{ title: doc?.name ?? 'Board', href: `/${doc?.language ?? 'en'}/boards/${doc.slug}` }] }
+                : { locations: [] },
+          }),
+          accessory: defineLocations({
+            select: { name: 'name', slug: 'slug.current', language: 'language' },
+            resolve: (doc) =>
+              doc?.slug
+                ? { locations: [{ title: doc?.name ?? 'Accessory', href: `/${doc?.language ?? 'en'}/accessories/${doc.slug}` }] }
+                : { locations: [] },
+          }),
+          page: defineLocations({
+            select: { title: 'title', slug: 'slug.current', language: 'language' },
+            resolve: (doc) =>
+              doc?.slug
+                ? { locations: [{ title: doc?.title ?? 'Page', href: `/${doc?.language ?? 'en'}/${doc.slug}` }] }
+                : { locations: [] },
+          }),
+          ourStoryPage: defineLocations({
+            select: { slug: 'slug.current', language: 'language' },
+            resolve: (doc) =>
+              doc?.slug
+                ? { locations: [{ title: 'Our Story', href: `/${doc?.language ?? 'en'}/${doc.slug}` }] }
+                : { locations: [] },
+          }),
+          whereToBuyPage: defineLocations({
+            select: { slug: 'slug.current', language: 'language' },
+            resolve: (doc) =>
+              doc?.slug
+                ? { locations: [{ title: 'Where to buy', href: `/${doc?.language ?? 'en'}/${doc.slug}` }] }
+                : { locations: [] },
+          }),
+          contactPage: defineLocations({
+            select: { slug: 'slug.current', language: 'language' },
+            resolve: (doc) =>
+              doc?.slug
+                ? { locations: [{ title: 'Contact', href: `/${doc?.language ?? 'en'}/${doc.slug}` }] }
+                : { locations: [] },
+          }),
+          faqPage: defineLocations({
+            select: { slug: 'slug.current', language: 'language' },
+            resolve: (doc) =>
+              doc?.slug
+                ? { locations: [{ title: 'FAQ', href: `/${doc?.language ?? 'en'}/${doc.slug}` }] }
+                : { locations: [] },
+          }),
+          tkIdPage: defineLocations({
+            select: { language: 'language' },
+            resolve: (doc) => ({ locations: [{ title: 'TK ID', href: `/${doc?.language ?? 'en'}/tk-id` }] }),
+          }),
+        },
+      },
+    }),
     visionTool(),
     media(),
     linkField({

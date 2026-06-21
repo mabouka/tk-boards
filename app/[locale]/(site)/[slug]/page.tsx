@@ -3,12 +3,19 @@ import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
+import { loadQuery } from '@/sanity/lib/loadQuery'
 import {
   cmsPageBySlugQuery,
   faqPageQuery,
   contactPageQuery,
   contactSettingsQuery,
 } from '@/sanity/lib/queries'
+import type {
+  CmsPageBySlugQueryResult,
+  ContactPageQueryResult,
+  ContactSettingsQueryResult,
+  FaqPageQueryResult,
+} from '@/sanity.types'
 import { resolveHeroImage } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import BigTitle from '@/components/placeholder/BigTitle'
@@ -24,18 +31,6 @@ const getCmsPage = cache((locale: string, slug: string) =>
     { slug, locale },
     sanityCache('page', 'ourStoryPage', 'contactPage', 'faqPage', 'whereToBuyPage')
   )
-)
-
-const getFaqPage = cache((locale: string, slug: string) =>
-  client.fetch(faqPageQuery, { slug, locale }, sanityCache('faqPage'))
-)
-
-const getContactPage = cache((locale: string, slug: string) =>
-  client.fetch(contactPageQuery, { slug, locale }, sanityCache('contactPage'))
-)
-
-const getContactSettings = cache(() =>
-  client.fetch(contactSettingsQuery, {}, sanityCache('contactSettings'))
 )
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -72,7 +67,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // Renders just a big title for now — real templates per _type come later.
 export default async function CmsPage({ params }: Props) {
   const { locale, slug } = await params
-  const page = await getCmsPage(locale, slug)
+  // Draft-aware read (Presentation overlays in preview; published + cache otherwise).
+  const page = await loadQuery<CmsPageBySlugQueryResult>(
+    cmsPageBySlugQuery,
+    { slug, locale },
+    ['page', 'ourStoryPage', 'contactPage', 'faqPage', 'whereToBuyPage']
+  )
   if (!page) notFound()
 
   // Per-locale paths for the header language switcher (slugs differ per locale).
@@ -83,8 +83,8 @@ export default async function CmsPage({ params }: Props) {
 
   if (page._type === 'contactPage') {
     const [contact, settings] = await Promise.all([
-      getContactPage(locale, slug),
-      getContactSettings(),
+      loadQuery<ContactPageQueryResult>(contactPageQuery, { slug, locale }, ['contactPage']),
+      loadQuery<ContactSettingsQueryResult>(contactSettingsQuery, {}, ['contactSettings']),
     ])
     const heroImageUrl = resolveHeroImage(contact?.heroImage)
 
@@ -109,7 +109,7 @@ export default async function CmsPage({ params }: Props) {
   }
 
   if (page._type === 'faqPage') {
-    const faq = await getFaqPage(locale, slug)
+    const faq = await loadQuery<FaqPageQueryResult>(faqPageQuery, { slug, locale }, ['faqPage'])
     if (!faq) notFound()
 
     // Answer rich text is Portable Text; its images are resolved to URLs in GROQ
