@@ -6,5 +6,7 @@ export async function GET(request: Request) {
   ;(await draftMode()).disable()
   const url = new URL(request.url)
   const slug = url.searchParams.get('slug')
-  return NextResponse.redirect(new URL(slug && slug.startsWith('/') ? slug : '/', url.origin))
+  // Same-origin path only: reject protocol-relative ("//evil.com") and "/\" → open redirect.
+  const safe = slug && /^\/(?![/\\])/.test(slug) ? slug : '/'
+  return NextResponse.redirect(new URL(safe, url.origin))
 }

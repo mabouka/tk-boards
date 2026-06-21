@@ -275,6 +275,20 @@ export default defineConfig({
                 ? { locations: [{ title: doc?.title ?? 'Page', href: `/${doc?.language ?? 'en'}/${doc.slug}` }] }
                 : { locations: [] },
           }),
+          ourStoryPage: defineLocations({
+            select: { slug: 'slug.current', language: 'language' },
+            resolve: (doc) =>
+              doc?.slug
+                ? { locations: [{ title: 'Our Story', href: `/${doc?.language ?? 'en'}/${doc.slug}` }] }
+                : { locations: [] },
+          }),
+          whereToBuyPage: defineLocations({
+            select: { slug: 'slug.current', language: 'language' },
+            resolve: (doc) =>
+              doc?.slug
+                ? { locations: [{ title: 'Where to buy', href: `/${doc?.language ?? 'en'}/${doc.slug}` }] }
+                : { locations: [] },
+          }),
           contactPage: defineLocations({
             select: { slug: 'slug.current', language: 'language' },
             resolve: (doc) =>

@@ -15,8 +15,8 @@ import { revalidateSanity } from './revalidate'
  *
  * The subscription effect runs ONCE per token (router is read through a ref so a
  * new router identity can't re-run the effect and re-open the live stream — that
- * re-subscribe churn was what caused a render loop). Only acts on `message`
- * events (never `restart`/`reconnect`, which can fire repeatedly).
+ * re-subscribe churn was what caused a render loop). Refreshes on `message` and
+ * `restart` (events missed → refetch); debounced.
  */
 export default function LiveRefresh({ token }: { token?: string }) {
   const router = useRouter()
@@ -31,7 +31,10 @@ export default function LiveRefresh({ token }: { token?: string }) {
       dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production',
       apiVersion: '2025-05-25',
       useCdn: false,
+      // Viewer token, sent to the browser ONLY inside the preview session (same
+      // as next-sanity's defineLive browserToken). Keep it minimal (read drafts).
       token,
+      ignoreBrowserTokenWarning: true,
     })
 
     let timer: ReturnType<typeof setTimeout> | undefined
@@ -45,9 +48,14 @@ export default function LiveRefresh({ token }: { token?: string }) {
 
     const subscription = client.live.events({ includeDrafts: Boolean(token) }).subscribe({
       next: (event) => {
-        if (event.type === 'message') refresh()
+        // `message` = content changed; `restart` = the stream missed events and we
+        // must refetch. Safe to refresh on both now that the effect runs once
+        // (the render loop came from re-subscribing, not from these events).
+        if (event.type === 'message' || event.type === 'restart') refresh()
       },
-      error: () => {},
+      error: (err) => {
+        if (process.env.NODE_ENV !== 'production') console.warn('[LiveRefresh] live events error', err)
+      },
     })
 
     return () => {
