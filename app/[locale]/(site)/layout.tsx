@@ -94,9 +94,9 @@ export default async function SiteLayout({ children, params }: Props) {
           socials={socials}
         />
         <CartDrawer locale={locale} />
-        <LiveRefresh token={isDraft ? process.env.SANITY_API_READ_TOKEN : undefined} />
         {isDraft && (
           <>
+            <LiveRefresh token={process.env.SANITY_API_READ_TOKEN} />
             <VisualEditing />
             <DraftModeBanner />
           </>

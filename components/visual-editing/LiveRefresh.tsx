@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from 'next-sanity'
 import { revalidateSanity } from './revalidate'
@@ -13,10 +13,17 @@ import { revalidateSanity } from './revalidate'
  *  - **production** (no token): subscribes to published changes → revalidate the
  *    `sanity` cache tag, then refresh.
  *
- * The read token is only passed here inside the preview session (draft mode).
+ * The subscription effect runs ONCE per token (router is read through a ref so a
+ * new router identity can't re-run the effect and re-open the live stream — that
+ * re-subscribe churn was what caused a render loop). Only acts on `message`
+ * events (never `restart`/`reconnect`, which can fire repeatedly).
  */
 export default function LiveRefresh({ token }: { token?: string }) {
   const router = useRouter()
+  const routerRef = useRef(router)
+  useEffect(() => {
+    routerRef.current = router
+  }, [router])
 
   useEffect(() => {
     const client = createClient({
@@ -31,14 +38,14 @@ export default function LiveRefresh({ token }: { token?: string }) {
     const refresh = () => {
       clearTimeout(timer)
       timer = setTimeout(() => {
-        if (token) router.refresh()
-        else revalidateSanity().then(() => router.refresh()).catch(() => router.refresh())
+        if (token) routerRef.current.refresh()
+        else revalidateSanity().then(() => routerRef.current.refresh()).catch(() => routerRef.current.refresh())
       }, 250)
     }
 
     const subscription = client.live.events({ includeDrafts: Boolean(token) }).subscribe({
       next: (event) => {
-        if (event.type === 'message' || event.type === 'restart') refresh()
+        if (event.type === 'message') refresh()
       },
       error: () => {},
     })
@@ -47,7 +54,7 @@ export default function LiveRefresh({ token }: { token?: string }) {
       clearTimeout(timer)
       subscription.unsubscribe()
     }
-  }, [token, router])
+  }, [token])
 
   return null
 }
