@@ -4,7 +4,9 @@ import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
+import { loadQuery } from '@/sanity/lib/loadQuery'
 import { accessoryBySlugQuery } from '@/sanity/lib/queries'
+import type { AccessoryBySlugQueryResult } from '@/sanity.types'
 import { getStorefrontProduct } from '@/lib/storefront/product'
 import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
@@ -48,10 +50,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AccessoryPage({ params }: Props) {
   const { locale, slug } = await params
-  const [t, accessory] = await Promise.all([
-    getTranslations('boards'),
-    getAccessory(locale, slug),
-  ])
+  const t = await getTranslations('boards')
+  // Draft-aware read (Presentation overlays in preview; published + cache otherwise).
+  const accessory = await loadQuery<AccessoryBySlugQueryResult>(
+    accessoryBySlugQuery,
+    { locale, slug },
+    ['accessory']
+  )
 
   if (!accessory) notFound()
 
