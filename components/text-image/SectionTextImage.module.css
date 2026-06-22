@@ -19,6 +19,14 @@
   object-fit: cover;
 }
 
+/* FULL layout, mobile: the bleed image needs its own height — the desktop rule
+   below (min-height + stretch) is gated behind @media (min-width: 1024px), so
+   without this the container collapses to 0 and the <Image fill> is invisible.
+   Contained gets its ratio inline from the component. */
+.textImage--full .textImage__image {
+  aspect-ratio: 3 / 2;
+}
+
 /* ── Content ── */
 .textImage__content {
   display: flex;
