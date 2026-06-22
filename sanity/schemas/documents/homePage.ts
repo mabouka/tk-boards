@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity'
 import { pageBuilderSections } from '../../lib/pageBuilderSections'
+import { withLanguage } from '../../lib/languagePreview'
 
 export const homePage = defineType({
   name: 'homePage',
@@ -41,5 +42,5 @@ export const homePage = defineType({
     }),
     defineField({ name: 'language', type: 'string', readOnly: true, hidden: true, validation: (r) => r.required() }),
   ],
-  preview: { select: { title: 'title', media: 'heroImage' } },
+  preview: withLanguage({ select: { title: 'title', media: 'heroImage' } }),
 })

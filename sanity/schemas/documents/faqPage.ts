@@ -1,5 +1,6 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
 import { pageSlugField } from '../../lib/pageSlug'
+import { withLanguage } from '../../lib/languagePreview'
 
 export const faqPage = defineType({
   name: 'faqPage',
@@ -111,5 +112,5 @@ export const faqPage = defineType({
     }),
     defineField({ name: 'language', type: 'string', readOnly: true, hidden: true, validation: (r) => r.required() }),
   ],
-  preview: { select: { title: 'title', subtitle: 'slug.current' } },
+  preview: withLanguage({ select: { title: 'title', subtitle: 'slug.current' } }),
 })

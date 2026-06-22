@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity'
 import { pageSlugField } from '../../lib/pageSlug'
+import { withLanguage } from '../../lib/languagePreview'
 import { pageBuilderSections } from '../../lib/pageBuilderSections'
 
 export const page = defineType({
@@ -85,7 +86,7 @@ export const page = defineType({
       validation: (r) => r.required(),
     }),
   ],
-  preview: {
+  preview: withLanguage({
     select: { title: 'title', subtitle: 'slug.current' },
-  },
+  }),
 })
