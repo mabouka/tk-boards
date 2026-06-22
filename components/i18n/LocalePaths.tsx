@@ -18,7 +18,7 @@ export type LocalePaths = Record<string, string>
 let current: LocalePaths | null = null
 const listeners = new Set<() => void>()
 
-export function setLocalePaths(next: LocalePaths | null) {
+function setLocalePaths(next: LocalePaths | null) {
   current = next
   listeners.forEach((l) => l())
 }

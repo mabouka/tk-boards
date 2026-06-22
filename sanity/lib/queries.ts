@@ -406,6 +406,9 @@ export const footerSeriesQuery = defineQuery(`
   }
 `)
 
+// Type-source only: never executed, but typegen turns it into PageBySlugQueryResult,
+// which PageBuilder uses to type its Section union. Do not delete (knip flags it as
+// unused because nothing runs it).
 export const pageBySlugQuery = defineQuery(`
   coalesce(
     *[_type == "page" && slug.current == $slug && language == $locale][0],
