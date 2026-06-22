@@ -1,4 +1,4 @@
-import BigTitle from '@/components/placeholder/BigTitle'
+import BigTitle from '@/components/ui/placeholder/BigTitle'
 
 // Accessories is a product type managed in the Studio (like Boards), not a CMS
 // page. Dedicated route — placeholder for now, to become a real listing later.

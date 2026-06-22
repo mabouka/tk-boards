@@ -18,7 +18,7 @@ import type {
 } from '@/sanity.types'
 import { resolveHeroImage } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
-import BigTitle from '@/components/placeholder/BigTitle'
+import BigTitle from '@/components/ui/placeholder/BigTitle'
 import FaqPage from '@/components/faq/FaqPage'
 import ContactPage from '@/components/contact/ContactPage'
 import { LocalePathsSync } from '@/components/i18n/LocalePaths'

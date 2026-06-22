@@ -7,8 +7,8 @@ import { loadQuery } from '@/sanity/lib/loadQuery'
 import { homePageByLocaleQuery } from '@/sanity/lib/queries'
 import type { HomePageByLocaleQueryResult } from '@/sanity.types'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
-import Hero from '@/components/hero/Hero'
-import PageBuilder from '@/components/page-builder/PageBuilder'
+import Hero from '@/components/sections/hero/Hero'
+import PageBuilder from '@/components/sections/page-builder/PageBuilder'
 
 type Props = {
   params: Promise<{ locale: string }>

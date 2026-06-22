@@ -11,7 +11,7 @@ import { getStorefrontProduct } from '@/lib/storefront/product'
 import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { LocalePathsSync } from '@/components/i18n/LocalePaths'
-import ProductPresentation from '@/components/product-presentation/ProductPresentation'
+import ProductPresentation from '@/components/sections/product-presentation/ProductPresentation'
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>

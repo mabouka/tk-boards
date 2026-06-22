@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import LogoTK from '@/components/icons/LogoTK'
+import LogoTK from '@/components/ui/icons/LogoTK'
 import styles from './construction.module.css'
 
 export const metadata: Metadata = {

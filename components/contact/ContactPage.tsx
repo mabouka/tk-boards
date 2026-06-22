@@ -1,11 +1,11 @@
 import { headers } from 'next/headers'
 import type { ContactPageQueryResult } from '@/sanity.types'
-import BasicHero from '@/components/basic-hero/BasicHero'
-import IconWhatsapp from '@/components/icons/IconWhatsapp'
-import IconMail from '@/components/icons/IconMail'
+import BasicHero from '@/components/sections/basic-hero/BasicHero'
+import IconWhatsapp from '@/components/ui/icons/IconWhatsapp'
+import IconMail from '@/components/ui/icons/IconMail'
 import ContactForm from './ContactForm'
-import PageBuilder from '@/components/page-builder/PageBuilder'
-import { haloProps } from '@/components/halo/haloProps'
+import PageBuilder from '@/components/sections/page-builder/PageBuilder'
+import { haloProps } from '@/components/ui/halo/haloProps'
 import styles from './ContactPage.module.css'
 
 type Sections = NonNullable<ContactPageQueryResult>['sections']
