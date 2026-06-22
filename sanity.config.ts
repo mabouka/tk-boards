@@ -2,7 +2,6 @@ import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
 import type { StructureBuilder } from 'sanity/structure'
 import { presentationTool, defineLocations } from 'sanity/presentation'
-import { visionTool } from '@sanity/vision'
 import { documentInternationalization } from '@sanity/document-internationalization'
 import { internationalizedArray } from 'sanity-plugin-internationalized-array'
 import { media } from 'sanity-plugin-media'
@@ -310,7 +309,6 @@ export default defineConfig({
         },
       },
     }),
-    visionTool(),
     media(),
     linkField({
       linkableSchemaTypes: [
@@ -336,6 +334,9 @@ export default defineConfig({
       fieldTypes: ['string', 'text'],
     }),
   ],
+  // Hide the built-in Releases + Scheduled-drafts tools from the Studio.
+  releases: { enabled: false },
+  scheduledDrafts: { enabled: false },
   schema: {
     types: schemaTypes,
   },
