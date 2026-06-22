@@ -4,8 +4,8 @@ import { urlFor } from '@/sanity/lib/image'
 import { siteUrl } from './metadata'
 
 /** Stable @id references so nodes can cross-link within the JSON-LD graph. */
-export const ORG_ID = `${siteUrl}/#organization`
-export const WEBSITE_ID = `${siteUrl}/#website`
+const ORG_ID = `${siteUrl}/#organization`
+const WEBSITE_ID = `${siteUrl}/#website`
 
 /**
  * Sitewide Organization + WebSite graph, sourced from the site settings

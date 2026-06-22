@@ -29,7 +29,7 @@ export const getSiteSettings = cache((locale: string) =>
 )
 
 /** Extract a Twitter/X handle (e.g. "@tkboards") from an x.com/twitter.com profile URL. */
-export function twitterHandle(xUrl?: string | null): string | undefined {
+function twitterHandle(xUrl?: string | null): string | undefined {
   if (!xUrl) return undefined
   const m = xUrl.match(/(?:twitter|x)\.com\/@?([A-Za-z0-9_]{1,15})/)
   return m ? `@${m[1]}` : undefined

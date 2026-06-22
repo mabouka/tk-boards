@@ -4,7 +4,7 @@ import { isUniqueSlugPerLanguage } from './isUniqueSlugPerLanguage'
 // Slugs that collide with a static Next route — a CMS page using one would be
 // shadowed by the static route and become silently unreachable. Keep in sync
 // with the static segments under app/[locale]/ (site + auth + account groups).
-export const RESERVED_SLUGS = [
+const RESERVED_SLUGS = [
   'boards',
   'accessories',
   'account',
