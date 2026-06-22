@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { PortableText } from 'next-sanity'
 import type { PortableTextComponents } from '@portabletext/react'
 import type { PortableTextValue } from '@/sanity/lib/types'
-import { haloProps } from '@/components/halo/haloProps'
+import { haloProps } from '@/components/ui/halo/haloProps'
 import styles from './FaqPage.module.css'
 
 /** A single Q&A — `answer` is Portable Text (paragraphs, images, YouTube). */

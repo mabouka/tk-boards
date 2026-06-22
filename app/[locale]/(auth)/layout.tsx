@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import LogoTK from '@/components/icons/LogoTK'
+import LogoTK from '@/components/ui/icons/LogoTK'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { authPageQuery } from '@/sanity/lib/queries'

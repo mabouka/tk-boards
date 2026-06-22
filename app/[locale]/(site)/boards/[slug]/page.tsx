@@ -11,11 +11,11 @@ import { getStorefrontProduct } from '@/lib/storefront/product'
 import { urlFor } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { productGraph } from '@/lib/structured-data'
-import JsonLd from '@/components/json-ld/JsonLd'
+import JsonLd from '@/components/ui/json-ld/JsonLd'
 import { LocalePathsSync } from '@/components/i18n/LocalePaths'
-import HeroBoard from '@/components/hero-board/HeroBoard'
-import ProductPresentation from '@/components/product-presentation/ProductPresentation'
-import PageBuilder from '@/components/page-builder/PageBuilder'
+import HeroBoard from '@/components/sections/hero-board/HeroBoard'
+import ProductPresentation from '@/components/sections/product-presentation/ProductPresentation'
+import PageBuilder from '@/components/sections/page-builder/PageBuilder'
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>

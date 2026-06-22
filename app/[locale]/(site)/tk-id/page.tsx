@@ -7,8 +7,8 @@ import { tkIdPageByLocaleQuery } from '@/sanity/lib/queries'
 import type { TkIdPageByLocaleQueryResult } from '@/sanity.types'
 import { resolveHeroImage } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
-import BasicHero from '@/components/basic-hero/BasicHero'
-import PageBuilder from '@/components/page-builder/PageBuilder'
+import BasicHero from '@/components/sections/basic-hero/BasicHero'
+import PageBuilder from '@/components/sections/page-builder/PageBuilder'
 
 type Props = { params: Promise<{ locale: string }> }
 
