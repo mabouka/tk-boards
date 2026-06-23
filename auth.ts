@@ -8,6 +8,11 @@ import { eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { users, accounts, sessions, verificationTokens } from '@/db/schema'
 
+// A valid cost-12 bcrypt hash with an unknown plaintext, used only to equalize
+// login response time for non-existent / password-less accounts — so timing
+// doesn't reveal whether an email is registered (no user-enumeration oracle).
+const DUMMY_PASSWORD_HASH = '$2b$12$mzuDMsM4WFhBO.qxDOOiZ.sxGzBOf6h4FHyuwb.kjInaF1vh/GABq'
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: DrizzleAdapter(db, {
     usersTable: users,
@@ -31,10 +36,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!email || !password) return null
 
         const [u] = await db.select().from(users).where(eq(users.email, email)).limit(1)
-        if (!u?.passwordHash) return null
 
-        const ok = await bcrypt.compare(password, u.passwordHash)
-        if (!ok) return null
+        // Always run a bcrypt compare (dummy hash when there's no password
+        // account) so login timing doesn't reveal whether the email exists.
+        const ok = await bcrypt.compare(password, u?.passwordHash ?? DUMMY_PASSWORD_HASH)
+        if (!u?.passwordHash || !ok) return null
 
         // Hard gate: never sign in a password account whose email isn't verified.
         if (!u.emailVerified) return null
