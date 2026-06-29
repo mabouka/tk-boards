@@ -55,6 +55,8 @@ export default function YoutubePlayer({ id, title, poster }: Props) {
     if (!activated || !hostRef.current) return
     let cancelled = false
     const host = hostRef.current
+    // Move focus to the player region (the play button that had focus is gone).
+    host.focus()
     // The API REPLACES this node with the iframe — React never owns it.
     const target = document.createElement('div')
     host.appendChild(target)
@@ -84,7 +86,7 @@ export default function YoutubePlayer({ id, title, poster }: Props) {
   return (
     <div className={styles.player}>
       {activated ? (
-        <div ref={hostRef} className={styles.playerHost} />
+        <div ref={hostRef} className={styles.playerHost} tabIndex={-1} aria-label={title} />
       ) : (
         <button
           type="button"

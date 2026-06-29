@@ -55,10 +55,10 @@ export default function SectionBigScrollText({ text }: Props) {
     <section ref={rootRef} className={styles.section}>
       <p className={styles.inner}>
         {lines.map((line, li) => (
-          <Fragment key={li}>
+          <Fragment key={`${li}:${line}`}>
             {line.split(/\s+/).map((word, wi) =>
               word === '' ? null : (
-                <span key={wi} className={styles.word}>
+                <span key={`${wi}:${word}`} className={styles.word}>
                   {word}{' '}
                 </span>
               )

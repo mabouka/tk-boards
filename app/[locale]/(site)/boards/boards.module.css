@@ -1,4 +1,6 @@
 .boards {
+  /* Keep the footer below the fold when a locale has few boards / one series. */
+  min-height: 100vh;
   padding: clamp(130px, 18vw, 220px) 0 var(--space-4xl);
 }
 

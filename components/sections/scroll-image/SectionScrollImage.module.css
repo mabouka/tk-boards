@@ -4,11 +4,11 @@
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--col-gutter);
-  padding-inline: var(--gutter);
-  /* Room for the parallax drift so figures don't bleed into neighbours. */
   align-items: start;
-    margin: var(--space-4xl) 0;
-  padding: 0 var(--gutter);
+  /* The 4xl block margin doubles as the buffer for the parallax drift, so
+     figures don't bleed into neighbouring sections. */
+  margin: var(--space-4xl) 0;
+  padding-inline: var(--gutter);
 }
 
 .figure {

@@ -42,6 +42,12 @@ const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min)
 export default function SectionScrollImage({ items }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
 
+  // Rebuild the parallax when any per-item config changes — not just the count,
+  // so editing a speed/column/offset (same length) re-runs GSAP.
+  const signature = items
+    .map((i) => `${i.imageUrl}|${i.speed}|${i.startColumn}|${i.widthColumns}|${i.offsetY}`)
+    .join(';')
+
   useGSAP(
     () => {
       const root = rootRef.current
@@ -74,13 +80,21 @@ export default function SectionScrollImage({ items }: Props) {
         })
         // Images set the section height *after* setup → recompute trigger
         // positions once each has loaded (otherwise start/end are stale).
+        // Track the listeners so they're removed if this context reverts before
+        // the image loads (otherwise a late load() refreshes dead triggers).
+        const onLoad = () => ScrollTrigger.refresh()
+        const cleanups: Array<() => void> = []
         root.querySelectorAll('img').forEach((im) => {
-          if (!im.complete) im.addEventListener('load', () => ScrollTrigger.refresh(), { once: true })
+          if (!im.complete) {
+            im.addEventListener('load', onLoad, { once: true })
+            cleanups.push(() => im.removeEventListener('load', onLoad))
+          }
         })
         ScrollTrigger.refresh()
+        return () => cleanups.forEach((fn) => fn())
       })
     },
-    { scope: rootRef, dependencies: [items.length] }
+    { scope: rootRef, dependencies: [signature] }
   )
 
   if (!items?.length) return null
@@ -93,6 +107,9 @@ export default function SectionScrollImage({ items }: Props) {
         const span = clamp(Math.round(it.widthColumns ?? 6), 1, 12 - start + 1)
         const ar = it.aspectRatio && it.aspectRatio > 0 ? it.aspectRatio : 1
         const w = 1400
+        // Desktop renders the image at span/12 of the viewport — tell the
+        // browser so it doesn't fetch a ~60vw source for a narrow image.
+        const sizes = `(max-width: 767px) 100vw, ${Math.round((span / 12) * 100)}vw`
         return (
           <figure
             key={it._key ?? i}
@@ -114,7 +131,7 @@ export default function SectionScrollImage({ items }: Props) {
               width={w}
               height={Math.round(w / ar)}
               className={styles.img}
-              sizes="(max-width: 767px) 100vw, 60vw"
+              sizes={sizes}
             />
           </figure>
         )
