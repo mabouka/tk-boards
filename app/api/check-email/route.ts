@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   }
 
   const ip = await clientIp()
-  if (!(await rateLimit('check-email', ip, 30, 60))) {
+  if (!(await rateLimit('check-email', ip, 10, 60))) {
     return NextResponse.json(
       { exists: false, hasPassword: false, providers: [], error: 'rate' },
       { status: 429 }
