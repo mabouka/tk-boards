@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { PortableText } from 'next-sanity'
 import type { PortableTextComponents } from '@portabletext/react'
 import type { PortableTextValue } from '@/sanity/lib/types'
+import { youtubeId } from '@/lib/youtube'
 import { haloProps } from '@/components/ui/halo/haloProps'
 import styles from './FaqPage.module.css'
 
@@ -23,13 +24,6 @@ type Props = {
   title: string
   heroTitle: string | null
   categories: FaqCategory[]
-}
-
-/** Extract the 11-char id from any YouTube URL (watch, youtu.be, shorts, embed). */
-function youtubeId(url?: string): string | null {
-  if (!url) return null
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([\w-]{11})/)
-  return m ? m[1] : null
 }
 
 /** Serializers for the answer rich text: inline images + YouTube embeds. */

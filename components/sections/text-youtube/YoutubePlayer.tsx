@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './SectionTextYoutube.module.css'
 
 // Minimal typing for the bits of the IFrame API we use (avoids @types/youtube).
@@ -12,7 +12,10 @@ declare global {
   }
 }
 
-// Load https://www.youtube.com/iframe_api once, shared across all players.
+const API_SRC = 'https://www.youtube.com/iframe_api'
+
+// Load the IFrame API once, shared across all players. Resolves only when
+// window.YT.Player actually exists (not merely window.YT).
 let apiPromise: Promise<void> | null = null
 function loadYouTubeApi(): Promise<void> {
   if (typeof window === 'undefined') return Promise.resolve()
@@ -24,9 +27,11 @@ function loadYouTubeApi(): Promise<void> {
       prev?.()
       resolve()
     }
-    const tag = document.createElement('script')
-    tag.src = 'https://www.youtube.com/iframe_api'
-    document.head.appendChild(tag)
+    if (!document.querySelector(`script[src="${API_SRC}"]`)) {
+      const tag = document.createElement('script')
+      tag.src = API_SRC
+      document.head.appendChild(tag)
+    }
   })
   return apiPromise
 }
@@ -35,48 +40,56 @@ type Props = { id: string; title: string; poster: string }
 
 /**
  * Custom poster + play button. No iframe at load — so GSAP/ScrollTrigger on the
- * same page never touches a cross-origin frame during init. On click, React
- * renders the (nocookie) iframe with `enablejsapi=1` and we bind a YT.Player to
- * the *existing* iframe (it isn't replaced, so React keeps owning the node),
- * giving a JS handle (`playerRef`) for programmatic control.
+ * same page never touches a cross-origin frame during init. On click, the IFrame
+ * Player API creates the player inside a React-owned host div (the API replaces
+ * an imperatively-created child, which React never owns), so destroy() on unmount
+ * can't collide with React removing the node. `host` points at the nocookie
+ * domain so the postMessage handshake (JS control) works.
  */
 export default function YoutubePlayer({ id, title, poster }: Props) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const hostRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<YTPlayer | null>(null)
   const [activated, setActivated] = useState(false)
 
   useEffect(() => {
-    if (!activated) return
+    if (!activated || !hostRef.current) return
     let cancelled = false
+    const host = hostRef.current
+    // The API REPLACES this node with the iframe — React never owns it.
+    const target = document.createElement('div')
+    host.appendChild(target)
+
     loadYouTubeApi().then(() => {
-      if (cancelled || !iframeRef.current || !window.YT) return
-      playerRef.current = new window.YT.Player(iframeRef.current, {})
+      if (cancelled || !window.YT?.Player) return
+      playerRef.current = new window.YT.Player(target, {
+        videoId: id,
+        host: 'https://www.youtube-nocookie.com',
+        width: '100%',
+        height: '100%',
+        playerVars: { autoplay: 1, rel: 0, modestbranding: 1, playsinline: 1 },
+      })
     })
+
     return () => {
       cancelled = true
-      playerRef.current?.destroy?.()
+      try {
+        playerRef.current?.destroy?.()
+      } catch {
+        /* iframe already detached */
+      }
       playerRef.current = null
     }
-  }, [activated])
-
-  const activate = useCallback(() => setActivated(true), [])
+  }, [activated, id])
 
   return (
     <div className={styles.player}>
       {activated ? (
-        <iframe
-          ref={iframeRef}
-          className={styles.playerIframe}
-          src={`https://www.youtube-nocookie.com/embed/${id}?enablejsapi=1&autoplay=1&rel=0&modestbranding=1&playsinline=1`}
-          title={title}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
+        <div ref={hostRef} className={styles.playerHost} />
       ) : (
         <button
           type="button"
           className={styles.facade}
-          onClick={activate}
+          onClick={() => setActivated(true)}
           aria-label={`Play video: ${title}`}
           style={{ backgroundImage: `url(${poster})` }}
         >

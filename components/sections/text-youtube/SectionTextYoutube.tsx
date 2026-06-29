@@ -1,17 +1,9 @@
 import { PortableText } from 'next-sanity'
 import type { PortableTextValue, Cta } from '@/sanity/lib/types'
+import { youtubeId } from '@/lib/youtube'
 import { haloProps } from '@/components/ui/halo/haloProps'
 import YoutubePlayer from './YoutubePlayer'
 import styles from './SectionTextYoutube.module.css'
-
-/** Extract the 11-char video id from any common YouTube URL form. */
-function youtubeId(url?: string): string | null {
-  if (!url) return null
-  const m = url.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([\w-]{11})/
-  )
-  return m ? m[1] : null
-}
 
 type Props = {
   label?: string

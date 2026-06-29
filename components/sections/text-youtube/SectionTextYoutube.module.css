@@ -27,19 +27,19 @@
   display: block;
 }
 
-/* JS player: facade (poster + play) until clicked, then the bound iframe. */
+/* JS player: facade (poster + play) until clicked, then the API-managed iframe.
+   The IFrame API replaces a child of .playerHost with the iframe, which is
+   sized by the `.textYoutube__video iframe` rule above. */
 .player {
   position: absolute;
   inset: 0;
 }
 
-.playerIframe {
+.playerHost {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  border: 0;
-  display: block;
 }
 
 .facade {

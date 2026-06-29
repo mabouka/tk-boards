@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import AccessoryCard from './AccessoryCard'
 import { haloProps } from '@/components/ui/halo/haloProps'
 import styles from './Accessories.module.css'
@@ -36,6 +36,12 @@ export default function AccessoriesClient({
   const [active, setActive] = useState<string>('all')
   const filtered =
     active === 'all' ? accessories : accessories.filter((a) => a.categorySlug === active)
+
+  // Filtering adds/removes [data-halo] cards → tell the global BgHalos layer to
+  // recompute (matches the Halos.tsx / SectionOutline.tsx pattern).
+  useEffect(() => {
+    window.dispatchEvent(new Event('bg:rebuild'))
+  }, [active])
 
   return (
     <div className={styles.accessories}>
