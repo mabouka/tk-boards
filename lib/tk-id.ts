@@ -10,6 +10,8 @@ export type TkId = {
   variantId: string | null
   productName: string | null
   variantSku: string | null
+  /** Parent product SKU — matches the Sanity board's `skuCode` (for its image). */
+  productSku: string | null
   ownerUserId: string | null
   contactPublic: boolean
 }
@@ -26,6 +28,7 @@ export async function getUnitByToken(token: string): Promise<TkId | null> {
       variantId: units.variantId,
       productName: products.name,
       variantSku: variants.sku,
+      productSku: products.sku,
     })
     .from(units)
     .leftJoin(variants, eq(variants.id, units.variantId))

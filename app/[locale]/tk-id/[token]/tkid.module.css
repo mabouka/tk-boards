@@ -13,7 +13,6 @@
   padding: 40px;
   background: rgba(15, 17, 22, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
   backdrop-filter: blur(8px);
 }
 
@@ -43,6 +42,18 @@
   color: var(--color-white-72, rgba(255, 255, 255, 0.72));
 }
 
+.photo {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .meta {
   display: flex;
   flex-direction: column;
@@ -50,7 +61,8 @@
   margin: 0 0 24px;
   padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-top: none;
+
 }
 
 .metaRow {
@@ -82,7 +94,6 @@
   padding: 14px 16px;
   border: 1px solid rgba(220, 80, 80, 0.5);
   background: rgba(220, 80, 80, 0.12);
-  border-radius: 10px;
   font-size: 14px;
   line-height: 1.5;
   color: #f0b8b8;
@@ -110,7 +121,6 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 11px 18px;
-  border-radius: 8px;
   cursor: pointer;
   width: 100%;
 }

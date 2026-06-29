@@ -115,6 +115,20 @@ export const boardsQuery = defineQuery(`
   }
 `)
 
+// Board main image by SKU (board.skuCode == the commerce product's parent SKU).
+// Used by the TK-ID page to show the registered board's photo. Prefers the
+// requested locale, falls back to any language (the image is shared).
+export const boardImageBySkuQuery = defineQuery(`
+  coalesce(
+    *[_type == "board" && skuCode == $sku && language == $locale && !(_id in path("drafts.**"))][0],
+    *[_type == "board" && skuCode == $sku && !(_id in path("drafts.**"))][0]
+  ) {
+    "name": name,
+    mainImage,
+    "aspectRatio": mainImage.asset->metadata.dimensions.aspectRatio
+  }
+`)
+
 export const boardBySlugQuery = defineQuery(`
   *[_type == "board" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {
     _id,

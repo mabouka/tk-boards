@@ -1,7 +1,12 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { auth } from '@/auth'
 import { getUnitByToken } from '@/lib/tk-id'
+import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
+import { urlFor } from '@/sanity/lib/image'
+import { boardImageBySkuQuery } from '@/sanity/lib/queries'
 import { registerBoard, declareStolen, markRecovered } from './actions'
 import styles from './tkid.module.css'
 
@@ -26,8 +31,18 @@ export default async function TkIdPage({ params }: Props) {
   const [tk, session] = await Promise.all([getUnitByToken(token), auth()])
   const userId = session?.user?.id ?? null
 
-  const meta = tk?.productName ? (
+  // Board photo from Sanity, matched by the parent SKU (board.skuCode).
+  const board = tk?.productSku
+    ? await client.fetch(boardImageBySkuQuery, { sku: tk.productSku, locale }, sanityCache('board'))
+    : null
+  const photoUrl = board?.mainImage
+    ? urlFor(board.mainImage).width(900).quality(85).auto('format').url()
+    : null
+  const photoAr = board?.aspectRatio && board.aspectRatio > 0 ? board.aspectRatio : 1
+
+  const metaTable = tk?.productName ? (
     <div className={styles.meta}>
+      <p className={styles.metaTitle}>{tk.productName}</p>
       <div className={styles.metaRow}>
         <span className={styles.metaKey}>{t('model_label')}</span>
         <span className={styles.metaVal}>{tk.productName}</span>
@@ -40,6 +55,26 @@ export default async function TkIdPage({ params }: Props) {
       )}
     </div>
   ) : null
+
+  // Photo above the model/serial — shown wherever a board is known.
+  const meta =
+    photoUrl || metaTable ? (
+      <>
+        {photoUrl && (
+          <figure className={styles.photo}>
+            <Image
+              src={photoUrl}
+              alt={tk?.productName ?? ''}
+              width={900}
+              height={Math.round(900 / photoAr)}
+              sizes="(max-width: 520px) 88vw, 420px"
+              priority
+            />
+          </figure>
+        )}
+        {metaTable}
+      </>
+    ) : null
 
   const home = (
     <Link href={`/${locale}`} className="u-cta u-cta--white-outline">
