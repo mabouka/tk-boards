@@ -57,40 +57,47 @@ export default function SectionScrollImage({ items }: Props) {
 
       const mm = gsap.matchMedia()
       mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
-        figures.forEach((fig) => {
-          const speed = parseFloat(fig.dataset.speed || '0')
-          if (!speed) return
-          // Drift the figure from +range (entering) to -range (leaving).
-          const range = speed * 300
-          gsap.fromTo(
-            fig,
-            { y: range },
-            {
-              y: -range,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: root,
-                start: 'top bottom',
-                end: 'bottom top',
-                scrub: true,
-                invalidateOnRefresh: true,
-              },
-            }
-          )
-        })
-        // Images set the section height *after* setup → recompute trigger
-        // positions once each has loaded (otherwise start/end are stale).
-        // Track the listeners so they're removed if this context reverts before
-        // the image loads (otherwise a late load() refreshes dead triggers).
-        const onLoad = () => ScrollTrigger.refresh()
         const cleanups: Array<() => void> = []
-        root.querySelectorAll('img').forEach((im) => {
-          if (!im.complete) {
-            im.addEventListener('load', onLoad, { once: true })
-            cleanups.push(() => im.removeEventListener('load', onLoad))
-          }
-        })
-        ScrollTrigger.refresh()
+        // GSAP/ScrollTrigger can throw a cross-origin SecurityError when the page
+        // runs inside a cross-origin iframe (e.g. a preview sandbox). Skip the
+        // parallax rather than crash the page — top-level users animate normally.
+        try {
+          figures.forEach((fig) => {
+            const speed = parseFloat(fig.dataset.speed || '0')
+            if (!speed) return
+            // Drift the figure from +range (entering) to -range (leaving).
+            const range = speed * 300
+            gsap.fromTo(
+              fig,
+              { y: range },
+              {
+                y: -range,
+                ease: 'none',
+                scrollTrigger: {
+                  trigger: root,
+                  start: 'top bottom',
+                  end: 'bottom top',
+                  scrub: true,
+                  invalidateOnRefresh: true,
+                },
+              }
+            )
+          })
+          // Images set the section height *after* setup → recompute trigger
+          // positions once each has loaded (otherwise start/end are stale).
+          // Track the listeners so they're removed if this context reverts
+          // before the image loads (a late load() would refresh dead triggers).
+          const onLoad = () => ScrollTrigger.refresh()
+          root.querySelectorAll('img').forEach((im) => {
+            if (!im.complete) {
+              im.addEventListener('load', onLoad, { once: true })
+              cleanups.push(() => im.removeEventListener('load', onLoad))
+            }
+          })
+          ScrollTrigger.refresh()
+        } catch (e) {
+          console.warn('[ScrollImage] parallax skipped:', e)
+        }
         return () => cleanups.forEach((fn) => fn())
       })
     },

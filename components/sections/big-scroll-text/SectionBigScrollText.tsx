@@ -28,21 +28,28 @@ export default function SectionBigScrollText({ text }: Props) {
 
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {
-        gsap.fromTo(
-          words,
-          { opacity: 0.18 },
-          {
-            opacity: 1,
-            ease: 'none',
-            stagger: 0.5,
-            scrollTrigger: {
-              trigger: root,
-              start: 'top 80%',
-              end: 'bottom 60%',
-              scrub: true,
-            },
-          }
-        )
+        // GSAP/ScrollTrigger can throw a cross-origin SecurityError when the page
+        // runs inside a cross-origin iframe (e.g. a preview sandbox). Skip the
+        // reveal rather than crash the page — top-level users animate normally.
+        try {
+          gsap.fromTo(
+            words,
+            { opacity: 0.18 },
+            {
+              opacity: 1,
+              ease: 'none',
+              stagger: 0.5,
+              scrollTrigger: {
+                trigger: root,
+                start: 'top 80%',
+                end: 'bottom 60%',
+                scrub: true,
+              },
+            }
+          )
+        } catch (e) {
+          console.warn('[BigScrollText] reveal skipped:', e)
+        }
       })
     },
     { scope: rootRef, dependencies: [text] }
