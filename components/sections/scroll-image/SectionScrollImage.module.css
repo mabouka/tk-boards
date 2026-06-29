@@ -1,0 +1,42 @@
+/* Scroll Image — staggered, overlapping images on the 12-col grid with
+   per-image vertical offset + scroll parallax. Mobile: stacked, no overlap. */
+.section {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--col-gutter);
+  align-items: start;
+  /* The 4xl block margin doubles as the buffer for the parallax drift, so
+     figures don't bleed into neighbouring sections. */
+  margin: var(--space-4xl) 0;
+  padding-inline: var(--gutter);
+}
+
+.figure {
+  /* All in row 1 so they can overlap; columns + offset place them. */
+  grid-row: 1;
+  grid-column: var(--start) / span var(--span);
+  margin: 0;
+  margin-top: calc(var(--offset, 0) * 1vh);
+  will-change: transform;
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 767px) {
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    padding-block: var(--space-2xl);
+  }
+
+  .figure {
+    grid-column: auto;
+    margin-top: 0;
+    width: 100%;
+  }
+}

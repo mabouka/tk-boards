@@ -9,18 +9,22 @@ import {
   faqPageQuery,
   contactPageQuery,
   contactSettingsQuery,
+  ourStoryPageQuery,
 } from '@/sanity/lib/queries'
 import type {
   CmsPageBySlugQueryResult,
   ContactPageQueryResult,
   ContactSettingsQueryResult,
   FaqPageQueryResult,
+  OurStoryPageQueryResult,
 } from '@/sanity.types'
 import { resolveHeroImage } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import BigTitle from '@/components/ui/placeholder/BigTitle'
 import FaqPage from '@/components/faq/FaqPage'
 import ContactPage from '@/components/contact/ContactPage'
+import HeroBoard from '@/components/sections/hero-board/HeroBoard'
+import PageBuilder from '@/components/sections/page-builder/PageBuilder'
 import { LocalePathsSync } from '@/components/i18n/LocalePaths'
 
 type Props = { params: Promise<{ locale: string; slug: string }> }
@@ -104,6 +108,28 @@ export default async function CmsPage({ params }: Props) {
           sections={contact?.sections}
           locale={locale}
         />
+      </>
+    )
+  }
+
+  if (page._type === 'ourStoryPage') {
+    const story = await loadQuery<OurStoryPageQueryResult>(
+      ourStoryPageQuery,
+      { slug, locale },
+      ['ourStoryPage']
+    )
+    if (!story) notFound()
+
+    return (
+      <>
+        <LocalePathsSync paths={localePaths} />
+        {/* Same hero as the board (Rocket) pages, then page-builder sections. */}
+        <HeroBoard
+          title={story.heroTitle ?? story.title}
+          tagline={story.heroTagline}
+          backgroundImage={story.heroImage}
+        />
+        <PageBuilder sections={story.sections ?? []} locale={locale} />
       </>
     )
   }

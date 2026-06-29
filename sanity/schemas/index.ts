@@ -31,6 +31,9 @@ import { sectionFixedImage } from './sections/sectionFixedImage'
 import { sectionSpecs } from './sections/sectionSpecs'
 import { sectionWorkshop } from './sections/sectionWorkshop'
 import { sectionCenteredText } from './sections/sectionCenteredText'
+import { sectionBigScrollText } from './sections/sectionBigScrollText'
+import { sectionScrollImage } from './sections/sectionScrollImage'
+import { sectionTextYoutube } from './sections/sectionTextYoutube'
 
 export const schemaTypes = [
   accessory,
@@ -66,4 +69,7 @@ export const schemaTypes = [
   sectionSpecs,
   sectionWorkshop,
   sectionCenteredText,
+  sectionBigScrollText,
+  sectionScrollImage,
+  sectionTextYoutube,
 ]

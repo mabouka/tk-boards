@@ -63,9 +63,8 @@ export const navigation = defineType({
                 { type: 'contactPage' },
                 { type: 'faqPage' },
                 { type: 'whereToBuyPage' },
-                // Product listings: Boards / Accessories index pages. Single
-                // language-independent docs — href resolved in GROQ to /boards
-                // and /accessories.
+                // Product listings: Boards / Accessories index pages (per-language;
+                // href resolved in GROQ to /boards and /accessories).
                 { type: 'boardsPageSettings' },
                 { type: 'accessoriesPageSettings' },
                 // User dashboard — href resolved in GROQ to /account.
@@ -73,11 +72,10 @@ export const navigation = defineType({
               ],
               description: 'Link to a page — slug updates automatically. Only pages in this menu’s language are shown.',
               options: {
-                // Pages: same language as the menu. Product-listing singletons
-                // are language-independent so they're always offered.
+                // Pages: same language as the menu. The account dashboard is a
+                // single language-independent singleton, so it's always offered.
                 filter: ({ document }) => ({
-                  filter:
-                    '_type in ["boardsPageSettings", "accessoriesPageSettings", "accountPageSettings"] || language == $lang',
+                  filter: '_type == "accountPageSettings" || language == $lang',
                   params: { lang: (document as { language?: string }).language ?? null },
                 }),
               },

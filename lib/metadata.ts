@@ -85,8 +85,12 @@ export async function buildMetadata({
     : (settings?.siteTitle ?? '')
 
   // Collapse newlines / repeated whitespace — meta descriptions should be single-line.
-  const resolvedDescription =
-    (description ?? settings?.seoDescription ?? '').replace(/\s+/g, ' ').trim()
+  // Coerce to string: a stray non-string value (e.g. an unflattened i18n array)
+  // must never crash metadata generation.
+  const rawDescription = description ?? settings?.seoDescription ?? ''
+  const resolvedDescription = (typeof rawDescription === 'string' ? rawDescription : '')
+    .replace(/\s+/g, ' ')
+    .trim()
 
   // Fall back to the site-wide default OG image when no specific image is provided.
   let ogImage = image

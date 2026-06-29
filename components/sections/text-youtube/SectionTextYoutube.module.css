@@ -1,0 +1,168 @@
+/* Text + YouTube — mobile-first stacked; desktop 12-col grid (video 8 / text 4).
+   Mirrors Text + Image, with an 8-col 16:9 YouTube embed instead of an image. */
+.textYoutube {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-cream);
+}
+
+.textYoutube--dark {
+  background: transparent;
+}
+
+/* ── Video (16:9 embed) ── */
+.textYoutube__video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #000;
+}
+
+.textYoutube__video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* JS player: facade (poster + play) until clicked, then the API-managed iframe.
+   The IFrame API replaces a child of .playerHost with the iframe, which is
+   sized by the `.textYoutube__video iframe` rule above. */
+.player {
+  position: absolute;
+  inset: 0;
+}
+
+.playerHost {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.facade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background-color: #000;
+  background-size: cover;
+  background-position: center;
+  display: grid;
+  place-items: center;
+}
+
+.play {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.play::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 16px 0 16px 26px;
+  border-color: transparent transparent transparent var(--color-white);
+  margin-left: 6px;
+}
+
+.facade:hover .play,
+.facade:focus-visible .play {
+  background: rgba(0, 0, 0, 0.78);
+  transform: scale(1.06);
+}
+
+/* ── Content ── */
+.textYoutube__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-4xl) var(--gutter);
+}
+
+.textYoutube__eyebrow {
+  composes: u-eyebrow from global;
+}
+
+.textYoutube__title {
+  composes: u-title u-title--36 from global;
+  color: var(--color-black);
+  margin-bottom: var(--space-sm);
+  white-space: pre-line;
+}
+
+.textYoutube__body {
+  composes: u-body from global;
+}
+
+.textYoutube--dark .textYoutube__eyebrow {
+  color: var(--color-white-72);
+}
+
+.textYoutube--dark .textYoutube__eyebrow::after {
+  background: var(--color-white-72);
+}
+
+.textYoutube--dark .textYoutube__title {
+  color: var(--color-white);
+}
+
+.textYoutube--dark .textYoutube__body {
+  color: var(--color-white-80);
+}
+
+/* ── CTAs ── */
+.textYoutube__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+/* ── Desktop: 12-col grid (video 7 / gap / text 4) ── */
+@media (min-width: 1024px) {
+  .textYoutube {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--col-gutter);
+    padding-inline: var(--gutter);
+    margin: var(--space-4xl) 0;
+    align-items: center;
+  }
+
+  /* Video first in the DOM — pin both to row 1 so position toggles cleanly. */
+  .textYoutube__video,
+  .textYoutube__content {
+    grid-row: 1;
+  }
+
+  /* Video 7 cols + an empty column (8) before the 4-col text → more breathing room. */
+  .textYoutube__video {
+    grid-column: 1 / span 7;
+  }
+
+  .textYoutube__content {
+    grid-column: 9 / span 4;
+    padding: 0;
+  }
+
+  /* Reverse: video on the right (cols 6–12), text on the left (cols 1–4), gap at col 5. */
+  .textYoutube--reverse .textYoutube__video {
+    grid-column: 6 / span 7;
+  }
+
+  .textYoutube--reverse .textYoutube__content {
+    grid-column: 1 / span 4;
+  }
+}

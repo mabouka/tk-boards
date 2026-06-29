@@ -1,5 +1,5 @@
 .boards {
-  padding: var(--space-3xl) 0;
+  margin: var(--space-4xl) 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11,7 +11,7 @@
   composes: u-title u-title--66 from global;
   text-align: center;
   color: var(--color-white);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-xl);
 }
 
 /* ── Filters ── */
@@ -52,70 +52,11 @@
   justify-content: center;
 }
 
-/* ── Card ── */
+/* ── Card sizing — BoardCard fills the slot; the track fixes the width ── */
 
-.boards__card {
-  position: relative;
+.boards__track > a {
   width: col(3);
-  aspect-ratio: 390 / 606;
-  padding: 24px;
-
   flex-shrink: 0;
-  overflow: hidden;
-  display: block;
-  text-decoration: none;
-  color: var(--color-white);
-  cursor: pointer;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-start;
-}
-
-.boards__card_img {
-  object-fit: cover;
-  object-position: center;
-}
-
-.boards__card_overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.88) 0%,
-    rgba(0, 0, 0, 0.45) 35%,
-    transparent 65%
-  );
-  pointer-events: none;
-}
-
-.boards__card_name {
-  composes: u-title u-title--24 from global;
-  z-index: 2;
-  letter-spacing: 1px;
-  text-shadow: 0 0 10px color(--color-black / 0.8);
-  white-space: nowrap;
-  padding-bottom: 10px;
-}
-
-.boards__card_meta {
-  z-index: 2;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding-bottom: 10px;
-}
-
-.boards__card_tag {
-  composes: u-tag from global;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-}
-
-.boards__card_cta {
-  composes: u-cta u-cta--black-fill from global;
-  z-index: 2;
 }
 
 /* ── Discover CTA ── */

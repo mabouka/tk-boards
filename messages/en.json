@@ -41,6 +41,7 @@
   },
   "boards": {
     "title": "Boards",
+    "view_board": "View Board",
     "specs": "Specs",
     "weight": "Weight",
     "order": "Order this board",
@@ -183,5 +184,9 @@
     "included": "Included",
     "checkout": "Checkout",
     "note": "Shipping, applicable taxes and promo codes are calculated at checkout."
+  },
+  "accessories": {
+    "title": "Accessories",
+    "all": "All"
   }
 }
