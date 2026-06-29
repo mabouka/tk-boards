@@ -94,7 +94,7 @@ export default function FaqPage({ title, heroTitle, categories }: Props) {
       <header className={styles.hero}>
         <h1
           className={styles.heroTitle}
-          {...haloProps({ rgb: '225, 255, 255', opacity: 0.29, w: '75vw', h: '76vh', spread: '1%', anchor: 'bottom-left' })}
+          {...haloProps({ rgb: '225, 255, 255', opacity: 0.17, w: '75vw', h: '76vh', spread: '1%', anchor: 'bottom-left' })}
         >
           {heroTitle || title}
         </h1>
@@ -130,7 +130,7 @@ export default function FaqPage({ title, heroTitle, categories }: Props) {
                 <h2 className={styles.groupTitle}>{c.title}</h2>
                 <ul
                   className={styles.accordion}
-                  {...haloProps({ rgb: '225, 255, 255', opacity: 0.12, w: '87vw', h: '70vh', spread: '1%' })}
+                  {...haloProps({ rgb: '225, 255, 255', opacity: 0.06, w: '87vw', h: '70vh', spread: '1%' })}
                 >
                   {c.questions.map((q, index) => {
                     const key = `${c.id}::${index}`
