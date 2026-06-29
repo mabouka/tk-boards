@@ -1,21 +1,54 @@
 import { defineField, defineType } from 'sanity'
+import { withLanguage } from '../../lib/languagePreview'
+import { pageBuilderSections } from '../../lib/pageBuilderSections'
 
 export const accessoriesPageSettings = defineType({
   name: 'accessoriesPageSettings',
   title: 'Accessories Page Settings',
   type: 'document',
+  groups: [
+    { name: 'basic', title: 'Basic', default: true },
+    { name: 'content', title: 'Content' },
+    { name: 'seo', title: 'SEO' },
+  ],
   fields: [
+    defineField({
+      name: 'title',
+      title: 'Page Title',
+      type: 'string',
+      description: 'Big heading shown at the top of the /accessories page. Falls back to "Accessories".',
+      group: 'basic',
+    }),
+    defineField({
+      name: 'showFilters',
+      title: 'Show category filters',
+      type: 'boolean',
+      initialValue: true,
+      description: 'On: show the category filter pills (All / Boardbags / Fins…). Off: hide them and list every accessory.',
+      group: 'basic',
+    }),
+    defineField({
+      name: 'sections',
+      title: 'Sections',
+      type: 'array',
+      of: [...pageBuilderSections],
+      description: 'Extra page-builder sections rendered after the accessory listing.',
+      group: 'content',
+    }),
     defineField({
       name: 'seoTitle',
       title: 'SEO Title',
-      type: 'internationalizedArrayString',
-      description: 'Title for the /accessories listing page, per language. Falls back to the default "Accessories" label.',
+      type: 'string',
+      description: 'Title for the /accessories listing page. Falls back to the default "Accessories" label.',
+      group: 'seo',
     }),
     defineField({
       name: 'seoDescription',
       title: 'SEO Description',
-      type: 'internationalizedArrayText',
-      description: 'Meta description for the /accessories listing page, per language. Falls back to the site default.',
+      type: 'text',
+      rows: 3,
+      description: 'Meta description for the /accessories listing page. Falls back to the site default.',
+      group: 'seo',
     }),
     defineField({
       name: 'ogImage',
@@ -23,6 +56,7 @@ export const accessoriesPageSettings = defineType({
       type: 'image',
       options: { hotspot: true },
       description: 'Used for social media previews of the /accessories page (recommended 1200×630).',
+      group: 'seo',
       fields: [
         defineField({
           name: 'alt',
@@ -31,9 +65,11 @@ export const accessoriesPageSettings = defineType({
         }),
       ],
     }),
+    defineField({ name: 'language', type: 'string', readOnly: true, hidden: true, validation: (r) => r.required() }),
   ],
-  preview: {
-    // Shown in the "Internal page" picker — keep it short and route-like.
-    prepare: () => ({ title: 'Accessories', subtitle: '/accessories (product listing)' }),
-  },
+  // Per-language doc — show the language in the picker so the three are distinct.
+  preview: withLanguage({
+    select: {},
+    prepare: () => ({ title: 'Accessories', subtitle: '/accessories' }),
+  }),
 })

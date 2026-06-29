@@ -260,7 +260,7 @@
    (≥1024px) needs the indent mirrored to the right edge. */
 @media (min-width: 1024px) {
   .productPresentation--imageLeft .productPresentation__left {
-    padding-left: 0;
-    padding-right: calc(var(--col-gutter) + var(--col-width));
+    padding-right: 0;
+    padding-left: calc(var(--col-gutter) + var(--col-width));
   }
 }

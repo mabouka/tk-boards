@@ -57,6 +57,14 @@
   --w-cols: calc(var(--span, 1) * (var(--col-width) + var(--col-gutter)) - var(--col-gutter));
 }
 
+/* Tighter side padding on smaller screens (the 48px gutter is desktop-sized). */
+@media (max-width: 1023px) {
+  :root { --gutter: 24px; }
+}
+@media (max-width: 639px) {
+  :root { --gutter: 16px; }
+}
+
 /* ─── Reset ─────────────────────────────────────────────── */
 
 *, *::before, *::after {
@@ -182,10 +190,11 @@ main {
   line-height: var(--title-lh, 1);
 }
 
-.u-title--96 { --title-size: 96px; --title-lh: 0.9; }
-.u-title--66 { --title-size: 66px; --title-lh: 0.9; }
-.u-title--48 { --title-size: 48px; }
-.u-title--36 { --title-size: 36px; }
+/* Hero/title sizes scale fluidly so big titles never overflow on small screens. */
+.u-title--96 { --title-size: clamp(40px, 11vw, 96px); --title-lh: 0.9; }
+.u-title--66 { --title-size: clamp(34px, 8vw, 66px); --title-lh: 0.9; }
+.u-title--48 { --title-size: clamp(30px, 6vw, 48px); }
+.u-title--36 { --title-size: clamp(26px, 4.5vw, 36px); }
 .u-title--24 { --title-size: 24px; }
 
 /* ─── Body text utilities ───────────────────────────────── */

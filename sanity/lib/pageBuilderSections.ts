@@ -23,4 +23,7 @@ export const pageBuilderSections = [
   { type: 'sectionSpecs' },
   { type: 'sectionWorkshop' },
   { type: 'sectionCenteredText' },
+  { type: 'sectionBigScrollText' },
+  { type: 'sectionScrollImage' },
+  { type: 'sectionTextYoutube' },
 ] as const

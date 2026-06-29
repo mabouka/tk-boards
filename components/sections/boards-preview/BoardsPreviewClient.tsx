@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
 import { haloProps } from '@/components/ui/halo/haloProps'
+import BoardCard from './BoardCard'
 import styles from './BoardsPreview.module.css'
 
 type Board = {
@@ -79,32 +79,17 @@ export default function BoardsPreviewClient({ series, title, discoverCta, viewBo
           {...haloProps({ rgb: '215, 215, 255', opacity: 0.39, w: '74vw', h: '71vh', spread: '13%' })}
         >
           {boards.map(board => (
-            <Link
+            <BoardCard
               key={board._id}
               href={`/boards/${board.slug.current}`}
-              className={styles.boards__card}
-              aria-label={`${board.name}${board.style ? ` — ${board.style}` : ''}`}
-            >
-              {board.imageUrl && (
-                <Image
-                  src={board.imageUrl}
-                  alt={board.name}
-                  fill
-                  quality={85}
-                  className={styles.boards__card_img}
-                  sizes="390px"
-                />
-              )}
-              <div className={styles.boards__card_overlay} aria-hidden="true" />
-              <span className={styles.boards__card_name}>{board.name}</span>
-              <div className={styles.boards__card_meta}>
-                <span className={`${styles.boards__card_tag} u-tag--${board.seriesTagVariant ?? 'dark'}`}>{board.seriesName}</span>
-                {board.style && (
-                  <span className={`${styles.boards__card_tag} u-tag--cream`}>{board.style}</span>
-                )}
-              </div>
-              <span className={styles.boards__card_cta}>{viewBoardLabel}</span>
-            </Link>
+              name={board.name}
+              imageUrl={board.imageUrl}
+              seriesName={board.seriesName}
+              tagVariant={board.seriesTagVariant}
+              style={board.style}
+              viewBoardLabel={viewBoardLabel}
+              sizes="390px"
+            />
           ))}
         </div>
       </div>

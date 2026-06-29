@@ -3,7 +3,7 @@
   composes: u-grid from global;
   align-items: center;
   background: var(--color-cream);
-  padding-block: var(--space-3xl);
+  padding-block: var(--space-4xl);
   position: relative;
 }
 
@@ -11,7 +11,7 @@
 .textGallery--dark {
   background: transparent;
   padding-block: 0;
-  margin: var(--space-3xl) 0; 
+  margin: var(--space-4xl) 0; 
 
 }
 

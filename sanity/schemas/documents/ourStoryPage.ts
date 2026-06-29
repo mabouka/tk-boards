@@ -1,50 +1,69 @@
-import { defineArrayMember, defineField, defineType } from 'sanity'
+import { defineField, defineType } from 'sanity'
 import { pageSlugField } from '../../lib/pageSlug'
 import { withLanguage } from '../../lib/languagePreview'
 import { seoFields } from '../../lib/seoFields'
+import { pageBuilderSections } from '../../lib/pageBuilderSections'
 
 export const ourStoryPage = defineType({
   name: 'ourStoryPage',
   title: 'Our Story page',
   type: 'document',
+  groups: [
+    { name: 'basic', title: 'Basic', default: true },
+    { name: 'hero', title: 'Hero' },
+    { name: 'content', title: 'Content' },
+    { name: 'seo', title: 'SEO' },
+  ],
   fields: [
-    defineField({ name: 'title', title: 'Title', type: 'string', validation: (r) => r.required() }),
-    pageSlugField(),
-    defineField({ name: 'intro', title: 'Intro', type: 'text', rows: 4 }),
+    // ── Basic ───────────────────────────────────────
     defineField({
-      name: 'blocks',
-      title: 'Story blocks',
-      type: 'array',
-      of: [
-        defineArrayMember({
-          type: 'object',
-          name: 'storyBlock',
-          fields: [
-            defineField({ name: 'heading', title: 'Heading', type: 'string' }),
-            defineField({ name: 'body', title: 'Body', type: 'text', rows: 4 }),
-            defineField({ name: 'image', title: 'Image', type: 'image', options: { hotspot: true } }),
-          ],
-          preview: { select: { title: 'heading', media: 'image' } },
-        }),
-      ],
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (r) => r.required(),
+      group: 'basic',
+    }),
+    pageSlugField('basic'),
+
+    // ── Hero (same hero as the board pages) ─────────
+    defineField({
+      name: 'heroTitle',
+      title: 'Hero Title',
+      type: 'string',
+      description: 'Overrides the page title in the hero. Leave empty to use the title.',
+      group: 'hero',
     }),
     defineField({
-      name: 'keyFigures',
-      title: 'Key figures',
-      type: 'array',
-      of: [
-        defineArrayMember({
-          type: 'object',
-          name: 'figure',
-          fields: [
-            defineField({ name: 'value', title: 'Value', type: 'string', validation: (r) => r.required() }),
-            defineField({ name: 'label', title: 'Label', type: 'string', validation: (r) => r.required() }),
-          ],
-          preview: { select: { title: 'value', subtitle: 'label' } },
-        }),
+      name: 'heroTagline',
+      title: 'Hero Tagline',
+      type: 'string',
+      description: 'Short subtitle shown below the hero title.',
+      group: 'hero',
+    }),
+    defineField({
+      name: 'heroImage',
+      title: 'Hero Background Image',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Full-screen background image (action shot, lifestyle…), same hero as the board pages.',
+      group: 'hero',
+      fields: [
+        defineField({ name: 'alt', title: 'Alt Text', type: 'string' }),
       ],
     }),
-    ...seoFields,
+
+    // ── Content ─────────────────────────────────────
+    defineField({
+      name: 'sections',
+      title: 'Sections',
+      type: 'array',
+      of: [...pageBuilderSections],
+      description: 'Page-builder sections rendered after the hero (e.g. Big Scroll Text).',
+      group: 'content',
+    }),
+
+    // ── SEO ─────────────────────────────────────────
+    ...seoFields.map((f) => ({ ...f, group: 'seo' })),
     defineField({ name: 'language', type: 'string', readOnly: true, hidden: true, validation: (r) => r.required() }),
   ],
   preview: withLanguage({ select: { title: 'title', subtitle: 'slug.current' } }),

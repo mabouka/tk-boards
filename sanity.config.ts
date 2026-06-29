@@ -30,14 +30,18 @@ export const TRANSLATABLE_TYPES = [
   'whereToBuyPage',
   'ourStoryPage',
   'tkIdPage',
+  'boardsPageSettings',
+  'accessoriesPageSettings',
 ]
 
 // Singletons: exactly one document, edited from a fixed structure pane.
-export const SINGLETON_TYPES = ['seoSettings', 'contactSettings', 'footerSettings', 'authPage', 'boardsPageSettings', 'accessoriesPageSettings', 'accountPageSettings']
+export const SINGLETON_TYPES = ['seoSettings', 'contactSettings', 'footerSettings', 'authPage', 'accountPageSettings']
 
 // Bespoke i18n singletons that live under Pages → <language>, in display order.
 const BESPOKE_PAGES: ReadonlyArray<readonly [type: string, title: string]> = [
   ['homePage', 'Home'],
+  ['boardsPageSettings', 'Boards'],
+  ['accessoriesPageSettings', 'Accessories'],
   ['ourStoryPage', 'Our Story'],
   ['contactPage', 'Contact'],
   ['faqPage', 'FAQ'],
@@ -96,16 +100,6 @@ const structure = (S: StructureBuilder) =>
                 .title('Series')
                 .icon(TagIcon)
                 .child(S.documentTypeList('series').title('Series')),
-              S.divider(),
-              S.listItem()
-                .title('Page Settings')
-                .icon(CogIcon)
-                .child(
-                  S.document()
-                    .schemaType('boardsPageSettings')
-                    .documentId('boardsPageSettings')
-                    .title('Boards Page Settings')
-                ),
             ])
         ),
       S.divider(),
@@ -134,16 +128,6 @@ const structure = (S: StructureBuilder) =>
                 .title('Categories')
                 .icon(TagsIcon)
                 .child(S.documentTypeList('accessoryCategory').title('Categories')),
-              S.divider(),
-              S.listItem()
-                .title('Page Settings')
-                .icon(CogIcon)
-                .child(
-                  S.document()
-                    .schemaType('accessoriesPageSettings')
-                    .documentId('accessoriesPageSettings')
-                    .title('Accessories Page Settings')
-                ),
             ])
         ),
       S.divider(),

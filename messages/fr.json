@@ -41,6 +41,7 @@
   },
   "boards": {
     "title": "Boards",
+    "view_board": "Voir la board",
     "specs": "Caractéristiques",
     "weight": "Poids",
     "order": "Commander cette board",
@@ -183,5 +184,9 @@
     "included": "Inclus",
     "checkout": "Commander",
     "note": "Frais de livraison, taxes applicables et codes promo seront calculés au paiement."
+  },
+  "accessories": {
+    "title": "Accessoires",
+    "all": "Tout"
   }
 }

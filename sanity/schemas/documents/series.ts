@@ -8,8 +8,15 @@ export const series = defineType({
     defineField({
       name: 'name',
       title: 'Name',
+      description: 'Short label used on board tags (e.g. "Carbon").',
       type: 'internationalizedArrayString',
       validation: (r) => r.required(),
+    }),
+    defineField({
+      name: 'title',
+      title: 'Section Title',
+      description: 'Heading shown above this series on the Boards page. Falls back to Name.',
+      type: 'internationalizedArrayString',
     }),
     defineField({
       name: 'slug',
@@ -34,6 +41,13 @@ export const series = defineType({
         layout: 'radio',
       },
       initialValue: 'dark',
+    }),
+    defineField({
+      name: 'description',
+      title: 'Description',
+      type: 'internationalizedArrayText',
+      description:
+        'Short intro shown under the series title on the Boards page (when boards are grouped by series).',
     }),
     defineField({
       name: 'order',

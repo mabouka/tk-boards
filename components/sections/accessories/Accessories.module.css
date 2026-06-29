@@ -1,0 +1,54 @@
+.accessories {
+  padding: clamp(130px, 18vw, 220px) 0 var(--space-4xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Page hero ── */
+.accessories__header {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.accessories__title {
+  composes: u-title u-title--96 from global;
+  color: var(--color-white);
+}
+
+/* ── Category filters ── */
+.accessories__filters {
+  composes: u-tab-filters from global;
+  margin-bottom: var(--space-2xl);
+}
+
+.filter {
+  composes: u-tab-filter from global;
+}
+
+.filter--active {
+  composes: u-tab-filter--active from global;
+}
+
+/* ── Grid ── */
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--gutter);
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--col-gutter);
+}
+
+@media (max-width: 1023px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

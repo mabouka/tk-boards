@@ -28,6 +28,7 @@ const SECTIONS_PROJECTION = `sections[] {
       _type,
       _key,
       title,
+      text,
       showFilters,
       filterBySeries,
       items,
@@ -35,6 +36,7 @@ const SECTIONS_PROJECTION = `sections[] {
       label,
       body,
       image,
+      poster,
       gallery,
       mediaType,
       size,
@@ -45,6 +47,8 @@ const SECTIONS_PROJECTION = `sections[] {
       videoWidth,
       videoHeight,
       controls,
+      youtubeUrl,
+      videoPosition,
       imagePosition,
       layout,
       theme,
@@ -87,6 +91,15 @@ const SECTIONS_PROJECTION = `sections[] {
         "cta": cta {
           ${CTA_FIELDS}
         }
+      },
+      "scrollImages": items[]{
+        _key,
+        image,
+        "aspectRatio": image.asset->metadata.dimensions.aspectRatio,
+        startColumn,
+        widthColumns,
+        offsetY,
+        speed
       }
     }`
 
@@ -95,7 +108,7 @@ export const boardsQuery = defineQuery(`
     _id,
     name,
     slug,
-    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug },
+    series->{ _id, "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value), slug, tagVariant },
     style,
     weight,
     mainImage
@@ -171,12 +184,22 @@ export const accessoryBySlugQuery = defineQuery(`
 `)
 
 export const seriesQuery = defineQuery(`
-  *[_type == "series" && !(_id in path("drafts.**"))] | order(_createdAt asc) {
+  *[_type == "series" && !(_id in path("drafts.**"))] | order(order asc, _createdAt asc) {
     _id,
     "name": coalesce(
       name[language == $locale][0].value,
       name[language == "en"][0].value,
       name[0].value
+    ),
+    "title": coalesce(
+      title[language == $locale][0].value,
+      title[language == "en"][0].value,
+      title[0].value
+    ),
+    "description": coalesce(
+      description[language == $locale][0].value,
+      description[language == "en"][0].value,
+      description[0].value
     ),
     slug,
     tagVariant,
@@ -225,17 +248,56 @@ export const authPageQuery = defineQuery(`
 `)
 
 export const boardsPageSettingsQuery = defineQuery(`
-  *[_type == "boardsPageSettings" && _id == "boardsPageSettings"][0] {
-    "seoTitle": coalesce(
-      seoTitle[language == $locale][0].value,
-      seoTitle[language == "en"][0].value,
-      seoTitle[0].value
+  coalesce(
+    *[_type == "boardsPageSettings" && language == $locale && !(_id in path("drafts.**"))][0],
+    *[_type == "boardsPageSettings" && language == "en" && !(_id in path("drafts.**"))][0]
+  ) {
+    groupBySeries,
+    "marquee": marquee.items[]{ _key, text, accent },
+    ${SECTIONS_PROJECTION},
+    title,
+    seoTitle,
+    seoDescription,
+    ogImage
+  }
+`)
+
+export const accessoryCategoriesQuery = defineQuery(`
+  *[_type == "accessoryCategory" && !(_id in path("drafts.**"))] | order(order asc, _createdAt asc) {
+    "id": _id,
+    "name": coalesce(
+      name[language == $locale][0].value,
+      name[language == "en"][0].value,
+      name[0].value
     ),
-    "seoDescription": coalesce(
-      seoDescription[language == $locale][0].value,
-      seoDescription[language == "en"][0].value,
-      seoDescription[0].value
-    ),
+    "slug": slug.current
+  }
+`)
+
+export const accessoriesQuery = defineQuery(`
+  *[_type == "accessory" && language == $locale && !(_id in path("drafts.**"))] | order(order asc) {
+    _id,
+    title,
+    slug,
+    "category": category->{
+      "id": _id,
+      "name": coalesce(name[language == $locale][0].value, name[language == "en"][0].value, name[0].value),
+      "slug": slug.current
+    },
+    mainImage
+  }
+`)
+
+export const accessoriesPageSettingsQuery = defineQuery(`
+  coalesce(
+    *[_type == "accessoriesPageSettings" && language == $locale && !(_id in path("drafts.**"))][0],
+    *[_type == "accessoriesPageSettings" && language == "en" && !(_id in path("drafts.**"))][0]
+  ) {
+    title,
+    showFilters,
+    ${SECTIONS_PROJECTION},
+    seoTitle,
+    seoDescription,
     ogImage
   }
 `)
@@ -324,6 +386,16 @@ export const faqPageQuery = defineQuery(`
       "lang": value->language,
       "slug": value->slug.current
     }
+  }
+`)
+
+export const ourStoryPageQuery = defineQuery(`
+  *[_type == "ourStoryPage" && slug.current == $slug && language == $locale && !(_id in path("drafts.**"))][0] {
+    title,
+    heroTitle,
+    heroTagline,
+    heroImage,
+    ${SECTIONS_PROJECTION}
   }
 `)
 
