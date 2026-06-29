@@ -46,6 +46,9 @@ export default function SectionMarquee({ items }: Props) {
       // Respect reduced-motion: leave it static.
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {
+        // GSAP can throw a cross-origin SecurityError when the page hosts a
+        // cross-origin iframe (e.g. a YouTube embed). Skip rather than crash.
+        try {
         // Base loop: the track is duplicated, so -50% = one set → seamless.
         const loop = gsap.to(track, { xPercent: -50, repeat: -1, ease: 'none', duration: 30 })
         // Keep it looping when played BACKWARD (negative timeScale) instead of
@@ -80,6 +83,9 @@ export default function SectionMarquee({ items }: Props) {
           ScrollTrigger.removeEventListener('scrollEnd', onScrollEnd)
           st.kill()
           loop.kill()
+        }
+        } catch (e) {
+          console.warn('[Marquee] animation skipped:', e)
         }
       })
     },
