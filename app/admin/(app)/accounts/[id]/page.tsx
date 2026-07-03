@@ -26,7 +26,7 @@ const UNIT_STATUS: Record<string, string> = {
   minted: 'À assigner',
   provisioned: 'Prête',
   registered: 'Enregistrée',
-  stolen: 'Volée',
+  stolen: 'Perdue / volée',
   transferred: 'Transférée',
 }
 

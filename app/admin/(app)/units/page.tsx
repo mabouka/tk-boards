@@ -16,7 +16,7 @@ export default async function UnitsPage() {
     { label: 'À assigner', value: count('minted') },
     { label: 'Prêtes', value: count('provisioned') },
     { label: 'Enregistrées', value: count('registered') },
-    { label: 'Volées', value: count('stolen') },
+    { label: 'Perdues / volées', value: count('stolen') },
   ]
 
   return (

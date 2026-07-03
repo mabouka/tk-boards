@@ -41,7 +41,7 @@ const STATUS: Record<string, { label: string; variant: BadgeVariant }> = {
   minted: { label: 'À assigner', variant: 'secondary' },
   provisioned: { label: 'Prête', variant: 'default' },
   registered: { label: 'Enregistrée', variant: 'outline' },
-  stolen: { label: 'Volée', variant: 'destructive' },
+  stolen: { label: 'Perdue / volée', variant: 'destructive' },
   transferred: { label: 'Transférée', variant: 'outline' },
 }
 
@@ -129,7 +129,7 @@ export function UnitsTable({
             <SelectItem value="minted">À assigner</SelectItem>
             <SelectItem value="provisioned">Prêtes</SelectItem>
             <SelectItem value="registered">Enregistrées</SelectItem>
-            <SelectItem value="stolen">Volées</SelectItem>
+            <SelectItem value="stolen">Perdues / volées</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -4,8 +4,8 @@ export default function TheftPage() {
   return (
     <ClaimsQueue
       type="theft"
-      title="Vol"
-      subtitle="Boards déclarées volées — suivi et traitement."
+      title="Perte / vol"
+      subtitle="Boards déclarées perdues / volées — suivi et traitement."
     />
   )
 }

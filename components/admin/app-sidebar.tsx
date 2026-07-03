@@ -33,7 +33,7 @@ const NAV: NavGroup[] = [
     items: [
       { title: 'Comptes', href: '/admin/accounts', icon: Users },
       { title: 'Réclamations', href: '/admin/claims', icon: FileText },
-      { title: 'Vol', href: '/admin/theft', icon: ShieldAlert },
+      { title: 'Perte / vol', href: '/admin/theft', icon: ShieldAlert },
     ],
   },
 ]
