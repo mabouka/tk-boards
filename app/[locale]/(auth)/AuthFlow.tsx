@@ -89,6 +89,7 @@ export default function AuthFlow({
           <div className={styles.social}>
             <form action={signInWithGoogle}>
               <input type="hidden" name="locale" value={locale} />
+              {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
               <button className={`u-cta u-cta--white-outline ${styles.btnRow}`} type="submit">
                 <GoogleIcon />
                 {t('continue_google')}
@@ -96,6 +97,7 @@ export default function AuthFlow({
             </form>
             <form action={signInWithFacebook}>
               <input type="hidden" name="locale" value={locale} />
+              {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
               <button className={`u-cta u-cta--white-outline ${styles.btnRow}`} type="submit">
                 <FacebookIcon />
                 {t('continue_facebook')}
@@ -160,6 +162,7 @@ export default function AuthFlow({
             {showGoogle && (
               <form action={signInWithGoogle}>
                 <input type="hidden" name="locale" value={locale} />
+                {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
                 <button className={`u-cta u-cta--white-outline ${styles.btnRow}`} type="submit">
                   <GoogleIcon />
                   {t('continue_google')}
@@ -169,6 +172,7 @@ export default function AuthFlow({
             {showFacebook && (
               <form action={signInWithFacebook}>
                 <input type="hidden" name="locale" value={locale} />
+                {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
                 <button className={`u-cta u-cta--white-outline ${styles.btnRow}`} type="submit">
                   <FacebookIcon />
                   {t('continue_facebook')}

@@ -21,6 +21,7 @@
   --color-muted: #9a9a9a;
   --color-carbon: #3a3a3e;
   --color-red: #8b1a1a;
+  --color-danger: #dc5050; /* functional red for destructive actions/alerts (readable on --color-dark) */
   --color-paulownia: #E2C9A2;
 
   --color-white-72: rgba(255, 255, 255, 0.72);
@@ -276,6 +277,14 @@ main {
 /* blanc creux */
 .u-cta--white-outline { background: transparent; border-color: var(--color-white); color: var(--color-white); }
 .u-cta--white-outline:hover { background: var(--color-white); color: var(--color-black); }
+
+/* rouge plein — action destructive prominente */
+.u-cta--red-fill { background: var(--color-danger); border-color: var(--color-danger); color: var(--color-white); }
+.u-cta--red-fill:hover { background: transparent; color: var(--color-danger); }
+
+/* rouge creux — action destructive secondaire (déclarer volée, etc.) */
+.u-cta--red-outline { background: transparent; border-color: var(--color-danger); color: var(--color-danger); }
+.u-cta--red-outline:hover { background: var(--color-danger); color: var(--color-white); }
 
 /* ─── Tab filter utilities ──────────────────────────────── */
 

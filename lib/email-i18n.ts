@@ -15,6 +15,15 @@ type EmailStrings = {
   resetBody: string
   resetBody2: string
   resetCta: string
+  foundSubject: string
+  foundPreheader: string
+  foundHeading: string
+  foundBody: string
+  foundMessageLabel: string
+  foundReplyLabel: string
+  foundPhoneLabel: string
+  foundCta: string
+  foundSerialLabel: string
   fallback: string
   footer: string
   footer2: string
@@ -35,6 +44,15 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     resetBody2:
       "Ce lien expire dans 1 heure. Si tu n'es pas à l'origine de cette demande, ignore cet email.",
     resetCta: 'Choisir un nouveau mot de passe',
+    foundSubject: "Quelqu'un a retrouvé ta planche — TK Boards",
+    foundPreheader: "Un message t'attend via ton TK ID.",
+    foundHeading: "Quelqu'un a retrouvé ta planche",
+    foundBody: "Quelqu'un a scanné le tag TK ID de ta planche et t'a laissé un message",
+    foundMessageLabel: 'Message',
+    foundReplyLabel: 'Répondre à',
+    foundPhoneLabel: 'Téléphone',
+    foundCta: 'Voir ma planche',
+    foundSerialLabel: 'Série',
     fallback: 'Le bouton ne marche pas ? Copie ce lien :',
     footer: 'Tu reçois cet email suite à une action sur ton compte TK ID.',
     footer2: "Si ce n'était pas toi, ignore-le simplement.",
@@ -53,6 +71,15 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     resetBody2:
       "This link expires in 1 hour. If you didn't request it, just ignore this email.",
     resetCta: 'Choose a new password',
+    foundSubject: 'Someone found your board — TK Boards',
+    foundPreheader: 'A message is waiting via your TK ID.',
+    foundHeading: 'Someone found your board',
+    foundBody: "Someone scanned your board's TK ID tag and left you a message",
+    foundMessageLabel: 'Message',
+    foundReplyLabel: 'Reply to',
+    foundPhoneLabel: 'Phone',
+    foundCta: 'View my board',
+    foundSerialLabel: 'Serial',
     fallback: 'Button not working? Copy this link:',
     footer: "You're receiving this email following an action on your TK ID account.",
     footer2: "If this wasn't you, just ignore it.",
@@ -70,6 +97,15 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     resetBody: 'Solicitaste restablecer tu contraseña.',
     resetBody2: 'Este enlace caduca en 1 hora. Si no fuiste tú, ignora este correo.',
     resetCta: 'Elegir una nueva contraseña',
+    foundSubject: 'Alguien encontró tu tabla — TK Boards',
+    foundPreheader: 'Tienes un mensaje a través de tu TK ID.',
+    foundHeading: 'Alguien encontró tu tabla',
+    foundBody: 'Alguien escaneó la etiqueta TK ID de tu tabla y te dejó un mensaje',
+    foundMessageLabel: 'Mensaje',
+    foundReplyLabel: 'Responder a',
+    foundPhoneLabel: 'Teléfono',
+    foundCta: 'Ver mi tabla',
+    foundSerialLabel: 'Serie',
     fallback: '¿El botón no funciona? Copia este enlace:',
     footer: 'Recibes este correo tras una acción en tu cuenta TK ID.',
     footer2: 'Si no fuiste tú, ignóralo.',

@@ -5,6 +5,7 @@ import { Resend } from 'resend'
 import VerifyEmail from '@/emails/verify-email'
 import ResetPasswordEmail from '@/emails/reset-password'
 import ContactEmail from '@/emails/contact-email'
+import FoundBoardEmail from '@/emails/found-board'
 import { emailT } from '@/lib/email-i18n'
 
 const FROM = process.env.EMAIL_FROM || 'TK Boards <onboarding@resend.dev>'
@@ -87,6 +88,45 @@ export async function sendContactEmail(data: {
     text,
     replyTo: data.email,
     devNote: `contact from ${data.email}: ${data.message.slice(0, 80)}`,
+  })
+}
+
+// A finder used the public "contact the owner" form on a registered board. The
+// message reaches the owner; replyTo lets them answer without ever exposing
+// their own address to the finder.
+export async function sendFoundBoardEmail(opts: {
+  to: string
+  locale: string
+  boardName: string | null
+  serial: string | null
+  photoUrl: string | null
+  attributes: { name: string; value: string; swatchHex: string | null }[]
+  token: string
+  message: string
+  finderEmail: string
+  finderPhone?: string
+}) {
+  const url = `${BASE}/${opts.locale}/tk-id/${opts.token}`
+  const { html, text } = await renderBoth(
+    createElement(FoundBoardEmail, {
+      locale: opts.locale,
+      boardName: opts.boardName,
+      serial: opts.serial,
+      photoUrl: opts.photoUrl,
+      attributes: opts.attributes,
+      message: opts.message,
+      finderEmail: opts.finderEmail,
+      finderPhone: opts.finderPhone,
+      url,
+    })
+  )
+  await send({
+    to: opts.to,
+    subject: emailT(opts.locale).foundSubject,
+    html,
+    text,
+    replyTo: opts.finderEmail,
+    devNote: `found-board → ${opts.to} (reply ${opts.finderEmail})`,
   })
 }
 
