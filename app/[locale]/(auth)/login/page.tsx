@@ -34,11 +34,16 @@ export default async function LoginPage({ params, searchParams }: Props) {
   const { locale } = await params
 
   const session = await auth()
-  if (session?.user?.id) redirect(`/${locale}/account`)
-
   const sp = searchParams ? await searchParams : {}
-  const flash = sp.verified === '1' ? 'verified' : sp.reset === '1' ? 'reset' : undefined
   const callbackUrl = typeof sp.callbackUrl === 'string' ? sp.callbackUrl : undefined
+
+  // Already logged in → honour a safe relative callback (e.g. back to a TK-ID
+  // registration), otherwise the account page.
+  if (session?.user?.id) {
+    redirect(callbackUrl && /^\/(?![/\\])/.test(callbackUrl) ? callbackUrl : `/${locale}/account`)
+  }
+
+  const flash = sp.verified === '1' ? 'verified' : sp.reset === '1' ? 'reset' : undefined
 
   return <AuthFlow flash={flash} callbackUrl={callbackUrl} />
 }

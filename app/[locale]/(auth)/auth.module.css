@@ -1,8 +1,6 @@
 /* ── Split layout ── */
 .split {
   position: relative;
-  z-index: 1;
-  min-height: 100dvh;
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
@@ -15,7 +13,7 @@
   width: 50vw;
   height: 100%;
   background-image:
-    linear-gradient(to bottom, rgba(13, 15, 20, 0.35), rgba(13, 15, 20, 0.8)),
+    linear-gradient(to bottom, rgba(13, 15, 20, 0) 55%, rgba(13, 15, 20, 0.9) 100%),
     url('/auth-hero.jpg');
   background-size: cover;
   background-position: center;
@@ -29,9 +27,7 @@
   right: 0;
   width: 50vw;
   height: 100%;
-  background: rgba(13, 15, 20, 0.72);
   border-left: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(2px);
 }
 
 /* ── Brand panel (left) ── */
@@ -131,10 +127,7 @@
 }
 
 .subtitle {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--color-white-72);
+  color: var(--color-white);
 }
 
 /* steps */
@@ -161,15 +154,14 @@
   background: transparent;
   border: none;
   color: var(--color-white-72);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 0.04em;
+
   cursor: pointer;
   padding: 0;
   text-decoration: none;
 }
 
 .changeEmail:hover {
+  text-decoration: underline;
   color: var(--color-white);
 }
 
@@ -205,10 +197,6 @@
 }
 
 .formLabel {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  color: var(--color-white-72);
 }
 
 .inputWrap {
@@ -348,15 +336,16 @@
 }
 
 .legal {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
-  color: var(--color-white-50);
+  color: var(--color-white-72);
 }
 
 .legal a {
   color: var(--color-white-72);
+  font-weight: 500;
   text-underline-offset: 3px;
+
 }
 
 .legal a:hover {

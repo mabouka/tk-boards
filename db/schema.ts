@@ -254,6 +254,10 @@ export const units = pgTable(
     variantId: text('variant_id').references(() => variants.id, { onDelete: 'set null' }),
     serial: text('serial'),
     status: text('status').notNull().default('minted'), // minted|provisioned|registered|stolen|transferred
+    // Owner-provided lost/stolen report, shown on the public TK-ID page; cleared on recovery.
+    lostNote: text('lost_note'),
+    lostEmail: text('lost_email'),
+    lostPhone: text('lost_phone'),
     createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date' })
       .notNull()

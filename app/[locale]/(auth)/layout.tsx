@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import LogoTK from '@/components/ui/icons/LogoTK'
+import { haloProps } from '@/components/ui/halo/haloProps'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { authPageQuery } from '@/sanity/lib/queries'
@@ -31,12 +32,23 @@ export default async function AuthLayout({ children, params }: Props) {
         style={
           bgUrl
             ? {
-                backgroundImage: `linear-gradient(to bottom, rgba(13, 15, 20, 0.35), rgba(13, 15, 20, 0.8)), url(${bgUrl})`,
-              }
+              backgroundImage: `linear-gradient(to bottom, rgba(13, 15, 20, 0.0) 55%, rgba(13, 15, 20, 0.9) 100%), url(${bgUrl})`,
+            }
             : undefined
         }
       />
-      <div className={styles.surface} aria-hidden />
+      <div
+        className={styles.surface}
+        aria-hidden
+        {...haloProps({
+          rgb: '225, 255, 255',
+          opacity: 0.26,
+          w: '67vw',
+          h: '64vh',
+          spread: '1%',
+          anchor: 'bottom-right',
+        })}
+      />
 
       <aside className={styles.brand}>
         <Link href={`/${locale}`} className={styles.logo} aria-label="TK Boards">
@@ -51,7 +63,19 @@ export default async function AuthLayout({ children, params }: Props) {
         </div>
       </aside>
 
-      <div className={styles.formPanel}>{children}</div>
+      <div
+        className={styles.formPanel}
+        {...haloProps({
+          rgb: '225, 255, 255',
+          opacity: 0.26,
+          w: '67vw',
+          h: '64vh',
+          spread: '1%',
+          anchor: 'top-left',
+        })}
+      >
+        {children}
+      </div>
     </div>
   )
 }

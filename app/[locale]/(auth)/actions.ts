@@ -162,12 +162,14 @@ export async function resetPassword(_prev: AuthState, formData: FormData): Promi
 
 export async function signInWithGoogle(formData: FormData) {
   const locale = safeLocale(formData.get('locale'))
-  await signIn('google', { redirectTo: `/${locale}/account` })
+  const callbackUrl = safeCallback(formData.get('callbackUrl'), `/${locale}/account`)
+  await signIn('google', { redirectTo: callbackUrl })
 }
 
 export async function signInWithFacebook(formData: FormData) {
   const locale = safeLocale(formData.get('locale'))
-  await signIn('facebook', { redirectTo: `/${locale}/account` })
+  const callbackUrl = safeCallback(formData.get('callbackUrl'), `/${locale}/account`)
+  await signIn('facebook', { redirectTo: callbackUrl })
 }
 
 // ── Email verification (confirmed via POST → scanner-safe) ──────
