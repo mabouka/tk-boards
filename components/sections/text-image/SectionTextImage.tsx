@@ -3,6 +3,7 @@ import { PortableText } from 'next-sanity'
 import { urlFor } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue, Cta } from '@/sanity/lib/types'
 import { haloProps } from '@/components/ui/halo/haloProps'
+import SectionCtas from '@/components/sections/_shared/SectionCtas'
 import styles from './SectionTextImage.module.css'
 
 // Natural W×H encoded in the Sanity asset ref: image-<id>-<w>x<h>-<ext>
@@ -48,10 +49,6 @@ export default function SectionTextImage({
     .filter(Boolean)
     .join(' ')
 
-  // First CTA is the primary (filled), the rest are outlined.
-  const ctaFill = isDark ? 'u-cta--white-fill' : 'u-cta--black-fill'
-  const ctaOutline = isDark ? 'u-cta--white-outline' : 'u-cta--black-outline'
-
   return (
     <section
       className={classList}
@@ -85,24 +82,7 @@ export default function SectionTextImage({
             <PortableText value={body} />
           </div>
         )}
-        {ctas && ctas.length > 0 && (
-          <div className={styles.textImage__ctas}>
-            {ctas.map((cta, i) =>
-              cta.href && cta.text ? (
-                <a
-                  key={cta._key ?? i}
-                  href={cta.href}
-                  className={`u-cta ${i === 0 ? ctaFill : ctaOutline}`}
-                  {...(cta.openInNewTab
-                    ? { target: '_blank', rel: 'noopener noreferrer' }
-                    : {})}
-                >
-                  {cta.text}
-                </a>
-              ) : null
-            )}
-          </div>
-        )}
+        <SectionCtas ctas={ctas} theme={theme} />
       </div>
     </section>
   )

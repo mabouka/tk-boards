@@ -73,6 +73,9 @@ export default function SectionOutline({
 
       const mm = gsap.matchMedia()
       mm.add('(min-width: 769px) and (prefers-reduced-motion: no-preference)', () => {
+        // GSAP can throw a cross-origin SecurityError when the page hosts a
+        // cross-origin iframe (e.g. a YouTube embed). Skip rather than crash.
+        try {
         const outlines = gsap.utils.toArray<HTMLElement>(`.${styles.outline}`, root)
         const rows = gsap.utils.toArray<HTMLElement>(`.${styles.row}`, root)
         const dots = rows.map((r) => r.querySelector(`.${styles.dot}`))
@@ -118,6 +121,9 @@ export default function SectionOutline({
           tl.to(photo, { opacity: 1, duration: 0.25 })
           tl.to(outlines, { opacity: 0, duration: 0.22 }, '<0.04')
           if (label) tl.to(label, { opacity: 1, duration: 0.2 }, '<0.1')
+        }
+        } catch (e) {
+          console.warn('[Outline] animation skipped:', e)
         }
       })
 

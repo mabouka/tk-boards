@@ -122,13 +122,7 @@
   color: var(--color-white-80);
 }
 
-/* ── CTAs ── */
-.textYoutube__ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-  margin-top: var(--space-md);
-}
+/* CTAs live in the shared <SectionCtas> component. */
 
 /* ── Desktop: 12-col grid (video 7 / gap / text 4) ── */
 @media (min-width: 1024px) {
