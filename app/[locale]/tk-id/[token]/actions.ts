@@ -135,8 +135,9 @@ export async function contactOwner(_prev: ContactState, formData: FormData): Pro
     .where(eq(units.token, token))
     .limit(1)
 
-  // Only a registered (not-yet-lost) board with a reachable owner.
-  if (!row?.ownerEmail || row.status !== 'registered') return { error: 'unavailable' }
+  // Any board with a reachable owner — registered or already reported lost/stolen
+  // (tel/mail on the lost page are optional, so this stays the reliable channel).
+  if (!row?.ownerEmail) return { error: 'unavailable' }
 
   // Board card for the email: photo (Sanity, by parent SKU) + variant axes
   // (color/size…), resolved in the owner's language.

@@ -214,7 +214,7 @@ export default async function TkIdPage({ params }: Props) {
             )}
           </div>
         )}
-        {isOwner && (
+        {isOwner ? (
           <div className={styles.actions}>
             <form action={markRecovered}>
               <input type="hidden" name="locale" value={locale} />
@@ -223,6 +223,11 @@ export default async function TkIdPage({ params }: Props) {
                 {t('mark_recovered')}
               </button>
             </form>
+          </div>
+        ) : (
+          // tel/mail are optional, so always keep a reliable way to reach the owner.
+          <div className={styles.actions}>
+            <ContactOwnerModal locale={locale} token={token} />
           </div>
         )}
       </Card>
