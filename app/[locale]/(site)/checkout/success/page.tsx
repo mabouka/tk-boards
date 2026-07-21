@@ -22,15 +22,24 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Prop
   const t = await getTranslations('checkout')
   if (!sessionId) redirect(`/${locale}`)
 
+  const eur = (cents: number) =>
+    new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(cents / 100)
   let email = ''
   let total = ''
+  let items: { name: string; qty: number; total: string }[] = []
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    const [session, li] = await Promise.all([
+      stripe.checkout.sessions.retrieve(sessionId),
+      stripe.checkout.sessions.listLineItems(sessionId, { limit: 100 }),
+    ])
     if (session.payment_status !== 'paid') redirect(`/${locale}`)
     email = session.customer_details?.email ?? ''
-    total = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(
-      (session.amount_total ?? 0) / 100
-    )
+    total = eur(session.amount_total ?? 0)
+    items = li.data.map((it) => ({
+      name: it.description ?? '',
+      qty: it.quantity ?? 1,
+      total: eur(it.amount_total ?? 0),
+    }))
   } catch {
     redirect(`/${locale}`)
   }
@@ -52,6 +61,14 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Prop
         <p className={styles.text}>{email ? t('success_text', { email }) : t('success_processing')}</p>
 
         <div className={styles.meta}>
+          {items.map((it, i) => (
+            <div key={i} className={styles.metaRow}>
+              <span className={styles.metaVal}>
+                {it.qty}× {it.name}
+              </span>
+              <span className={`${styles.metaVal} ${styles.mono}`}>{it.total}</span>
+            </div>
+          ))}
           {order?.number && (
             <div className={styles.metaRow}>
               <span className={styles.metaKey}>{t('order_label')}</span>
