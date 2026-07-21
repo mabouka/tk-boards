@@ -358,3 +358,81 @@ export const transfers = pgTable(
   },
   (t) => [uniqueIndex('transfer_token_uq').on(t.tokenHash), index('transfer_unit_idx').on(t.unitId)]
 )
+
+// ── Commerce: orders ──
+// One order per purchase. Money is numeric(10,2) EUR (matching variant.priceEur).
+// The shipping address and each line's product/price are FROZEN (snapshot) at
+// order time, so later edits to addresses/variants never rewrite a past order.
+// Web orders are created by the Stripe webhook (source of truth); admin can also
+// create cash/transfer orders for an existing account.
+export const orders = pgTable(
+  'order',
+  {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    number: text('number').notNull(), // human-readable, e.g. TK-2026-0001
+    // Account owner — resolved by email at checkout (guest included). Kept even if
+    // the account is later deleted, so orders survive for accounting/history.
+    userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+    email: text('email').notNull(), // buyer email (Stripe / admin)
+    status: text('status').notNull().default('pending_payment'),
+    // pending_payment | paid | preparing | shipped | delivered | cancelled | refunded
+    paymentMethod: text('payment_method').notNull(), // stripe | cash | transfer
+    paymentStatus: text('payment_status').notNull().default('pending'), // pending | paid | refunded
+    currency: text('currency').notNull().default('EUR'),
+    subtotalEur: numeric('subtotal_eur', { precision: 10, scale: 2 }).notNull(),
+    taxEur: numeric('tax_eur', { precision: 10, scale: 2 }).notNull().default('0'), // Stripe Tax
+    shippingEur: numeric('shipping_eur', { precision: 10, scale: 2 }).notNull().default('0'),
+    totalEur: numeric('total_eur', { precision: 10, scale: 2 }).notNull(),
+    // Shipping address — frozen snapshot
+    shipName: text('ship_name'),
+    shipLine1: text('ship_line1'),
+    shipLine2: text('ship_line2'),
+    shipPostalCode: text('ship_postal_code'),
+    shipCity: text('ship_city'),
+    shipCountry: text('ship_country'), // ISO 3166-1 alpha-2
+    shipPhone: text('ship_phone'),
+    // Fulfillment
+    carrier: text('carrier'),
+    trackingNumber: text('tracking_number'),
+    trackingUrl: text('tracking_url'),
+    // Stripe reconciliation
+    stripeSessionId: text('stripe_session_id'),
+    stripePaymentIntentId: text('stripe_payment_intent_id'),
+    createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+    paidAt: timestamp('paid_at', { mode: 'date' }),
+    shippedAt: timestamp('shipped_at', { mode: 'date' }),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (o) => [
+    uniqueIndex('order_number_uq').on(o.number),
+    // One order per Stripe session — makes the webhook idempotent. NULLs (admin
+    // cash/transfer orders) are distinct in Postgres, so those are unconstrained.
+    uniqueIndex('order_stripe_session_uq').on(o.stripeSessionId),
+    index('order_user_idx').on(o.userId),
+    index('order_status_idx').on(o.status),
+  ]
+)
+
+export const orderLines = pgTable(
+  'order_line',
+  {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    orderId: text('order_id')
+      .notNull()
+      .references(() => orders.id, { onDelete: 'cascade' }),
+    // Link to the variant for stock decrement / fulfillment; nullable so a later
+    // variant deletion never orphans the order line (the snapshots below stay).
+    variantId: text('variant_id').references(() => variants.id, { onDelete: 'set null' }),
+    productSku: text('product_sku').notNull(), // snapshot
+    variantSku: text('variant_sku'), // snapshot
+    productName: text('product_name').notNull(), // snapshot
+    variantLabel: text('variant_label'), // snapshot of axes, e.g. "Bleu · 5'10\""
+    unitPriceEur: numeric('unit_price_eur', { precision: 10, scale: 2 }).notNull(), // frozen
+    qty: integer('qty').notNull().default(1),
+    lineShippingEur: numeric('line_shipping_eur', { precision: 10, scale: 2 }).notNull().default('0'),
+  },
+  (l) => [index('order_line_order_idx').on(l.orderId)]
+)
