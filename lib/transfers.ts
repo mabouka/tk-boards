@@ -27,6 +27,7 @@ export async function createTransfer(
 export type PendingTransfer = {
   id: string
   unitId: string
+  fromUserId: string
   token: string
   toEmail: string
   boardName: string | null
@@ -42,6 +43,7 @@ export async function getPendingTransfer(raw: string): Promise<PendingTransfer |
     .select({
       id: transfers.id,
       unitId: transfers.unitId,
+      fromUserId: transfers.fromUserId,
       token: units.token,
       toEmail: transfers.toEmail,
       status: transfers.status,
@@ -62,6 +64,7 @@ export async function getPendingTransfer(raw: string): Promise<PendingTransfer |
   return {
     id: row.id,
     unitId: row.unitId,
+    fromUserId: row.fromUserId,
     token: row.token,
     toEmail: row.toEmail,
     boardName: row.boardName,

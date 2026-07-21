@@ -104,6 +104,16 @@ export async function acceptTransfer(formData: FormData) {
   const [me] = await db.select({ email: users.email }).from(users).where(eq(users.id, s.userId)).limit(1)
   if (!me || me.email.toLowerCase() !== transfer.toEmail) redirect(`${back}&status=wrongemail`)
 
+  // The invite is only valid while its initiator is STILL the active owner —
+  // otherwise a stale link (ownership changed since it was sent) could retire
+  // whoever owns the board now.
+  const [current] = await db
+    .select({ userId: registrations.userId })
+    .from(registrations)
+    .where(and(eq(registrations.unitId, transfer.unitId), eq(registrations.status, 'active')))
+    .limit(1)
+  if (!current || current.userId !== transfer.fromUserId) redirect(`${back}&status=invalid`)
+
   // Retire the current owner's registration, register the board to the recipient,
   // and close the transfer. Sequential (the neon-http driver has no interactive tx).
   await db
@@ -112,6 +122,12 @@ export async function acceptTransfer(formData: FormData) {
     .where(and(eq(registrations.unitId, transfer.unitId), eq(registrations.status, 'active')))
   await db.insert(registrations).values({ userId: s.userId, unitId: transfer.unitId, status: 'active' })
   await db.update(transfers).set({ status: 'accepted' }).where(eq(transfers.id, transfer.id))
+  // Invalidate any other pending invites for this unit so a former owner's
+  // outstanding link can never fire against the new owner.
+  await db
+    .update(transfers)
+    .set({ status: 'expired' })
+    .where(and(eq(transfers.unitId, transfer.unitId), eq(transfers.status, 'pending')))
 
   redirect(`/${locale}/account?transfer=done`)
 }

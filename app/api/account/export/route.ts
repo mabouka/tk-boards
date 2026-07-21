@@ -1,4 +1,3 @@
-import { getTranslations } from 'next-intl/server'
 import { and, asc, desc, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import {
@@ -17,18 +16,28 @@ const HEADER: Record<string, [string, string, string]> = {
   en: ['Section', 'Field', 'Value'],
   es: ['Sección', 'Campo', 'Valor'],
 }
+const REGISTERED_ON: Record<string, string> = {
+  fr: 'Enregistrée le',
+  en: 'Registered on',
+  es: 'Registrada el',
+}
 
 // GDPR data export — the signed-in user downloads all of their personal data as
-// a CSV (section, field, value). Lives under /api (outside the [locale] segment)
-// so the i18n middleware doesn't touch it; access is gated by the session.
+// a CSV (section, field, value). Lives under /api (outside the [locale] segment),
+// so labels are resolved by importing the message bundle directly rather than via
+// getTranslations (which has no locale context here). Access is gated by session.
 export async function GET(req: Request) {
   const sess = await liveSession()
   if (!sess) return new Response('Unauthorized', { status: 401 })
 
   const raw = new URL(req.url).searchParams.get('locale') ?? 'en'
   const locale = (LOCALES as readonly string[]).includes(raw) ? raw : 'en'
-  const t = await getTranslations({ locale, namespace: 'account' })
-  const tk = await getTranslations({ locale, namespace: 'tkid' })
+  const m = (await import(`../../../../messages/${locale}.json`)).default as {
+    account: Record<string, string>
+    tkid: Record<string, string>
+  }
+  const t = (k: string) => m.account[k] ?? k
+  const tk = (k: string) => m.tkid[k] ?? k
 
   const [u] = await db
     .select({
@@ -101,10 +110,15 @@ export async function GET(req: Request) {
     rows.push([s, tk('model_label'), b.productName ?? ''])
     rows.push([s, tk('serial_label'), b.serial ?? ''])
     rows.push([s, 'SKU', b.sku ?? ''])
-    rows.push([s, t('member_since'), fmtDate(b.registeredAt)])
+    rows.push([s, REGISTERED_ON[locale], fmtDate(b.registeredAt)])
   })
 
-  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`
+  // CSV escape + neutralize spreadsheet formula injection: a cell that starts
+  // with = + - @ (or tab/CR) is prefixed with ' so Excel/Sheets treat it as text.
+  const esc = (v: string) => {
+    const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v
+    return `"${safe.replace(/"/g, '""')}"`
+  }
   const csv = [HEADER[locale], ...rows].map((r) => r.map(esc).join(',')).join('\r\n')
 
   // Leading BOM (﻿) so Excel reads UTF-8 correctly.
