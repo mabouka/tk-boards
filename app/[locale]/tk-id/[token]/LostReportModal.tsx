@@ -56,7 +56,9 @@ export default function LostReportModal({ locale, token }: { locale: string; tok
                 <input type="hidden" name="token" value={token} />
 
                 <label className={styles.field}>
-                  <span className={styles.fieldLabel}>{t('lost_note_label')}</span>
+                  <span className={styles.fieldLabel}>
+                    {t('lost_note_label')} <span className="u-req">*</span>
+                  </span>
                   <textarea
                     name="note"
                     className={styles.textarea}

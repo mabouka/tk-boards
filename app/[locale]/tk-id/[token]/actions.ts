@@ -174,6 +174,7 @@ export async function contactOwner(_prev: ContactState, formData: FormData): Pro
 export async function markRecovered(formData: FormData) {
   const locale = loc(formData.get('locale'))
   const token = String(formData.get('token') ?? '')
+  const next = String(formData.get('next') ?? '')
   const s = await liveSession()
   if (!s) redirect(loginUrl(locale, token))
 
@@ -184,5 +185,6 @@ export async function markRecovered(formData: FormData) {
       .set({ status: 'registered', lostNote: null, lostEmail: null, lostPhone: null })
       .where(eq(units.id, unitId))
   }
-  redirect(`/${locale}/tk-id/${token}`)
+  // Safe relative redirect (e.g. back to /account), else the TK-ID page.
+  redirect(next && /^\/(?![/\\])/.test(next) ? next : `/${locale}/tk-id/${token}`)
 }

@@ -67,7 +67,9 @@ export default function ContactOwnerModal({ locale, token }: { locale: string; t
                     <input type="hidden" name="token" value={token} />
 
                     <label className={styles.field}>
-                      <span className={styles.fieldLabel}>{t('lost_note_label')}</span>
+                      <span className={styles.fieldLabel}>
+                        {t('lost_note_label')} <span className="u-req">*</span>
+                      </span>
                       <textarea
                         name="message"
                         className={styles.textarea}
@@ -79,7 +81,9 @@ export default function ContactOwnerModal({ locale, token }: { locale: string; t
                     </label>
 
                     <label className={styles.field}>
-                      <span className={styles.fieldLabel}>{t('lost_email_label')}</span>
+                      <span className={styles.fieldLabel}>
+                        {t('lost_email_label')} <span className="u-req">*</span>
+                      </span>
                       <input
                         name="email"
                         type="email"

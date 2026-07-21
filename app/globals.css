@@ -286,6 +286,9 @@ main {
 .u-cta--red-outline { background: transparent; border-color: var(--color-danger); color: var(--color-danger); }
 .u-cta--red-outline:hover { background: var(--color-danger); color: var(--color-white); }
 
+/* Required-field marker (asterisk after a label). */
+.u-req { color: var(--color-paulownia); margin-left: 2px; }
+
 /* ─── Tab filter utilities ──────────────────────────────── */
 
 .u-tab-filters {

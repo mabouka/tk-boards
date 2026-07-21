@@ -1,0 +1,394 @@
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  /* clears the 148px absolute site header */
+  padding: 180px var(--gutter) 120px;
+  min-height: 70vh;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+}
+
+.eyebrow::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--color-paulownia);
+}
+
+.title {
+  margin: 0 0 40px;
+  font-family: var(--font-display, sans-serif);
+  font-weight: 500;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: var(--color-white, #fff);
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  padding-bottom: 14px;
+}
+
+.tab {
+  position: relative;
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+  transition: color 0.2s ease;
+}
+
+.tab:hover {
+  color: var(--color-white, #fff);
+}
+
+.tabActive {
+  color: var(--color-white, #fff);
+}
+
+/* Active-tab underline, sitting on the .tabs divider (padding-bottom: 14px). */
+.tabActive::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -15px;
+  height: 2px;
+  background: var(--color-paulownia);
+}
+
+/* ── Toolbar (register) ── */
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 32px 0;
+}
+
+/* ── Grid + cards ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cardPhoto {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  container-type: inline-size;
+}
+
+.cardPhoto img {
+  object-fit: cover;
+}
+
+/* "LOST" rubber stamp on the photo when the board is lost/stolen. Sized in cqw
+   so it scales with the card, mirroring the TK-ID page. */
+.stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-13deg);
+  padding: 0.08em 0.32em;
+  padding-bottom: 17px;
+  border: 0.14em solid var(--color-danger, #dc5050);
+  color: var(--color-danger, #dc5050);
+  font-family: var(--font-display, sans-serif);
+  font-weight: 800;
+  font-size: 16cqw;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.cardName {
+  margin: 0 0 16px;
+  font-family: var(--font-display, sans-serif);
+  font-weight: 500;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-white, #fff);
+}
+
+.cardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 0 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cardRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardKey {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+}
+
+.cardVal {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-white, #fff);
+}
+
+.mono {
+  font-family: var(--font-mono, monospace);
+}
+
+.swatch {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 7px;
+  vertical-align: middle;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.cardActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardActions a,
+.cardActions button {
+  width: 100%;
+  text-align: center;
+}
+
+/* ── Empty state ── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 80px 24px;
+  text-align: center;
+  color: var(--color-white-72, rgba(255, 255, 255, 0.72));
+}
+
+@media (max-width: 1023px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 639px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .wrap {
+    padding-top: 140px;
+  }
+}
+
+/* ── My informations: cards, rows, addresses ── */
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+  margin-top: 40px;
+}
+
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.infoCard {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 24px;
+}
+
+.infoCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 20px;
+  padding: 0 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.infoCardTitle {
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+}
+
+.cardBtn,
+.cardBtnDanger {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--color-white, #fff);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.cardBtn:hover {
+  border-color: var(--color-white, #fff);
+}
+
+.cardBtnDanger {
+  border-color: rgba(220, 80, 80, 0.5);
+  color: var(--color-danger, #dc5050);
+}
+
+.cardBtnDanger:hover {
+  border-color: var(--color-danger, #dc5050);
+}
+
+.infoRows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.infoRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoRowAction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.infoRowAction > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoKey {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+}
+
+.infoVal {
+  font-size: 15px;
+  color: var(--color-white, #fff);
+}
+
+.infoEmpty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+}
+
+.addrList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.addrCard {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 16px;
+}
+
+.addrHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+
+.addrLabel {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-white, #fff);
+}
+
+.addrDefault {
+  padding: 2px 8px;
+  background: var(--color-paulownia);
+  color: var(--color-black, #000);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.addrBody {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-white-72, rgba(255, 255, 255, 0.72));
+}
+
+.addrActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 1023px) {
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+}

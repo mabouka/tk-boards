@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import {
   units,
@@ -97,4 +97,47 @@ export async function getVariantAttributes(
     value: localized(r.label, locale),
     swatchHex: r.swatchHex,
   }))
+}
+
+export type UserBoard = {
+  token: string
+  serial: string | null
+  status: string
+  /** Product (marketing) name. */
+  name: string | null
+  /** Parent SKU — matches the Sanity board's skuCode (for its image). */
+  sku: string | null
+  variantId: string | null
+  attributes: VariantAttribute[]
+}
+
+/**
+ * Every board actively registered to a user (newest first), with its variant
+ * axes resolved. The Sanity photo is fetched separately by SKU in the page.
+ */
+export async function getUserBoards(userId: string, locale: string): Promise<UserBoard[]> {
+  if (!userId) return []
+
+  const rows = await db
+    .select({
+      token: units.token,
+      serial: units.serial,
+      status: units.status,
+      name: products.name,
+      sku: products.sku,
+      variantId: units.variantId,
+    })
+    .from(registrations)
+    .innerJoin(units, eq(units.id, registrations.unitId))
+    .leftJoin(variants, eq(variants.id, units.variantId))
+    .leftJoin(products, eq(products.id, variants.productId))
+    .where(and(eq(registrations.userId, userId), eq(registrations.status, 'active')))
+    .orderBy(desc(registrations.createdAt))
+
+  return Promise.all(
+    rows.map(async (r) => ({
+      ...r,
+      attributes: r.variantId ? await getVariantAttributes(r.variantId, locale) : [],
+    }))
+  )
 }

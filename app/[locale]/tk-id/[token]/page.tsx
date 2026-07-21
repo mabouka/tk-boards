@@ -11,6 +11,7 @@ import Halos, { type Halo } from '@/components/ui/halo/Halos'
 import { registerBoard, markRecovered } from './actions'
 import LostReportModal from './LostReportModal'
 import ContactOwnerModal from './ContactOwnerModal'
+import TransferModal from '@/app/[locale]/(site)/account/TransferModal'
 import styles from './tkid.module.css'
 
 type Props = { params: Promise<{ locale: string; token: string }> }
@@ -216,6 +217,9 @@ export default async function TkIdPage({ params }: Props) {
         )}
         {isOwner ? (
           <div className={styles.actions}>
+            <Link href={`/${locale}/account`} className="u-cta u-cta--white-fill">
+              {t('account_cta')}
+            </Link>
             <form action={markRecovered}>
               <input type="hidden" name="locale" value={locale} />
               <input type="hidden" name="token" value={token} />
@@ -246,6 +250,7 @@ export default async function TkIdPage({ params }: Props) {
             <Link href={`/${locale}/account`} className="u-cta u-cta--white-fill">
               {t('account_cta')}
             </Link>
+            <TransferModal locale={locale} token={token} />
             <LostReportModal locale={locale} token={token} />
           </div>
         </Card>
