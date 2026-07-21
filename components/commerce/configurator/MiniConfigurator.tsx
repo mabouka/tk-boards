@@ -4,6 +4,7 @@ import type { StorefrontProduct } from '@/lib/storefront/product'
 import { formatEur } from '@/lib/format-price'
 import { useCart } from '@/lib/use-cart'
 import { lineFromVariant } from '@/components/commerce/cart/cartLine'
+import { useBuyNow } from '@/components/commerce/cart/useBuyNow'
 import { useVariantSelection } from './useVariantSelection'
 import type { ConfiguratorLabels } from './Configurator'
 import styles from './MiniConfigurator.module.css'
@@ -27,10 +28,15 @@ export default function MiniConfigurator({ product, locale, labels, productName,
   const { selected, isAvailable, resolved, pick, canBuy, displayPrice, oldPrice } =
     useVariantSelection(product)
   const { addItem } = useCart()
+  const { buyNow, pending, error } = useBuyNow(locale)
   const savings = oldPrice != null && displayPrice != null ? oldPrice - displayPrice : null
 
   function handleAdd() {
     if (resolved) addItem(lineFromVariant(product, resolved, selected, productName, previewImage ?? ''))
+  }
+
+  function handleBuy() {
+    if (resolved) buyNow(resolved.sku)
   }
 
   return (
@@ -92,8 +98,8 @@ export default function MiniConfigurator({ product, locale, labels, productName,
         <button
           type="button"
           className="u-cta u-cta--white-fill"
-          disabled={!canBuy}
-          onClick={handleAdd}
+          disabled={!canBuy || pending}
+          onClick={handleBuy}
         >
           {labels.buy}
         </button>
@@ -106,6 +112,7 @@ export default function MiniConfigurator({ product, locale, labels, productName,
           {labels.cart}
         </button>
       </div>
+      {error && <p className="u-buy-error">{error}</p>}
     </div>
   )
 }

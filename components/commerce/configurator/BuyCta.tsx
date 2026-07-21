@@ -5,6 +5,7 @@ import type { StorefrontProduct } from '@/lib/storefront/product'
 import { formatEur } from '@/lib/format-price'
 import { useCart } from '@/lib/use-cart'
 import { lineFromVariant } from '@/components/commerce/cart/cartLine'
+import { useBuyNow } from '@/components/commerce/cart/useBuyNow'
 import Configurator, { type ConfiguratorLabels } from './Configurator'
 import MiniConfigurator from './MiniConfigurator'
 import styles from './BuyCta.module.css'
@@ -20,6 +21,7 @@ type Props = {
 export default function BuyCta({ product, locale, labels, productName, previewImage }: Props) {
   const [open, setOpen] = useState(false)
   const { addItem } = useCart()
+  const { buyNow, pending, error } = useBuyNow(locale)
 
   // Board has a skuCode but no linked product in the admin yet → placeholder buttons.
   if (!product) {
@@ -86,13 +88,19 @@ export default function BuyCta({ product, locale, labels, productName, previewIm
     <div className={styles.cta}>
       {price != null && <p className={styles.price}>{formatEur(price, locale)}</p>}
       <div className={styles.btnRow}>
-        <button type="button" className="u-cta u-cta--white-fill" disabled={!variant} onClick={add}>
+        <button
+          type="button"
+          className="u-cta u-cta--white-fill"
+          disabled={!variant || pending}
+          onClick={() => variant && buyNow(variant.sku)}
+        >
           {labels.buy}
         </button>
         <button type="button" className="u-cta u-cta--white-outline" disabled={!variant} onClick={add}>
           {labels.cart}
         </button>
       </div>
+      {error && <p className="u-buy-error">{error}</p>}
     </div>
   )
 }

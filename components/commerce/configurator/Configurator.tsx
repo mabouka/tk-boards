@@ -8,6 +8,7 @@ import { formatEur } from '@/lib/format-price'
 import { useDrawer } from '@/lib/use-drawer'
 import { useCart } from '@/lib/use-cart'
 import { lineFromVariant } from '@/components/commerce/cart/cartLine'
+import { useBuyNow } from '@/components/commerce/cart/useBuyNow'
 import { useVariantSelection } from './useVariantSelection'
 import styles from './Configurator.module.css'
 
@@ -41,6 +42,7 @@ export default function Configurator({
   const { selected, isAvailable, resolved, pick, canBuy, displayPrice, oldPrice } =
     useVariantSelection(product, { allowDeselect: true })
   const { addItem } = useCart()
+  const { buyNow, pending, error } = useBuyNow(locale)
   // Portal target only exists on the client — false during SSR/hydration, true
   // after, without a setState-in-effect.
   const mounted = useSyncExternalStore(
@@ -55,6 +57,10 @@ export default function Configurator({
     if (!resolved) return
     addItem(lineFromVariant(product, resolved, selected, productName, previewImage ?? ''))
     onClose()
+  }
+
+  function handleBuy() {
+    if (resolved) buyNow(resolved.sku)
   }
 
   if (!mounted) return null
@@ -151,8 +157,8 @@ export default function Configurator({
             <button
               type="button"
               className="u-cta u-cta--white-fill"
-              disabled={!canBuy}
-              onClick={handleAdd}
+              disabled={!canBuy || pending}
+              onClick={handleBuy}
             >
               {labels.buy}
             </button>
@@ -165,6 +171,7 @@ export default function Configurator({
               {labels.cart}
             </button>
           </div>
+          {error && <p className="u-buy-error">{error}</p>}
         </div>
       </aside>
     </>,

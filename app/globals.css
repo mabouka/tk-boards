@@ -289,6 +289,9 @@ main {
 /* Required-field marker (asterisk after a label). */
 .u-req { color: var(--color-paulownia); margin-left: 2px; }
 
+/* Inline buy/checkout error under an action row. */
+.u-buy-error { margin: 8px 0 0; color: var(--color-danger, #dc5050); font-size: 13px; text-align: center; }
+
 /* Small ghost/outline button (card actions: edit, add, set-default…). */
 .u-card-btn {
   display: inline-block;
