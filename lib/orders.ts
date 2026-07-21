@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm'
+import { and, desc, eq, sql } from 'drizzle-orm'
 import { db } from '@/db'
 import { orders, orderLines, users, variants } from '@/db/schema'
 import { createEmailToken } from '@/lib/auth-tokens'
@@ -124,4 +124,44 @@ export async function createOrder(input: NewOrder): Promise<{ id: string; number
   }
 
   return { id: order.id, number }
+}
+
+// ── Account: read a user's orders ──
+export async function getUserOrders(userId: string) {
+  if (!userId) return []
+  return db
+    .select({
+      number: orders.number,
+      status: orders.status,
+      totalEur: orders.totalEur,
+      createdAt: orders.createdAt,
+      itemCount: sql<number>`(select coalesce(sum(${orderLines.qty}), 0) from ${orderLines} where ${orderLines.orderId} = ${orders.id})::int`,
+    })
+    .from(orders)
+    .where(eq(orders.userId, userId))
+    .orderBy(desc(orders.createdAt))
+}
+
+/** One order (by number) with its lines — scoped to the owner. */
+export async function getUserOrder(userId: string, number: string) {
+  if (!userId || !number) return null
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.userId, userId), eq(orders.number, number)))
+    .limit(1)
+  if (!order) return null
+
+  const lines = await db
+    .select({
+      productName: orderLines.productName,
+      variantSku: orderLines.variantSku,
+      variantLabel: orderLines.variantLabel,
+      unitPriceEur: orderLines.unitPriceEur,
+      qty: orderLines.qty,
+    })
+    .from(orderLines)
+    .where(eq(orderLines.orderId, order.id))
+
+  return { order, lines }
 }
