@@ -92,7 +92,7 @@ export default async function MyInformationsPage({ params }: Props) {
               firstName={firstName}
               lastName={lastName}
               phone={phone}
-              triggerClassName={styles.cardBtn}
+              triggerClassName="u-card-btn"
             />
           </div>
           <div className={styles.infoRowsGrid}>
@@ -114,7 +114,7 @@ export default async function MyInformationsPage({ params }: Props) {
                   <span className={styles.infoKey}>{t('password')}</span>
                   <span className={styles.infoVal}>••••••••••</span>
                 </div>
-                <PasswordModal locale={locale} triggerClassName={styles.cardBtn} />
+                <PasswordModal locale={locale} triggerClassName="u-card-btn" />
               </div>
             ) : (
               row(t('login_method'), providerLabel || '—')
@@ -133,7 +133,7 @@ export default async function MyInformationsPage({ params }: Props) {
           </div>
           <p className={styles.rgpdText}>{t('export_text')}</p>
           <div className={styles.rgpdActions}>
-            <a href={`/api/account/export?locale=${locale}`} className="u-cta u-cta--white-outline" download>
+            <a href={`/api/account/export?locale=${locale}`} className="u-card-btn" download>
               {t('export_cta')}
             </a>
           </div>
@@ -147,7 +147,7 @@ export default async function MyInformationsPage({ params }: Props) {
             <h2 className={styles.infoCardTitle}>
               {t('addresses')} ({addrs.length})
             </h2>
-            <AddressModal locale={locale} triggerClassName={styles.cardBtn} />
+            <AddressModal locale={locale} triggerClassName="u-card-btn" />
           </div>
 
           {addrs.length === 0 ? (
@@ -174,12 +174,12 @@ export default async function MyInformationsPage({ params }: Props) {
                     {a.country}
                   </p>
                   <div className={styles.addrActions}>
-                    <AddressModal locale={locale} address={a} triggerClassName={styles.cardBtn} />
+                    <AddressModal locale={locale} address={a} triggerClassName="u-card-btn" />
                     {!a.isDefault && (
                       <form action={setDefaultAddress}>
                         <input type="hidden" name="locale" value={locale} />
                         <input type="hidden" name="id" value={a.id} />
-                        <button type="submit" className={styles.cardBtn}>
+                        <button type="submit" className="u-card-btn">
                           {t('set_default')}
                         </button>
                       </form>
@@ -188,7 +188,7 @@ export default async function MyInformationsPage({ params }: Props) {
                       locale={locale}
                       id={a.id}
                       label={a.label || t('address')}
-                      triggerClassName={styles.cardBtnDanger}
+                      triggerClassName="u-card-btn u-card-btn--danger"
                     />
                   </div>
                 </div>
@@ -207,7 +207,7 @@ export default async function MyInformationsPage({ params }: Props) {
             <DeleteAccountModal
               locale={locale}
               confirmWord={t('delete_confirm_word')}
-              triggerClassName="u-cta u-cta--red-outline"
+              triggerClassName="u-card-btn u-card-btn--danger"
             />
           </div>
         </section>
