@@ -51,7 +51,7 @@ export default function ContactForm({ phoneCountry }: { phoneCountry: string }) 
       <div className={styles.row2}>
         <div className={styles.field}>
           <label htmlFor="contact-first" className={styles.label}>
-            {t('firstName')}
+            {t('firstName')} <span className="u-req">*</span>
           </label>
           <input
             id="contact-first"
@@ -74,7 +74,7 @@ export default function ContactForm({ phoneCountry }: { phoneCountry: string }) 
 
         <div className={styles.field}>
           <label htmlFor="contact-last" className={styles.label}>
-            {t('lastName')}
+            {t('lastName')} <span className="u-req">*</span>
           </label>
           <input
             id="contact-last"
@@ -98,7 +98,7 @@ export default function ContactForm({ phoneCountry }: { phoneCountry: string }) 
 
       <div className={styles.field}>
         <label htmlFor="contact-email" className={styles.label}>
-          {t('email')}
+          {t('email')} <span className="u-req">*</span>
         </label>
         <input
           id="contact-email"
@@ -152,7 +152,7 @@ export default function ContactForm({ phoneCountry }: { phoneCountry: string }) 
 
       <div className={styles.field}>
         <label htmlFor="contact-message" className={styles.label}>
-          {t('message')}
+          {t('message')} <span className="u-req">*</span>
         </label>
         <textarea
           id="contact-message"

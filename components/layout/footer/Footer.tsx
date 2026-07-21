@@ -48,7 +48,7 @@ export default async function Footer({ locale }: Props) {
     <footer className={styles.footer}>
       <div
         className={styles.footer__grid}
-        {...haloProps({ rgb: '225, 225, 255', opacity: 0.2, w: '122vw', h: '47vh', spread: '2%', anchor: 'bottom-right' })}
+        {...haloProps({ rgb: '225, 225, 255', opacity: 0.15, w: '100vw', h: '47vh', spread: '2%', anchor: 'bottom-right' })}
       >
 
         {/* ── Col 1 : Logo + Social ── */}

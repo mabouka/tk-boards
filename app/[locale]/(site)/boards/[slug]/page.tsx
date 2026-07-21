@@ -110,7 +110,7 @@ export default async function BoardPage({ params }: Props) {
         product={product}
         locale={locale}
         previewImage={previewImage}
-        perks={[t('perk_shipping'), t('perk_warranty'), t('perk_payment')]}
+        perks={[t('perk_shipping'), t('perk_payment')]}
         gallery={gallery}
         productName={board.name}
       />
