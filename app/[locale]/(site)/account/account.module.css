@@ -300,6 +300,13 @@
   gap: 16px;
 }
 
+/* Two fields per row (Identity card). */
+.infoRowsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
+}
+
 .infoRow {
   display: flex;
   flex-direction: column;
@@ -389,6 +396,12 @@
 
 @media (max-width: 1023px) {
   .infoGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 639px) {
+  .infoRowsGrid {
     grid-template-columns: 1fr;
   }
 }
