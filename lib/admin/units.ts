@@ -1,6 +1,6 @@
-import { asc, desc, eq } from 'drizzle-orm'
+import { and, asc, desc, eq } from 'drizzle-orm'
 import { db } from '@/db'
-import { units, variants, products } from '@/db/schema'
+import { units, variants, products, registrations, users } from '@/db/schema'
 
 export type UnitRow = {
   id: string
@@ -11,6 +11,9 @@ export type UnitRow = {
   variantId: string | null
   variantSku: string | null
   productName: string | null
+  /** Current owner (active registration), if any. */
+  ownerName: string | null
+  ownerEmail: string | null
 }
 
 export async function getUnits(): Promise<UnitRow[]> {
@@ -24,10 +27,17 @@ export async function getUnits(): Promise<UnitRow[]> {
       variantId: units.variantId,
       variantSku: variants.sku,
       productName: products.name,
+      ownerName: users.name,
+      ownerEmail: users.email,
     })
     .from(units)
     .leftJoin(variants, eq(variants.id, units.variantId))
     .leftJoin(products, eq(products.id, variants.productId))
+    .leftJoin(
+      registrations,
+      and(eq(registrations.unitId, units.id), eq(registrations.status, 'active'))
+    )
+    .leftJoin(users, eq(users.id, registrations.userId))
     .orderBy(desc(units.createdAt))
 }
 

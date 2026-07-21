@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { users, registrations, units, variants, products, claims, addresses } from '@/db/schema'
 import { fullName } from './format'
@@ -43,7 +43,6 @@ export type AccountDetail = {
     productName: string | null
     sku: string | null
     serial: string | null
-    warrantyUntil: Date | null
     createdAt: Date
   }[]
   claims: {
@@ -80,14 +79,13 @@ export async function getAccount(id: string): Promise<AccountDetail | null> {
       productName: products.name,
       sku: variants.sku,
       serial: units.serial,
-      warrantyUntil: registrations.warrantyUntil,
       createdAt: registrations.createdAt,
     })
     .from(registrations)
     .innerJoin(units, eq(units.id, registrations.unitId))
     .leftJoin(variants, eq(variants.id, units.variantId))
     .leftJoin(products, eq(products.id, variants.productId))
-    .where(eq(registrations.userId, id))
+    .where(and(eq(registrations.userId, id), eq(registrations.status, 'active')))
     .orderBy(desc(registrations.createdAt))
 
   const userClaims = await db

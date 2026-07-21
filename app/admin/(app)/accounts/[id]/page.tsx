@@ -89,7 +89,6 @@ export default async function AccountDetailPage({
                 <TableHead>SKU</TableHead>
                 <TableHead>Série</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead>Garantie</TableHead>
                 <TableHead>Enregistrée le</TableHead>
               </TableRow>
             </TableHeader>
@@ -103,9 +102,6 @@ export default async function AccountDetailPage({
                     <Badge variant={b.unitStatus === 'stolen' ? 'destructive' : 'secondary'}>
                       {UNIT_STATUS[b.unitStatus] ?? b.unitStatus}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {fmtDate(b.warrantyUntil)}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{fmtDate(b.createdAt)}</TableCell>
                 </TableRow>

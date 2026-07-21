@@ -75,7 +75,9 @@ export function UnitsTable({
       (needle === '' ||
         u.token.toLowerCase().includes(needle) ||
         (u.serial ?? '').toLowerCase().includes(needle) ||
-        (u.productName ?? '').toLowerCase().includes(needle))
+        (u.productName ?? '').toLowerCase().includes(needle) ||
+        (u.ownerName ?? '').toLowerCase().includes(needle) ||
+        (u.ownerEmail ?? '').toLowerCase().includes(needle))
   )
 
   const copy = (token: string) => {
@@ -142,6 +144,7 @@ export function UnitsTable({
               <TableHead>Board</TableHead>
               <TableHead>Série</TableHead>
               <TableHead>Statut</TableHead>
+              <TableHead>Propriétaire</TableHead>
               <TableHead>Créé</TableHead>
               <TableHead className="w-24" />
             </TableRow>
@@ -149,7 +152,7 @@ export function UnitsTable({
           <TableBody>
             {shown.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground py-10 text-center text-sm">
+                <TableCell colSpan={7} className="text-muted-foreground py-10 text-center text-sm">
                   Aucune unité.
                 </TableCell>
               </TableRow>
@@ -185,6 +188,18 @@ export function UnitsTable({
                     <TableCell className="font-mono text-xs">{u.serial ?? '—'}</TableCell>
                     <TableCell>
                       <Badge variant={s.variant}>{s.label}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {u.ownerEmail ? (
+                        <div className="flex flex-col">
+                          <span className="text-sm">{u.ownerName || u.ownerEmail}</span>
+                          {u.ownerName && (
+                            <span className="text-muted-foreground text-xs">{u.ownerEmail}</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">{fmtDate(u.createdAt)}</TableCell>
                     <TableCell>
