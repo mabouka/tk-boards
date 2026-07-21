@@ -24,6 +24,11 @@ type EmailStrings = {
   foundPhoneLabel: string
   foundCta: string
   foundSerialLabel: string
+  transferSubject: string
+  transferPreheader: string
+  transferHeading: string
+  transferBody: string
+  transferCta: string
   fallback: string
   footer: string
   footer2: string
@@ -53,6 +58,12 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     foundPhoneLabel: 'Téléphone',
     foundCta: 'Voir ma planche',
     foundSerialLabel: 'Série',
+    transferSubject: 'On te transfère une planche TK ID — TK Boards',
+    transferPreheader: 'Accepte le transfert de ta planche.',
+    transferHeading: 'Une planche pour toi',
+    transferBody:
+      "Quelqu'un souhaite te transférer la propriété de cette planche TK ID. Connecte-toi (ou crée ton compte avec cet email), puis accepte le transfert. Ce lien expire dans 7 jours.",
+    transferCta: 'Accepter le transfert',
     fallback: 'Le bouton ne marche pas ? Copie ce lien :',
     footer: 'Tu reçois cet email suite à une action sur ton compte TK ID.',
     footer2: "Si ce n'était pas toi, ignore-le simplement.",
@@ -80,6 +91,12 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     foundPhoneLabel: 'Phone',
     foundCta: 'View my board',
     foundSerialLabel: 'Serial',
+    transferSubject: 'A TK board is being transferred to you — TK Boards',
+    transferPreheader: 'Accept the transfer of your board.',
+    transferHeading: 'A board for you',
+    transferBody:
+      'Someone wants to transfer ownership of this TK ID board to you. Sign in (or create your account with this email), then accept the transfer. This link expires in 7 days.',
+    transferCta: 'Accept the transfer',
     fallback: 'Button not working? Copy this link:',
     footer: "You're receiving this email following an action on your TK ID account.",
     footer2: "If this wasn't you, just ignore it.",
@@ -106,6 +123,12 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     foundPhoneLabel: 'Teléfono',
     foundCta: 'Ver mi tabla',
     foundSerialLabel: 'Serie',
+    transferSubject: 'Te transfieren una tabla TK ID — TK Boards',
+    transferPreheader: 'Acepta la transferencia de tu tabla.',
+    transferHeading: 'Una tabla para ti',
+    transferBody:
+      'Alguien quiere transferirte la propiedad de esta tabla TK ID. Inicia sesión (o crea tu cuenta con este email) y acepta la transferencia. Este enlace caduca en 7 días.',
+    transferCta: 'Aceptar la transferencia',
     fallback: '¿El botón no funciona? Copia este enlace:',
     footer: 'Recibes este correo tras una acción en tu cuenta TK ID.',
     footer2: 'Si no fuiste tú, ignóralo.',

@@ -321,6 +321,7 @@ export const addresses = pgTable('address', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
+  label: text('label'), // e.g. "Domicile", "Spot préféré"
   company: text('company'), // optional business name
   line1: text('line1').notNull(),
   line2: text('line2'),
@@ -335,3 +336,25 @@ export const addresses = pgTable('address', {
     .defaultNow()
     .$onUpdate(() => new Date()),
 })
+
+// Ownership transfer: the owner invites an email; the recipient accepts via a
+// tokenised email link (only that email can accept). The raw token lives in the
+// link — we store its SHA-256 hash only.
+export const transfers = pgTable(
+  'transfer',
+  {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    unitId: text('unit_id')
+      .notNull()
+      .references(() => units.id, { onDelete: 'cascade' }),
+    fromUserId: text('from_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    toEmail: text('to_email').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    status: text('status').notNull().default('pending'), // pending|accepted|cancelled|expired
+    expiresAt: timestamp('expires_at', { mode: 'date' }).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('transfer_token_uq').on(t.tokenHash), index('transfer_unit_idx').on(t.unitId)]
+)

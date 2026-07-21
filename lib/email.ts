@@ -6,6 +6,7 @@ import VerifyEmail from '@/emails/verify-email'
 import ResetPasswordEmail from '@/emails/reset-password'
 import ContactEmail from '@/emails/contact-email'
 import FoundBoardEmail from '@/emails/found-board'
+import TransferEmail from '@/emails/transfer'
 import { emailT } from '@/lib/email-i18n'
 
 const FROM = process.env.EMAIL_FROM || 'TK Boards <onboarding@resend.dev>'
@@ -127,6 +128,36 @@ export async function sendFoundBoardEmail(opts: {
     text,
     replyTo: opts.finderEmail,
     devNote: `found-board → ${opts.to} (reply ${opts.finderEmail})`,
+  })
+}
+
+// Ownership-transfer invitation — a tokenised link only the invited email can use.
+export async function sendTransferEmail(opts: {
+  to: string
+  locale: string
+  boardName: string | null
+  serial: string | null
+  photoUrl: string | null
+  attributes: { name: string; value: string; swatchHex: string | null }[]
+  token: string
+}) {
+  const url = `${BASE}/${opts.locale}/transfer?token=${opts.token}`
+  const { html, text } = await renderBoth(
+    createElement(TransferEmail, {
+      locale: opts.locale,
+      boardName: opts.boardName,
+      serial: opts.serial,
+      photoUrl: opts.photoUrl,
+      attributes: opts.attributes,
+      url,
+    })
+  )
+  await send({
+    to: opts.to,
+    subject: emailT(opts.locale).transferSubject,
+    html,
+    text,
+    devNote: `transfer → ${opts.to}`,
   })
 }
 
