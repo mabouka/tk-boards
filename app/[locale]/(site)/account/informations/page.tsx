@@ -7,6 +7,7 @@ import ProfileModal from '../ProfileModal'
 import PasswordModal from '../PasswordModal'
 import AddressModal from '../AddressModal'
 import DeleteAddressModal from '../DeleteAddressModal'
+import DeleteAccountModal from '../DeleteAccountModal'
 import { setDefaultAddress } from '../informationsActions'
 import styles from '../account.module.css'
 
@@ -124,6 +125,19 @@ export default async function MyInformationsPage({ params }: Props) {
             )}
           </div>
         </section>
+
+        {/* ── GDPR: export my data ── */}
+        <section className={styles.infoCard}>
+          <div className={styles.infoCardHead}>
+            <h2 className={styles.infoCardTitle}>{t('export_data')}</h2>
+          </div>
+          <p className={styles.rgpdText}>{t('export_text')}</p>
+          <div className={styles.rgpdActions}>
+            <a href={`/api/account/export?locale=${locale}`} className="u-cta u-cta--white-outline" download>
+              {t('export_cta')}
+            </a>
+          </div>
+        </section>
       </div>
 
       {/* ── Right column ── */}
@@ -181,6 +195,21 @@ export default async function MyInformationsPage({ params }: Props) {
               ))}
             </div>
           )}
+        </section>
+
+        {/* ── GDPR: delete my account ── */}
+        <section className={styles.infoCard}>
+          <div className={styles.infoCardHead}>
+            <h2 className={styles.infoCardTitle}>{t('delete_account')}</h2>
+          </div>
+          <p className={styles.rgpdText}>{t('delete_account_desc')}</p>
+          <div className={styles.rgpdActions}>
+            <DeleteAccountModal
+              locale={locale}
+              confirmWord={t('delete_confirm_word')}
+              triggerClassName="u-cta u-cta--red-outline"
+            />
+          </div>
         </section>
       </div>
     </div>

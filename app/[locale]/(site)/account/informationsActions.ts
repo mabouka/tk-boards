@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs'
 import { db } from '@/db'
 import { users, addresses } from '@/db/schema'
 import { liveSession } from '@/lib/session'
+import { signOut as authSignOut } from '@/auth'
 
 const LOCALES = ['fr', 'en', 'es']
 const loc = (v: FormDataEntryValue | null) => (LOCALES.includes(String(v)) ? String(v) : 'en')
@@ -108,6 +109,18 @@ export async function deleteAddress(fd: FormData) {
   const id = str(fd.get('id'), 60)
   if (id) await db.delete(addresses).where(and(eq(addresses.id, id), eq(addresses.userId, sess.userId)))
   revalidate(locale)
+}
+
+// ── GDPR: account deletion ──
+// Deleting the user row cascades to accounts, sessions, addresses, registrations
+// (→ claims) and transfers via the schema's onDelete: 'cascade'. The physical
+// units stay; the registrations are freed. Then we sign the (now gone) user out.
+export async function deleteAccount(fd: FormData) {
+  const locale = loc(fd.get('locale'))
+  const sess = await liveSession()
+  if (!sess) return
+  await db.delete(users).where(eq(users.id, sess.userId))
+  await authSignOut({ redirectTo: `/${locale}` })
 }
 
 export async function setDefaultAddress(fd: FormData) {
