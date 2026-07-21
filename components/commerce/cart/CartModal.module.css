@@ -5,7 +5,22 @@
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
-  background: rgba(0, 0, 0, 0.65);
+  /* Same frosted backdrop as the configurator. Custom property keeps the space
+     between the two filter functions through minification (`brightness()blur()`
+     would be invalid); -webkit- prefix first and the standard property last,
+     otherwise the prod minifier drops the unprefixed one (Chrome/FF/Edge lose
+     the blur). */
+  --backdrop-fx: brightness(60%) blur(15px);
+  -webkit-backdrop-filter: var(--backdrop-fx);
+  backdrop-filter: var(--backdrop-fx);
+}
+
+/* Fallback dim where backdrop-filter is unsupported (brightness() is what dims,
+   so without it the backdrop would be fully transparent). */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .backdrop {
+    background: rgba(0, 0, 0, 0.6);
+  }
 }
 
 .panel {
