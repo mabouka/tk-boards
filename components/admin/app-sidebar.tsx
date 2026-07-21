@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, Boxes, Nfc, Users, ShieldAlert } from 'lucide-react'
+import { LayoutDashboard, Package, Boxes, Nfc, Users, ShieldAlert, Receipt } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -28,6 +28,7 @@ const NAV: NavGroup[] = [
     ],
   },
   { label: 'Production', items: [{ title: 'Registre NFC', href: '/admin/units', icon: Nfc }] },
+  { label: 'Ventes', items: [{ title: 'Commandes', href: '/admin/orders', icon: Receipt }] },
   {
     label: 'Clients',
     items: [
