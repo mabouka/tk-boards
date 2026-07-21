@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { asc, desc, eq } from 'drizzle-orm'
 import { auth } from '@/auth'
 import { db } from '@/db'
-import { users, addresses as addressesTable } from '@/db/schema'
+import { users, addresses as addressesTable, accounts as accountsTable } from '@/db/schema'
 import ProfileModal from '../ProfileModal'
 import PasswordModal from '../PasswordModal'
 import AddressModal from '../AddressModal'
@@ -52,6 +52,19 @@ export default async function MyInformationsPage({ params }: Props) {
         .orderBy(desc(addressesTable.isDefault), asc(addressesTable.createdAt))
     : []
 
+  // OAuth accounts have no password — surface the sign-in provider instead.
+  const [oauth] =
+    u && !u.passwordHash
+      ? await db
+          .select({ provider: accountsTable.provider })
+          .from(accountsTable)
+          .where(eq(accountsTable.userId, userId))
+          .limit(1)
+      : [undefined]
+  const providerLabel = oauth?.provider
+    ? oauth.provider.charAt(0).toUpperCase() + oauth.provider.slice(1)
+    : ''
+
   const firstName = u?.firstName ?? ''
   const lastName = u?.lastName ?? ''
   const phone = u?.phone ?? ''
@@ -94,13 +107,17 @@ export default async function MyInformationsPage({ params }: Props) {
             <h2 className={styles.infoCardTitle}>{t('security')}</h2>
           </div>
           <div className={styles.infoRows}>
-            <div className={styles.infoRowAction}>
-              <div>
-                <span className={styles.infoKey}>{t('password')}</span>
-                <span className={styles.infoVal}>••••••••••</span>
+            {u?.passwordHash ? (
+              <div className={styles.infoRowAction}>
+                <div>
+                  <span className={styles.infoKey}>{t('password')}</span>
+                  <span className={styles.infoVal}>••••••••••</span>
+                </div>
+                <PasswordModal locale={locale} triggerClassName={styles.cardBtn} />
               </div>
-              {u?.passwordHash && <PasswordModal locale={locale} triggerClassName={styles.cardBtn} />}
-            </div>
+            ) : (
+              row(t('login_method'), providerLabel || '—')
+            )}
             {row(
               t('member_since'),
               `${memberSince}${u?.emailVerified ? ` · ${t('verified')}` : ''}`

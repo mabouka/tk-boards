@@ -206,6 +206,7 @@
     "wrong_current_password": "La contraseña actual es incorrecta.",
     "no_password_account": "Esta cuenta no tiene contraseña (inicio con Google).",
     "password_invalid": "Contraseña no válida (mín. 8 caracteres, y ambas deben coincidir).",
+    "login_method": "Método de inicio de sesión",
     "member_since": "Miembro desde",
     "verified": "Cuenta verificada",
     "address": "Dirección",

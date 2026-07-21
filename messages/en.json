@@ -206,6 +206,7 @@
     "wrong_current_password": "Current password is incorrect.",
     "no_password_account": "This account has no password (Google sign-in).",
     "password_invalid": "Invalid password (min. 8 characters, and both must match).",
+    "login_method": "Sign-in method",
     "member_since": "Member since",
     "verified": "Verified account",
     "address": "Address",

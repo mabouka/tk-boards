@@ -206,6 +206,7 @@
     "wrong_current_password": "Mot de passe actuel incorrect.",
     "no_password_account": "Ce compte n'a pas de mot de passe (connexion Google).",
     "password_invalid": "Mot de passe invalide (min. 8 caractères, et les deux doivent correspondre).",
+    "login_method": "Méthode de connexion",
     "member_since": "Membre depuis",
     "verified": "Compte vérifié",
     "address": "Adresse",
