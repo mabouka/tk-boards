@@ -6,6 +6,7 @@ import { users } from '@/db/schema'
 import { liveSession } from '@/lib/session'
 import { haloProps } from '@/components/ui/halo/haloProps'
 import AccountTabs from './AccountTabs'
+import { signOut } from './actions'
 import styles from './account.module.css'
 
 type Props = {
@@ -32,19 +33,27 @@ export default async function AccountLayout({ children, params }: Props) {
   return (
     <section className={styles.wrap}>
       <p className={styles.eyebrow}>{t('overline')}</p>
-      <h1
-        className={styles.title}
-        {...haloProps({
-          rgb: '225, 225, 255',
-          opacity: 0.15,
-          w: '67vw',
-          h: '30vh',
-          spread: '31%',
-          anchor: 'top-left',
-        })}
-      >
-        {t('welcome', { name })}
-      </h1>
+      <div className={styles.titleRow}>
+        <h1
+          className={styles.title}
+          {...haloProps({
+            rgb: '225, 225, 255',
+            opacity: 0.15,
+            w: '67vw',
+            h: '30vh',
+            spread: '31%',
+            anchor: 'top-left',
+          })}
+        >
+          {t('welcome', { name })}
+        </h1>
+        <form action={signOut}>
+          <input type="hidden" name="locale" value={locale} />
+          <button type="submit" className="u-cta u-cta--white-outline">
+            {t('sign_out')}
+          </button>
+        </form>
+      </div>
       <AccountTabs locale={locale} />
       {children}
     </section>

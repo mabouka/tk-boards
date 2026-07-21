@@ -6,6 +6,15 @@
   min-height: 70vh;
 }
 
+/* Title + sign-out on one row; button sits on the title's baseline (bottom). */
+.titleRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 0 40px;
+}
+
 .eyebrow {
   display: flex;
   align-items: center;
@@ -26,7 +35,7 @@
 }
 
 .title {
-  margin: 0 0 40px;
+  margin: 0;
   font-family: var(--font-display, sans-serif);
   font-weight: 500;
   font-size: clamp(2rem, 6vw, 3.4rem);
