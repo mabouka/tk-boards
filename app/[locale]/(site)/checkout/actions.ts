@@ -79,7 +79,7 @@ export async function createCheckoutSession(
       automatic_tax: { enabled: true },
       shipping_address_collection: { allowed_countries: SHIP_COUNTRIES },
       customer_email: email,
-      success_url: `${BASE}/${locale}?checkout=success`,
+      success_url: `${BASE}/${locale}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${BASE}/${locale}?checkout=cancel`,
       metadata: { userId: sess?.userId ?? '', locale },
     })

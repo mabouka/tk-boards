@@ -273,6 +273,16 @@
     "checkout_err_generic": "Checkout couldn't start. Please try again.",
     "note": "Shipping, applicable taxes and promo codes are calculated at checkout."
   },
+  "checkout": {
+    "success_eyebrow": "Order",
+    "success_title": "Thank you!",
+    "success_text": "Your order is confirmed. A confirmation email was sent to {email}.",
+    "success_processing": "Payment received — your order is being processed.",
+    "order_label": "Order",
+    "total_label": "Total paid",
+    "view_orders": "View my orders",
+    "back_shop": "Back to shop"
+  },
   "accessories": {
     "title": "Accessories",
     "all": "All"

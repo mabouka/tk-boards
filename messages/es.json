@@ -273,6 +273,16 @@
     "checkout_err_generic": "No se pudo iniciar el pago. Inténtalo de nuevo.",
     "note": "Los gastos de envío, los impuestos aplicables y los códigos promocionales se calculan al finalizar la compra."
   },
+  "checkout": {
+    "success_eyebrow": "Pedido",
+    "success_title": "¡Gracias!",
+    "success_text": "Tu pedido está confirmado. Se ha enviado un email de confirmación a {email}.",
+    "success_processing": "Pago recibido — tu pedido se está procesando.",
+    "order_label": "Pedido",
+    "total_label": "Total pagado",
+    "view_orders": "Ver mis pedidos",
+    "back_shop": "Volver a la tienda"
+  },
   "accessories": {
     "title": "Accesorios",
     "all": "Todos"

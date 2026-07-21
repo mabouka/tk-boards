@@ -273,6 +273,16 @@
     "checkout_err_generic": "Le paiement n'a pas pu démarrer. Réessaie.",
     "note": "Frais de livraison, taxes applicables et codes promo seront calculés au paiement."
   },
+  "checkout": {
+    "success_eyebrow": "Commande",
+    "success_title": "Merci !",
+    "success_text": "Ta commande est confirmée. Un email de confirmation a été envoyé à {email}.",
+    "success_processing": "Paiement reçu — ta commande est en cours de traitement.",
+    "order_label": "Commande",
+    "total_label": "Total payé",
+    "view_orders": "Voir mes commandes",
+    "back_shop": "Retour à la boutique"
+  },
   "accessories": {
     "title": "Accessoires",
     "all": "Tout"
