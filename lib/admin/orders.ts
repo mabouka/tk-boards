@@ -1,7 +1,34 @@
-import { desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq, sql } from 'drizzle-orm'
 import { db } from '@/db'
-import { orders, orderLines, users } from '@/db/schema'
+import { orders, orderLines, users, variants, products } from '@/db/schema'
 import { fullName } from './format'
+
+export type PickVariant = { id: string; sku: string; label: string; priceEur: string; stock: number }
+
+/** Active variants for the manual-order picker (product name + SKU + price). */
+export async function getPickableVariants(): Promise<PickVariant[]> {
+  const rows = await db
+    .select({
+      id: variants.id,
+      sku: variants.sku,
+      priceEur: variants.priceEur,
+      salePriceEur: variants.salePriceEur,
+      stock: variants.stock,
+      productName: products.name,
+    })
+    .from(variants)
+    .innerJoin(products, eq(products.id, variants.productId))
+    .where(and(eq(variants.active, true), eq(products.active, true)))
+    .orderBy(products.name, variants.sortOrder)
+
+  return rows.map((r) => ({
+    id: r.id,
+    sku: r.sku,
+    label: `${r.productName} — ${r.sku}`,
+    priceEur: r.salePriceEur ?? r.priceEur,
+    stock: r.stock,
+  }))
+}
 
 export type AdminOrderRow = {
   id: string
