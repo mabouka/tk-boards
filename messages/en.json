@@ -268,6 +268,9 @@
     "remove": "Remove",
     "included": "Included",
     "checkout": "Checkout",
+    "checkout_err_stock": "Not enough stock for an item — adjust the quantity.",
+    "checkout_err_unavailable": "An item is no longer available.",
+    "checkout_err_generic": "Checkout couldn't start. Please try again.",
     "note": "Shipping, applicable taxes and promo codes are calculated at checkout."
   },
   "accessories": {

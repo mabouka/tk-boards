@@ -31,6 +31,9 @@ type Props = {
   onClose?: () => void
   onQty?: (id: string, delta: number) => void
   onRemove?: (id: string) => void
+  onCheckout?: () => void
+  checkingOut?: boolean
+  checkoutError?: string
 }
 
 const CloseIcon = () => (
@@ -45,7 +48,16 @@ const TrashIcon = () => (
   </svg>
 )
 
-export default function CartModal({ lines, locale, onClose, onQty, onRemove }: Props) {
+export default function CartModal({
+  lines,
+  locale,
+  onClose,
+  onQty,
+  onRemove,
+  onCheckout,
+  checkingOut,
+  checkoutError,
+}: Props) {
   const t = useTranslations('cart')
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0)
 
@@ -145,8 +157,14 @@ export default function CartModal({ lines, locale, onClose, onQty, onRemove }: P
 
         {/* ── Footer ── */}
         <footer className={styles.footer}>
-          <button type="button" className={`u-cta u-cta--white-fill ${styles.checkout}`}>
-            {t('checkout')} · {formatEur(total, locale)}
+          {checkoutError && <p className={styles.error}>{checkoutError}</p>}
+          <button
+            type="button"
+            className={`u-cta u-cta--white-fill ${styles.checkout}`}
+            onClick={onCheckout}
+            disabled={checkingOut || lines.length === 0}
+          >
+            {checkingOut ? `${t('checkout')}…` : `${t('checkout')} · ${formatEur(total, locale)}`}
           </button>
           <p className={styles.note}>{t('note')}</p>
         </footer>

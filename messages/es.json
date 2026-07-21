@@ -268,6 +268,9 @@
     "remove": "Eliminar",
     "included": "Incluido",
     "checkout": "Tramitar pedido",
+    "checkout_err_stock": "Stock insuficiente para un artículo — ajusta la cantidad.",
+    "checkout_err_unavailable": "Un artículo ya no está disponible.",
+    "checkout_err_generic": "No se pudo iniciar el pago. Inténtalo de nuevo.",
     "note": "Los gastos de envío, los impuestos aplicables y los códigos promocionales se calculan al finalizar la compra."
   },
   "accessories": {
