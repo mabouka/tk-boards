@@ -29,6 +29,16 @@ type EmailStrings = {
   transferHeading: string
   transferBody: string
   transferCta: string
+  orderSubject: string
+  orderPreheader: string
+  orderHeading: string
+  orderBody: string
+  orderSubtotal: string
+  orderTax: string
+  orderShipping: string
+  orderTotal: string
+  orderShipTo: string
+  orderCta: string
   fallback: string
   footer: string
   footer2: string
@@ -64,6 +74,16 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     transferBody:
       "Quelqu'un souhaite te transférer la propriété de cette planche TK ID. Connecte-toi (ou crée ton compte avec cet email), puis accepte le transfert. Ce lien expire dans 7 jours.",
     transferCta: 'Accepter le transfert',
+    orderSubject: 'Merci pour ta commande — TK Boards',
+    orderPreheader: 'On a bien reçu ta commande.',
+    orderHeading: 'Commande confirmée',
+    orderBody: 'Merci ! Voici le récapitulatif de ta commande. Tu recevras un email dès son expédition.',
+    orderSubtotal: 'Sous-total',
+    orderTax: 'TVA',
+    orderShipping: 'Livraison',
+    orderTotal: 'Total',
+    orderShipTo: 'Livraison à',
+    orderCta: 'Voir ma commande',
     fallback: 'Le bouton ne marche pas ? Copie ce lien :',
     footer: 'Tu reçois cet email suite à une action sur ton compte TK ID.',
     footer2: "Si ce n'était pas toi, ignore-le simplement.",
@@ -97,6 +117,16 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     transferBody:
       'Someone wants to transfer ownership of this TK ID board to you. Sign in (or create your account with this email), then accept the transfer. This link expires in 7 days.',
     transferCta: 'Accept the transfer',
+    orderSubject: 'Thanks for your order — TK Boards',
+    orderPreheader: 'We received your order.',
+    orderHeading: 'Order confirmed',
+    orderBody: "Thank you! Here's a summary of your order. We'll email you as soon as it ships.",
+    orderSubtotal: 'Subtotal',
+    orderTax: 'VAT',
+    orderShipping: 'Shipping',
+    orderTotal: 'Total',
+    orderShipTo: 'Ship to',
+    orderCta: 'View my order',
     fallback: 'Button not working? Copy this link:',
     footer: "You're receiving this email following an action on your TK ID account.",
     footer2: "If this wasn't you, just ignore it.",
@@ -129,6 +159,16 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     transferBody:
       'Alguien quiere transferirte la propiedad de esta tabla TK ID. Inicia sesión (o crea tu cuenta con este email) y acepta la transferencia. Este enlace caduca en 7 días.',
     transferCta: 'Aceptar la transferencia',
+    orderSubject: 'Gracias por tu pedido — TK Boards',
+    orderPreheader: 'Hemos recibido tu pedido.',
+    orderHeading: 'Pedido confirmado',
+    orderBody: '¡Gracias! Aquí tienes el resumen de tu pedido. Te avisaremos por email en cuanto se envíe.',
+    orderSubtotal: 'Subtotal',
+    orderTax: 'IVA',
+    orderShipping: 'Envío',
+    orderTotal: 'Total',
+    orderShipTo: 'Enviar a',
+    orderCta: 'Ver mi pedido',
     fallback: '¿El botón no funciona? Copia este enlace:',
     footer: 'Recibes este correo tras una acción en tu cuenta TK ID.',
     footer2: 'Si no fuiste tú, ignóralo.',

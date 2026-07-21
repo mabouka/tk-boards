@@ -7,6 +7,7 @@ import ResetPasswordEmail from '@/emails/reset-password'
 import ContactEmail from '@/emails/contact-email'
 import FoundBoardEmail from '@/emails/found-board'
 import TransferEmail from '@/emails/transfer'
+import OrderConfirmationEmail from '@/emails/order-confirmation'
 import { emailT } from '@/lib/email-i18n'
 
 const FROM = process.env.EMAIL_FROM || 'TK Boards <onboarding@resend.dev>'
@@ -158,6 +159,44 @@ export async function sendTransferEmail(opts: {
     html,
     text,
     devNote: `transfer → ${opts.to}`,
+  })
+}
+
+// Order confirmation (branded, alongside Stripe's own receipt). Amounts come in
+// as euro strings ('490.00') and are formatted for the buyer's locale.
+export async function sendOrderConfirmationEmail(opts: {
+  to: string
+  locale: string
+  orderNumber: string
+  lines: { name: string; qty: number; totalEur: string }[]
+  subtotalEur: string
+  taxEur: string
+  shippingEur: string
+  totalEur: string
+  shipTo: string
+}) {
+  const fmt = (v: string) =>
+    new Intl.NumberFormat(opts.locale, { style: 'currency', currency: 'EUR' }).format(Number(v))
+  const url = `${BASE}/${opts.locale}/account/orders`
+  const { html, text } = await renderBoth(
+    createElement(OrderConfirmationEmail, {
+      locale: opts.locale,
+      orderNumber: opts.orderNumber,
+      lines: opts.lines.map((l) => ({ name: l.name, qty: l.qty, total: fmt(l.totalEur) })),
+      subtotal: fmt(opts.subtotalEur),
+      tax: fmt(opts.taxEur),
+      shipping: fmt(opts.shippingEur),
+      total: fmt(opts.totalEur),
+      shipTo: opts.shipTo,
+      url,
+    })
+  )
+  await send({
+    to: opts.to,
+    subject: emailT(opts.locale).orderSubject,
+    html,
+    text,
+    devNote: `order ${opts.orderNumber} → ${opts.to}`,
   })
 }
 
