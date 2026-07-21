@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm'
+import { and, desc, eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
 import {
   units,
@@ -74,14 +74,17 @@ export type VariantAttribute = { name: string; value: string; swatchHex: string 
  * localized, ordered by the attribute's sort order. Empty when the variant has
  * no axes (simple product) or the variant is unknown.
  */
-export async function getVariantAttributes(
-  variantId: string,
+/** Resolved axes for many variants at once, grouped by variantId (one query). */
+async function getVariantAttributesFor(
+  variantIds: string[],
   locale: string
-): Promise<VariantAttribute[]> {
-  if (!variantId) return []
+): Promise<Map<string, VariantAttribute[]>> {
+  const byVariant = new Map<string, VariantAttribute[]>()
+  if (variantIds.length === 0) return byVariant
 
   const rows = await db
     .select({
+      variantId: variantValues.variantId,
       name: productAttributes.nameI18n,
       label: productAttributeValues.labelI18n,
       swatchHex: productAttributeValues.swatchHex,
@@ -89,14 +92,23 @@ export async function getVariantAttributes(
     .from(variantValues)
     .innerJoin(productAttributes, eq(productAttributes.id, variantValues.attributeId))
     .innerJoin(productAttributeValues, eq(productAttributeValues.id, variantValues.valueId))
-    .where(eq(variantValues.variantId, variantId))
+    .where(inArray(variantValues.variantId, variantIds))
     .orderBy(productAttributes.sortOrder)
 
-  return rows.map((r) => ({
-    name: localized(r.name, locale),
-    value: localized(r.label, locale),
-    swatchHex: r.swatchHex,
-  }))
+  for (const r of rows) {
+    const list = byVariant.get(r.variantId) ?? []
+    list.push({ name: localized(r.name, locale), value: localized(r.label, locale), swatchHex: r.swatchHex })
+    byVariant.set(r.variantId, list)
+  }
+  return byVariant
+}
+
+export async function getVariantAttributes(
+  variantId: string,
+  locale: string
+): Promise<VariantAttribute[]> {
+  if (!variantId) return []
+  return (await getVariantAttributesFor([variantId], locale)).get(variantId) ?? []
 }
 
 export type UserBoard = {
@@ -134,10 +146,12 @@ export async function getUserBoards(userId: string, locale: string): Promise<Use
     .where(and(eq(registrations.userId, userId), eq(registrations.status, 'active')))
     .orderBy(desc(registrations.createdAt))
 
-  return Promise.all(
-    rows.map(async (r) => ({
-      ...r,
-      attributes: r.variantId ? await getVariantAttributes(r.variantId, locale) : [],
-    }))
-  )
+  // Resolve every board's variant axes in one query, then attach (avoids N+1).
+  const variantIds = [...new Set(rows.map((r) => r.variantId).filter((v): v is string => Boolean(v)))]
+  const attrsByVariant = await getVariantAttributesFor(variantIds, locale)
+
+  return rows.map((r) => ({
+    ...r,
+    attributes: r.variantId ? (attrsByVariant.get(r.variantId) ?? []) : [],
+  }))
 }

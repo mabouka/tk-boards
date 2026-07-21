@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { asc, desc, eq } from 'drizzle-orm'
-import { auth } from '@/auth'
+import { liveSession } from '@/lib/session'
 import { db } from '@/db'
 import { users, addresses as addressesTable, accounts as accountsTable } from '@/db/schema'
 import ProfileModal from '../ProfileModal'
@@ -16,8 +16,8 @@ type Props = { params: Promise<{ locale: string }> }
 export default async function MyInformationsPage({ params }: Props) {
   const { locale } = await params
   const t = await getTranslations('account')
-  const session = await auth()
-  const userId = session?.user?.id ?? ''
+  const session = await liveSession()
+  const userId = session?.userId ?? ''
 
   const [u] = userId
     ? await db

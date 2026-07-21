@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import { auth } from '@/auth'
+import { liveSession } from '@/lib/session'
 import { getUserBoards } from '@/lib/tk-id'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
@@ -14,8 +14,8 @@ type Props = { params: Promise<{ locale: string }> }
 export default async function MyBoardsPage({ params }: Props) {
   const { locale } = await params
   const t = await getTranslations('account')
-  const session = await auth()
-  const userId = session?.user?.id ?? ''
+  const session = await liveSession()
+  const userId = session?.userId ?? ''
 
   const boards = await getUserBoards(userId, locale)
 

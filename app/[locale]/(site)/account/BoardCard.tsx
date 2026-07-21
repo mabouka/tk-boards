@@ -68,7 +68,8 @@ export default async function BoardCard({ board, photoUrl, locale }: Props) {
             {t('view_board')}
           </Link>
 
-          <TransferModal locale={locale} token={board.token} />
+          {/* Can't transfer a board you've reported lost/stolen — recover it first. */}
+          {!stolen && <TransferModal locale={locale} token={board.token} />}
 
           {stolen ? (
             <form action={markRecovered}>
