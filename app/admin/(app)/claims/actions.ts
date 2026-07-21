@@ -15,7 +15,6 @@ export async function setClaimStatus(claimId: string, status: ClaimStatus): Prom
   await requireAdmin()
   if (!claimId || !STATUSES.includes(status)) return { ok: false, error: 'Statut invalide.' }
   await db.update(claims).set({ status }).where(eq(claims.id, claimId))
-  revalidatePath('/admin/claims') // warranty queue
-  revalidatePath('/admin/theft') // theft queue (same ClaimsTable)
+  revalidatePath('/admin/theft') // lost/stolen queue (ClaimsTable)
   return { ok: true }
 }

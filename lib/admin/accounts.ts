@@ -1,6 +1,6 @@
 import { and, desc, eq } from 'drizzle-orm'
 import { db } from '@/db'
-import { users, registrations, units, variants, products, claims, addresses } from '@/db/schema'
+import { users, registrations, units, variants, products, addresses } from '@/db/schema'
 import { fullName } from './format'
 
 export type AccountRow = {
@@ -45,15 +45,6 @@ export type AccountDetail = {
     serial: string | null
     createdAt: Date
   }[]
-  claims: {
-    id: string
-    type: string
-    status: string
-    description: string | null
-    productName: string | null
-    sku: string | null
-    createdAt: Date
-  }[]
   addresses: {
     id: string
     company: string | null
@@ -88,24 +79,6 @@ export async function getAccount(id: string): Promise<AccountDetail | null> {
     .where(and(eq(registrations.userId, id), eq(registrations.status, 'active')))
     .orderBy(desc(registrations.createdAt))
 
-  const userClaims = await db
-    .select({
-      id: claims.id,
-      type: claims.type,
-      status: claims.status,
-      description: claims.description,
-      productName: products.name,
-      sku: variants.sku,
-      createdAt: claims.createdAt,
-    })
-    .from(claims)
-    .innerJoin(registrations, eq(registrations.id, claims.registrationId))
-    .innerJoin(units, eq(units.id, registrations.unitId))
-    .leftJoin(variants, eq(variants.id, units.variantId))
-    .leftJoin(products, eq(products.id, variants.productId))
-    .where(eq(claims.userId, id))
-    .orderBy(desc(claims.createdAt))
-
   const userAddresses = await db
     .select({
       id: addresses.id,
@@ -135,7 +108,6 @@ export async function getAccount(id: string): Promise<AccountDetail | null> {
     locale: u.locale,
     createdAt: u.createdAt,
     boards,
-    claims: userClaims,
     addresses: userAddresses,
   }
 }

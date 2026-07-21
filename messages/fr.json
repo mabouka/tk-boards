@@ -160,7 +160,6 @@
   "account": {
     "nav_dashboard": "Tableau de bord",
     "nav_boards": "Mes boards",
-    "nav_claims": "Réclamations",
     "sign_out": "Déconnexion",
     "welcome": "Bienvenue {name} !",
     "dashboard_intro": "Enregistre tes boards TK et déclare un vol le cas échéant.",
@@ -225,8 +224,6 @@
     "no_address": "Aucune adresse.",
     "boards_title": "Mes boards",
     "boards_empty": "Tu n'as pas encore enregistré de board.",
-    "claims_title": "Réclamations",
-    "claims_empty": "Aucune réclamation pour l'instant.",
     "soon": "Bientôt disponible."
   },
   "contact": {

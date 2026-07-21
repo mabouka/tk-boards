@@ -110,39 +110,6 @@ export default async function AccountDetailPage({
           </Table>
         )}
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Réclamations · {a.claims.length}</CardTitle>
-        </CardHeader>
-        {a.claims.length === 0 ? (
-          <CardContent className="text-muted-foreground pt-0 text-sm">Aucune réclamation.</CardContent>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Board</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {a.claims.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="capitalize">{c.type}</TableCell>
-                  <TableCell>
-                    {c.productName ?? '—'}{' '}
-                    <span className="text-muted-foreground font-mono text-xs">{c.sku}</span>
-                  </TableCell>
-                  <TableCell className="capitalize">{c.status}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{fmtDate(c.createdAt)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </Card>
     </div>
   )
 }

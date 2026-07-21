@@ -3,7 +3,7 @@ import { ClaimsTable } from '@/components/admin/claims/claims-table'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/admin/ui/card'
 
 // Shared admin queue for one claim type (warranty/theft): KPIs + filterable table.
-// Used by both /admin/claims and /admin/theft.
+// Used by /admin/theft (lost/stolen queue).
 export async function ClaimsQueue({
   type,
   title,

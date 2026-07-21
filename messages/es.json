@@ -160,7 +160,6 @@
   "account": {
     "nav_dashboard": "Panel",
     "nav_boards": "Mis tablas",
-    "nav_claims": "Reclamaciones",
     "sign_out": "Cerrar sesión",
     "welcome": "¡Bienvenido {name}!",
     "dashboard_intro": "Registra tus tablas TK y denuncia un robo si ocurre.",
@@ -225,8 +224,6 @@
     "no_address": "Sin dirección.",
     "boards_title": "Mis tablas",
     "boards_empty": "Aún no has registrado ninguna tabla.",
-    "claims_title": "Reclamaciones",
-    "claims_empty": "Todavía no hay reclamaciones.",
     "soon": "Próximamente."
   },
   "contact": {

@@ -160,7 +160,6 @@
   "account": {
     "nav_dashboard": "Dashboard",
     "nav_boards": "My boards",
-    "nav_claims": "Claims",
     "sign_out": "Sign out",
     "welcome": "Welcome {name}!",
     "dashboard_intro": "Register your TK boards and declare a theft if it ever happens.",
@@ -225,8 +224,6 @@
     "no_address": "No address.",
     "boards_title": "My boards",
     "boards_empty": "You haven't registered any board yet.",
-    "claims_title": "Claims",
-    "claims_empty": "No claim yet.",
     "soon": "Coming soon."
   },
   "contact": {
