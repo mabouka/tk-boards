@@ -6,7 +6,8 @@ import { users, addresses as addressesTable } from '@/db/schema'
 import ProfileModal from '../ProfileModal'
 import PasswordModal from '../PasswordModal'
 import AddressModal from '../AddressModal'
-import { deleteAddress, setDefaultAddress } from '../informationsActions'
+import DeleteAddressModal from '../DeleteAddressModal'
+import { setDefaultAddress } from '../informationsActions'
 import styles from '../account.module.css'
 
 type Props = { params: Promise<{ locale: string }> }
@@ -152,13 +153,12 @@ export default async function MyInformationsPage({ params }: Props) {
                         </button>
                       </form>
                     )}
-                    <form action={deleteAddress}>
-                      <input type="hidden" name="locale" value={locale} />
-                      <input type="hidden" name="id" value={a.id} />
-                      <button type="submit" className={styles.cardBtnDanger}>
-                        {t('delete')}
-                      </button>
-                    </form>
+                    <DeleteAddressModal
+                      locale={locale}
+                      id={a.id}
+                      label={a.label || t('address')}
+                      triggerClassName={styles.cardBtnDanger}
+                    />
                   </div>
                 </div>
               ))}

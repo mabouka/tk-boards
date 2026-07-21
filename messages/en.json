@@ -220,6 +220,8 @@
     "default": "Default",
     "set_default": "Set as default",
     "delete": "Delete",
+    "delete_address_title": "Delete this address?",
+    "delete_address_text": "“{label}” will be permanently deleted. This can't be undone.",
     "no_address": "No address.",
     "boards_title": "My boards",
     "boards_empty": "You haven't registered any board yet.",

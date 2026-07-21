@@ -220,6 +220,8 @@
     "default": "Predeterminada",
     "set_default": "Establecer predeterminada",
     "delete": "Eliminar",
+    "delete_address_title": "¿Eliminar esta dirección?",
+    "delete_address_text": "«{label}» se eliminará de forma permanente. Esta acción no se puede deshacer.",
     "no_address": "Sin dirección.",
     "boards_title": "Mis tablas",
     "boards_empty": "Aún no has registrado ninguna tabla.",
