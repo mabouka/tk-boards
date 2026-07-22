@@ -14,7 +14,7 @@ import {
 } from '@/lib/email'
 import { trackingUrlFor } from '@/lib/carriers'
 import { stripe } from '@/lib/stripe'
-import { vatFromTtc, SHIPPING_VAT_RATE } from '@/lib/vat'
+import { vatBreakdown } from '@/lib/vat'
 
 const STATUSES = [
   'pending_payment',
@@ -309,17 +309,15 @@ export async function createManualOrder(
   const byId = new Map(rows.map((r) => [r.id, r]))
 
   // Prices are TTC. Subtotal is TTC goods; VAT is the portion included at each
-  // product's rate (plus the standard rate on shipping).
+  // product's rate (plus the standard rate on shipping) — see vatBreakdown below.
   const lines: NewOrderLine[] = []
   let subtotal = 0
-  let goodsVat = 0
   for (const l of input.lines) {
     const v = byId.get(l.variantId)
     if (!v) return { ok: false, error: 'Article invalide.' }
     const qty = Math.max(1, Math.floor(Number(l.qty) || 0))
     const price = Number(v.salePriceEur ?? v.priceEur)
     subtotal += price * qty
-    goodsVat += vatFromTtc(price * qty, v.vatRate)
     lines.push({
       variantId: v.id,
       productSku: v.sku,
@@ -327,13 +325,14 @@ export async function createManualOrder(
       productName: v.productName,
       variantLabel: null,
       unitPriceEur: price.toFixed(2),
+      vatRate: v.vatRate,
       qty,
       lineShippingEur: '0.00',
     })
   }
 
   const ship = Math.max(0, Number(input.shippingEur) || 0)
-  const tax = goodsVat + vatFromTtc(ship, SHIPPING_VAT_RATE)
+  const tax = vatBreakdown(lines, ship).vatEur
   const total = subtotal + ship
 
   // Hold the stock now only if the order is already paid (a pending cash/transfer

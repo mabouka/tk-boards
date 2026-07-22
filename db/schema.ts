@@ -457,7 +457,10 @@ export const orderLines = pgTable(
     variantSku: text('variant_sku'), // snapshot
     productName: text('product_name').notNull(), // snapshot
     variantLabel: text('variant_label'), // snapshot of axes, e.g. "Bleu · 5'10\""
-    unitPriceEur: numeric('unit_price_eur', { precision: 10, scale: 2 }).notNull(), // frozen
+    unitPriceEur: numeric('unit_price_eur', { precision: 10, scale: 2 }).notNull(), // frozen, TTC
+    // Frozen too: an invoice must show the rate applied at the time of sale, even
+    // if the product's rate changes later.
+    vatRate: integer('vat_rate').notNull().default(21),
     qty: integer('qty').notNull().default(1),
     lineShippingEur: numeric('line_shipping_eur', { precision: 10, scale: 2 }).notNull().default('0'),
   },

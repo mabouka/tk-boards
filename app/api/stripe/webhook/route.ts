@@ -5,7 +5,7 @@ import { orders, variants, products, users } from '@/db/schema'
 import { stripe } from '@/lib/stripe'
 import { createOrder, resolveOrCreateUser, releaseStock, type NewOrderLine } from '@/lib/orders'
 import { sendOrderConfirmationEmail } from '@/lib/email'
-import { vatFromTtcCents, SHIPPING_VAT_RATE, DEFAULT_VAT_RATE } from '@/lib/vat'
+import { vatBreakdown, DEFAULT_VAT_RATE } from '@/lib/vat'
 
 export const runtime = 'nodejs'
 
@@ -100,15 +100,6 @@ export async function POST(req: Request) {
     })
   }
 
-  // We compute VAT ourselves (prices are TTC). Sum the VAT contained in each line
-  // at its product's rate, plus the shipping VAT at the standard rate.
-  let vatCents = 0
-  for (const item of li.data) {
-    const rate = vatBySku.get(skuOf(item)) ?? DEFAULT_VAT_RATE
-    vatCents += vatFromTtcCents(item.amount_subtotal ?? 0, rate)
-  }
-  vatCents += vatFromTtcCents(session.total_details?.amount_shipping ?? 0, SHIPPING_VAT_RATE)
-
   const lines: NewOrderLine[] = li.data.map((item) => {
     const sku = skuOf(item)
     const qty = item.quantity ?? 1
@@ -120,10 +111,16 @@ export async function POST(req: Request) {
       productName: item.description ?? sku,
       variantLabel: null,
       unitPriceEur: money(qty > 0 ? Math.round(lineSubtotal / qty) : lineSubtotal),
+      vatRate: vatBySku.get(sku) ?? DEFAULT_VAT_RATE,
       qty,
       lineShippingEur: '0.00',
     }
   })
+
+  // VAT is ours to compute (prices are TTC). Extracted once per rate — the same
+  // helper the invoice uses — so the stored tax matches the invoice exactly.
+  const shippingEur = money(session.total_details?.amount_shipping)
+  const vat = vatBreakdown(lines, shippingEur)
 
   // Prefer the signed-in buyer's account (stashed in metadata at checkout, and
   // re-checked here); fall back to resolving/creating an account by email for
@@ -188,8 +185,8 @@ export async function POST(req: Request) {
     paymentMethod: 'stripe',
     paymentStatus: 'paid',
     subtotalEur: money(session.amount_subtotal),
-    taxEur: money(vatCents),
-    shippingEur: money(session.total_details?.amount_shipping),
+    taxEur: vat.vatEur.toFixed(2),
+    shippingEur,
     totalEur: money(session.amount_total),
     ship: {
       name: ship.name,
@@ -230,8 +227,8 @@ export async function POST(req: Request) {
         totalEur: (Number(l.unitPriceEur) * l.qty).toFixed(2),
       })),
       subtotalEur: money(session.amount_subtotal),
-      taxEur: money(vatCents),
-      shippingEur: money(session.total_details?.amount_shipping),
+      taxEur: vat.vatEur.toFixed(2),
+      shippingEur,
       totalEur: money(session.amount_total),
       shipTo,
     })

@@ -85,7 +85,8 @@ export type NewOrderLine = {
   variantSku: string | null
   productName: string
   variantLabel: string | null
-  unitPriceEur: string // '490.00'
+  unitPriceEur: string // '490.00', TTC
+  vatRate: number // frozen at sale time — invoices must not follow later changes
   qty: number
   lineShippingEur: string
 }
