@@ -1,6 +1,7 @@
-import { and, desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { orders, orderLines, users, variants, products } from '@/db/schema'
+import { orderItemCountSql } from '@/lib/order-sql'
 import { fullName } from './format'
 
 export type PickVariant = { id: string; sku: string; label: string; priceEur: string; stock: number }
@@ -57,7 +58,7 @@ export async function getOrders(): Promise<AdminOrderRow[]> {
       paymentStatus: orders.paymentStatus,
       totalEur: orders.totalEur,
       createdAt: orders.createdAt,
-      itemCount: sql<number>`(select coalesce(sum(${orderLines.qty}), 0) from ${orderLines} where ${orderLines.orderId} = ${orders.id})::int`,
+      itemCount: orderItemCountSql,
     })
     .from(orders)
     .leftJoin(users, eq(users.id, orders.userId))

@@ -4,6 +4,7 @@ import { db } from '@/db'
 import { orders, orderLines, users, variants } from '@/db/schema'
 import { createEmailToken } from '@/lib/auth-tokens'
 import { sendPasswordResetEmail } from '@/lib/email'
+import { orderItemCountSql } from '@/lib/order-sql'
 
 export type StockLine = { variantId: string; qty: number }
 
@@ -181,7 +182,7 @@ export async function getUserOrders(userId: string) {
       status: orders.status,
       totalEur: orders.totalEur,
       createdAt: orders.createdAt,
-      itemCount: sql<number>`(select coalesce(sum(${orderLines.qty}), 0) from ${orderLines} where ${orderLines.orderId} = ${orders.id})::int`,
+      itemCount: orderItemCountSql,
     })
     .from(orders)
     .where(eq(orders.userId, userId))
