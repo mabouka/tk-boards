@@ -177,6 +177,31 @@ export const variants = pgTable(
   (v) => [uniqueIndex('variant_sku_uq').on(v.sku), index('variant_product_idx').on(v.productId)]
 )
 
+// ── Shipping: explicit per-product × per-country rate matrix ──
+// A country with no row for a product is not shippable for that product. At
+// checkout, a destination is offered only if every product in the cart has a
+// rate for it, and the cart is charged the highest of those rates (one parcel).
+export const shippingRates = pgTable(
+  'shipping_rate',
+  {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    productId: text('product_id')
+      .notNull()
+      .references(() => products.id, { onDelete: 'cascade' }),
+    country: text('country').notNull(), // ISO 3166-1 alpha-2, uppercase
+    amountEur: numeric('amount_eur', { precision: 10, scale: 2 }).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (r) => [
+    uniqueIndex('shipping_rate_product_country_uq').on(r.productId, r.country),
+    index('shipping_rate_product_idx').on(r.productId),
+  ]
+)
+
 // ── Catalogue: which attribute value a variant has on each axis ──
 
 export const variantValues = pgTable(
