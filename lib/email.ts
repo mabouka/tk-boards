@@ -291,6 +291,19 @@ export async function sendOrderRefundedEmail(opts: {
   })
 }
 
+/**
+ * Operational alert to the shop's own inbox — not a customer email, so it skips
+ * the branded layout and says the useful thing in plain text.
+ */
+export async function sendOpsAlertEmail(opts: { subject: string; lines: string[] }) {
+  const to = process.env.CONTACT_EMAIL || FROM
+  const text = opts.lines.join('\n')
+  const html = `<pre style="font:13px/1.6 ui-monospace,monospace;white-space:pre-wrap">${opts.lines
+    .map((l) => l.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!))
+    .join('\n')}</pre>`
+  await send({ to, subject: opts.subject, html, text, devNote: opts.subject })
+}
+
 export async function sendPasswordResetEmail(opts: { to: string; locale: string; token: string }) {
   const url = `${BASE}/${opts.locale}/reset-password?token=${opts.token}`
   const { html, text } = await renderBoth(
