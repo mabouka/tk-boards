@@ -5,6 +5,7 @@ import { accountPageSettings } from './documents/accountPageSettings'
 import { authPage } from './documents/authPage'
 import { board } from './documents/board'
 import { boardsPageSettings } from './documents/boardsPageSettings'
+import { companySettings } from './documents/companySettings'
 import { contactSettings } from './documents/contactSettings'
 import { footerSettings } from './documents/footerSettings'
 import { navigation } from './documents/navigation'
@@ -43,6 +44,7 @@ export const schemaTypes = [
   authPage,
   board,
   boardsPageSettings,
+  companySettings,
   contactSettings,
   footerSettings,
   navigation,

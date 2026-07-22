@@ -4,34 +4,34 @@ import { and, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { orders, orderLines } from '@/db/schema'
 import InvoiceDocument, { type InvoiceData, type InvoiceParty } from '@/invoices/InvoiceDocument'
+import { client } from '@/sanity/lib/client'
+import { sanityCache } from '@/sanity/lib/fetch'
+import { companySettingsQuery } from '@/sanity/lib/queries'
 import { vatBreakdown } from '@/lib/vat'
 
 /**
- * Our legal identity on the invoice. Configured, never hard-coded — an invoice
- * without a real tax id is worthless, so a missing one disables invoicing rather
- * than emitting an invalid document.
- *
- *   INVOICE_SELLER_NAME    legal business name
- *   INVOICE_SELLER_TAX_ID  NIF/CIF
- *   INVOICE_SELLER_ADDRESS registered address ("|" or newline separates lines)
- *   INVOICE_SELLER_EMAIL   optional contact
+ * Our legal identity on the invoice, edited in the Studio (Société / facturation)
+ * so it can change without a deploy — none of it is secret, it is printed on every
+ * invoice. An invoice without a real tax id is worthless, so an unfilled setting
+ * disables invoicing rather than emitting an invalid document.
  */
-export function invoiceSeller(): InvoiceParty | null {
-  const name = (process.env.INVOICE_SELLER_NAME ?? '').trim()
-  const taxId = (process.env.INVOICE_SELLER_TAX_ID ?? '').trim()
+export async function invoiceSeller(): Promise<InvoiceParty | null> {
+  const c = await client.fetch(companySettingsQuery, {}, sanityCache('companySettings'))
+  const name = (c?.legalName ?? '').trim()
+  const taxId = (c?.taxId ?? '').trim()
   if (!name || !taxId) return null
   return {
     name,
     taxId,
-    lines: (process.env.INVOICE_SELLER_ADDRESS ?? '')
-      .split(/\r?\n|\s*\|\s*/)
-      .map((s) => s.trim())
+    lines: (c?.address ?? '')
+      .split(/\r?\n/)
+      .map((s: string) => s.trim())
       .filter(Boolean),
-    email: (process.env.INVOICE_SELLER_EMAIL ?? '').trim() || undefined,
+    email: (c?.email ?? '').trim() || undefined,
   }
 }
 
-export const invoicingConfigured = () => invoiceSeller() !== null
+export const invoicingConfigured = async () => (await invoiceSeller()) !== null
 
 type OrderRow = typeof orders.$inferSelect
 type LineRow = Pick<
@@ -95,7 +95,7 @@ const invoiceable = (o: OrderRow) => o.paymentStatus === 'paid'
 
 /** Invoice for one of the signed-in buyer's own orders (looked up by number). */
 export async function getUserInvoice(userId: string, number: string): Promise<InvoiceData | null> {
-  const seller = invoiceSeller()
+  const seller = await invoiceSeller()
   if (!seller || !userId || !number) return null
   const [order] = await db
     .select()
@@ -108,7 +108,7 @@ export async function getUserInvoice(userId: string, number: string): Promise<In
 
 /** Invoice for any order, for the back-office (caller must gate on admin). */
 export async function getAdminInvoice(orderId: string): Promise<InvoiceData | null> {
-  const seller = invoiceSeller()
+  const seller = await invoiceSeller()
   if (!seller || !orderId) return null
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1)
   if (!order || !invoiceable(order)) return null

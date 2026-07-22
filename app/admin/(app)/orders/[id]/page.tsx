@@ -31,6 +31,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   const eur = (v: string) => formatEur(Number(v), 'fr')
   const st = orderStatusOf(order.status)
   const canShip = ['paid', 'preparing', 'shipped', 'delivered'].includes(order.status)
+  const canInvoice = order.paymentStatus === 'paid' && (await invoicingConfigured())
   const shipTo = [
     order.shipName,
     order.shipLine1,
@@ -54,7 +55,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           <Badge variant={st.variant}>{st.label}</Badge>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {order.paymentStatus === 'paid' && invoicingConfigured() && (
+          {canInvoice && (
             <Button asChild variant="outline">
               <a href={`/admin/orders/${order.id}/invoice`} target="_blank" rel="noopener noreferrer">
                 <FileText className="size-4" /> Facture

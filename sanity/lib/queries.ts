@@ -451,6 +451,11 @@ export const contactSettingsQuery = defineQuery(`
   *[_type == "contactSettings"][0] { email, whatsapp }
 `)
 
+// Seller identity printed on invoices.
+export const companySettingsQuery = defineQuery(`
+  *[_type == "companySettings"][0] { legalName, taxId, address, email }
+`)
+
 export const navigationQuery = defineQuery(`
   *[_type == "navigation" && location == $location && language == $locale][0] {
     items[] {

@@ -18,6 +18,7 @@ export default async function OrderDetailPage({ params }: Props) {
   if (!data) notFound()
   const { order, lines } = data
 
+  const canInvoice = order.paymentStatus === 'paid' && (await invoicingConfigured())
   const eur = (v: string) => formatEur(Number(v), locale)
   const fmtDate = (d: Date) =>
     new Date(d).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })
@@ -45,7 +46,7 @@ export default async function OrderDetailPage({ params }: Props) {
         </span>
       </div>
 
-      {order.paymentStatus === 'paid' && invoicingConfigured() && (
+      {canInvoice && (
         <a
           href={`/${locale}/account/orders/${encodeURIComponent(order.number)}/invoice`}
           className="u-card-btn"
