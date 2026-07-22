@@ -66,7 +66,14 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
   useEffect(() => {
     let alive = true
     getSavedAddress().then((a) => {
-      if (alive && a) setAddr({ name: a.name, line1: a.line1, line2: a.line2, postalCode: a.postalCode, city: a.city, phone: a.phone })
+      if (!alive || !a) return
+      // Only prefill a form the buyer hasn't started: on a slow connection this
+      // resolves after they've begun typing, and overwriting would wipe it.
+      setAddr((cur) =>
+        cur === EMPTY_ADDR
+          ? { name: a.name, line1: a.line1, line2: a.line2, postalCode: a.postalCode, city: a.city, phone: a.phone }
+          : cur
+      )
     })
     return () => {
       alive = false

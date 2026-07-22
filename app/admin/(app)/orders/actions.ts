@@ -257,7 +257,18 @@ export async function refundOrder(orderId: string): Promise<Result> {
 
   // Records status + paymentStatus='refunded' and releases the held stock.
   const res = await setOrderStatus(orderId, 'refunded')
-  if (!res.ok) return res
+  if (!res.ok) {
+    // The money is already back with the customer. Record that no matter what,
+    // so the order can't be refunded a second time, and say so plainly.
+    await db
+      .update(orders)
+      .set({ status: 'refunded', paymentStatus: 'refunded' })
+      .where(eq(orders.id, orderId))
+    return {
+      ok: false,
+      error: `Remboursement effectué, mais la mise à jour a échoué (${res.error}). Vérifie le stock.`,
+    }
+  }
 
   // Notify the buyer of the refund (best-effort — never fails the refund itself).
   try {

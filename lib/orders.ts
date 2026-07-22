@@ -1,7 +1,7 @@
-import { and, desc, eq, gte, sql } from 'drizzle-orm'
+import { and, desc, eq, sql } from 'drizzle-orm'
 import type { BatchItem } from 'drizzle-orm/batch'
 import { db } from '@/db'
-import { orders, orderLines, users, variants } from '@/db/schema'
+import { orders, orderLines, users } from '@/db/schema'
 import { createEmailToken } from '@/lib/auth-tokens'
 import { sendPasswordResetEmail } from '@/lib/email'
 import { orderItemCountSql } from '@/lib/order-sql'
@@ -12,30 +12,61 @@ export type StockLine = { variantId: string; qty: number }
  *  so two concurrent buyers of the last unit can't both succeed; on any shortfall
  *  the already-held lines are released and it returns false (nothing reserved). */
 export async function reserveStock(lines: StockLine[]): Promise<boolean> {
-  const held: StockLine[] = []
-  for (const l of lines) {
-    const res = await db
-      .update(variants)
-      .set({ stock: sql`${variants.stock} - ${l.qty}` })
-      .where(and(eq(variants.id, l.variantId), gte(variants.stock, l.qty)))
-      .returning({ id: variants.id })
-    if (res.length === 0) {
-      await releaseStock(held)
-      return false
-    }
-    held.push(l)
-  }
-  return true
+  const wanted = sumByVariant(lines)
+  if (wanted.length === 0) return true
+
+  // One statement, all-or-nothing: the `ok` CTE decides up front whether every
+  // line can be satisfied, and the UPDATE only fires when it can. A loop of
+  // guarded updates would leave earlier lines decremented if the process died
+  // mid-way, with no session and no event to ever give them back.
+  const rows = sql.join(
+    wanted.map((l) => sql`(${l.variantId}, ${l.qty}::int)`),
+    sql`, `
+  )
+  const res = await db.execute(sql`
+    with req(variant_id, qty) as (values ${rows}),
+         ok as (
+           select count(*) = (select count(*) from req) as all_ok
+           from req join "variant" v on v.id = req.variant_id and v.stock >= req.qty
+         )
+    update "variant" v
+       set stock = v.stock - r.qty
+      from req r, ok
+     where v.id = r.variant_id and ok.all_ok
+    returning v.id
+  `)
+  return affectedRows(res) === wanted.length
 }
 
 /** Give stock back (session expired, order cancelled/refunded). */
 export async function releaseStock(lines: StockLine[]): Promise<void> {
+  const give = sumByVariant(lines)
+  if (give.length === 0) return
+  const rows = sql.join(
+    give.map((l) => sql`(${l.variantId}, ${l.qty}::int)`),
+    sql`, `
+  )
+  await db.execute(sql`
+    with req(variant_id, qty) as (values ${rows})
+    update "variant" v set stock = v.stock + r.qty
+      from req r
+     where v.id = r.variant_id
+  `)
+}
+
+/** Collapse repeated variants so a cart listing one twice moves its stock once. */
+function sumByVariant(lines: StockLine[]): StockLine[] {
+  const byId = new Map<string, number>()
   for (const l of lines) {
-    await db
-      .update(variants)
-      .set({ stock: sql`${variants.stock} + ${l.qty}` })
-      .where(eq(variants.id, l.variantId))
+    if (!l.variantId || l.qty <= 0) continue
+    byId.set(l.variantId, (byId.get(l.variantId) ?? 0) + l.qty)
   }
+  return [...byId].map(([variantId, qty]) => ({ variantId, qty }))
+}
+
+const affectedRows = (res: unknown): number => {
+  const r = res as { rows?: unknown[]; length?: number }
+  return r?.rows?.length ?? r?.length ?? 0
 }
 
 const LOCALES = ['fr', 'en', 'es']
@@ -51,11 +82,14 @@ const loc = (v: string | null | undefined) => (LOCALES.includes(String(v)) ? Str
 async function nextOrderNumber(): Promise<string> {
   const year = new Date().getFullYear()
   const prefix = `TK-${year}-`
+  // max() on the numeric suffix, not on the text: a plain max would compare
+  // 'TK-2026-10000' against 'TK-2026-9999' character by character and pick the
+  // latter, handing back a number that already exists once the series passes 9999.
   const [row] = await db
-    .select({ last: sql<string | null>`max(${orders.number})` })
+    .select({ last: sql<number | null>`max(cast(substring(${orders.number} from '[0-9]+$') as integer))` })
     .from(orders)
     .where(sql`${orders.number} like ${`${prefix}%`}`)
-  const seq = row?.last ? Number(row.last.slice(prefix.length)) : 0
+  const seq = Number(row?.last ?? 0)
   return `${prefix}${String((Number.isFinite(seq) ? seq : 0) + 1).padStart(4, '0')}`
 }
 

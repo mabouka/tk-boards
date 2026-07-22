@@ -1,5 +1,5 @@
 import type Stripe from 'stripe'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, lt } from 'drizzle-orm'
 import { db } from '@/db'
 import { orders, variants, products, users, webhookEvents } from '@/db/schema'
 import { stripe } from '@/lib/stripe'
@@ -16,6 +16,19 @@ import { vatBreakdown, DEFAULT_VAT_RATE } from '@/lib/vat'
 export const runtime = 'nodejs'
 
 const money = (cents: number | null | undefined) => ((cents ?? 0) / 100).toFixed(2)
+
+const HANDLED_EVENTS = [
+  'checkout.session.completed',
+  'checkout.session.async_payment_succeeded',
+  'checkout.session.async_payment_failed',
+  'checkout.session.expired',
+] as const
+type HandledEvent = Extract<Stripe.Event, { type: (typeof HANDLED_EVENTS)[number] }>
+const isHandled = (e: Stripe.Event): e is HandledEvent =>
+  (HANDLED_EVENTS as readonly string[]).includes(e.type)
+
+// Stripe only retries for three days, so a claim older than that protects nothing.
+const CLAIM_RETENTION_DAYS = 7
 
 // The variant SKU we stashed in the line item's product metadata at checkout.
 const skuOf = (item: Stripe.LineItem): string => {
@@ -57,10 +70,10 @@ export async function POST(req: Request) {
     return new Response('Invalid signature', { status: 400 })
   }
 
-  if (
-    event.type !== 'checkout.session.completed' &&
-    event.type !== 'checkout.session.expired'
-  ) {
+  // Async methods (Bancontact, SEPA…) complete the session before the money
+  // clears, so the order is created on async_payment_succeeded — a *different*
+  // event — and the stock goes back on async_payment_failed.
+  if (!isHandled(event)) {
     return new Response('ignored', { status: 200 })
   }
 
@@ -75,25 +88,45 @@ export async function POST(req: Request) {
     throw e
   }
 
+  // Keep the table bounded: a claim outlives its usefulness once Stripe has
+  // stopped retrying. Best-effort — never fail a webhook over housekeeping.
+  try {
+    const cutoff = new Date(Date.now() - CLAIM_RETENTION_DAYS * 86_400_000)
+    await db.delete(webhookEvents).where(lt(webhookEvents.receivedAt, cutoff))
+  } catch {
+    /* housekeeping only */
+  }
+
   try {
     return await handleEvent(event)
   } catch (e) {
-    await db.delete(webhookEvents).where(eq(webhookEvents.id, event.id))
+    // Release the claim so Stripe's retry isn't answered with 'duplicate' — but
+    // never let this cleanup mask the failure that caused it. If the delete also
+    // fails the row is left behind; the prune above eventually reclaims it.
+    try {
+      await db.delete(webhookEvents).where(eq(webhookEvents.id, event.id))
+    } catch {
+      /* keep the original error */
+    }
     throw e
   }
 }
 
-async function handleEvent(
-  event: Stripe.CheckoutSessionCompletedEvent | Stripe.CheckoutSessionExpiredEvent
-): Promise<Response> {
+async function handleEvent(event: HandledEvent): Promise<Response> {
   const session = event.data.object
 
-  // Abandoned/expired session → give back the stock reserved at checkout.
-  if (event.type === 'checkout.session.expired') {
+  // Abandoned, expired, or an async payment that never cleared → give back the
+  // stock reserved at checkout.
+  if (
+    event.type === 'checkout.session.expired' ||
+    event.type === 'checkout.session.async_payment_failed'
+  ) {
     await releaseStock(await sessionStockLines(session.id))
     return new Response('released', { status: 200 })
   }
 
+  // A session can complete before an async payment clears; the order is written
+  // when async_payment_succeeded arrives.
   if (session.payment_status !== 'paid') return new Response('unpaid', { status: 200 })
 
   // Idempotency: the unique index on stripe_session_id backs this too.

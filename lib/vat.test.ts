@@ -4,6 +4,7 @@ import {
   SHIPPING_VAT_RATE,
   VAT_RATES,
   isVatRate,
+  reconcileBuckets,
   vatBreakdown,
   vatFromTtc,
   vatFromTtcCents,
@@ -141,6 +142,49 @@ describe('vatBreakdown', () => {
 
   it('is empty for an empty order', () => {
     expect(vatBreakdown([])).toEqual({ buckets: [], baseEur: 0, vatEur: 0, totalEur: 0 })
+  })
+})
+
+// The invoice prints the charged totals but rebuilds its per-rate rows from the
+// stored lines; this keeps the two from ever contradicting each other.
+describe('reconcileBuckets', () => {
+  const mixed = () =>
+    vatBreakdown(
+      [
+        { unitPriceEur: 121, qty: 1, vatRate: 21 },
+        { unitPriceEur: 110, qty: 1, vatRate: 10 },
+      ],
+      24.2
+    ).buckets
+
+  it('leaves rows untouched when they already match', () => {
+    const b = mixed()
+    expect(reconcileBuckets(b, 255.2, 35.2)).toEqual(b)
+  })
+
+  it('absorbs a residual cent into the standard-rate row', () => {
+    const out = reconcileBuckets(mixed(), 255.21, 35.21)
+    expect(out[0]).toEqual({ rate: 21, baseEur: 120, vatEur: 25.21, totalEur: 145.21 })
+    expect(out[1]).toEqual({ rate: 10, baseEur: 100, vatEur: 10, totalEur: 110 })
+  })
+
+  it('makes the rows sum to the charged figures, whatever the drift', () => {
+    for (const [total, vat] of [
+      [255.2, 35.2],
+      [255.21, 35.2],
+      [255.19, 35.21],
+      [255.23, 35.18],
+    ] as const) {
+      const out = reconcileBuckets(mixed(), total, vat)
+      expect(out.reduce((s, b) => s + b.totalEur, 0)).toBeCloseTo(total, 2)
+      expect(out.reduce((s, b) => s + b.vatEur, 0)).toBeCloseTo(vat, 2)
+      // base + vat still reconciles on every row
+      for (const b of out) expect(b.baseEur + b.vatEur).toBeCloseTo(b.totalEur, 2)
+    }
+  })
+
+  it('is a no-op on an order with no rows', () => {
+    expect(reconcileBuckets([], 10, 2)).toEqual([])
   })
 })
 

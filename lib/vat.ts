@@ -21,6 +21,38 @@ export function vatFromTtc(ttcEur: number, ratePct: number): number {
   return vatFromTtcCents(Math.round(ttcEur * 100), ratePct) / 100
 }
 
+const cents = (eur: number) => Math.round(eur * 100)
+
+/**
+ * Force the per-rate rows to add up to the amounts actually charged.
+ *
+ * The rows are rebuilt from the stored order lines while the headline figures come
+ * from the order itself; any residual cent (a unit price that had to be rounded)
+ * is absorbed by the highest-rate row, so an invoice can never print rates that
+ * fail to sum to its own total.
+ */
+export function reconcileBuckets(
+  buckets: VatBucket[],
+  totalEur: number,
+  vatEur: number
+): VatBucket[] {
+  if (buckets.length === 0) return buckets
+  const dTotal = cents(totalEur) - buckets.reduce((s, b) => s + cents(b.totalEur), 0)
+  const dVat = cents(vatEur) - buckets.reduce((s, b) => s + cents(b.vatEur), 0)
+  if (dTotal === 0 && dVat === 0) return buckets
+  // buckets are sorted highest rate first — absorb into that one.
+  return buckets.map((b, i) =>
+    i === 0
+      ? {
+          ...b,
+          totalEur: (cents(b.totalEur) + dTotal) / 100,
+          vatEur: (cents(b.vatEur) + dVat) / 100,
+          baseEur: (cents(b.baseEur) + dTotal - dVat) / 100,
+        }
+      : b
+  )
+}
+
 export type BreakdownLine = { unitPriceEur: string | number; qty: number; vatRate: number }
 export type VatBucket = { rate: number; baseEur: number; vatEur: number; totalEur: number }
 export type VatBreakdown = {

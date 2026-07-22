@@ -9,7 +9,7 @@ import { stripe } from '@/lib/stripe'
 import { reserveStock, releaseStock } from '@/lib/orders'
 import { cartShippingQuotes, shippingForCountry } from '@/lib/shipping'
 import { isCountryCode } from '@/lib/countries'
-import { vatBreakdown } from '@/lib/vat'
+import { vatBreakdown, vatFromTtcCents, SHIPPING_VAT_RATE } from '@/lib/vat'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const LOCALES = ['fr', 'en', 'es']
@@ -104,8 +104,7 @@ export type CheckoutQuote =
 
 // Everything the checkout page needs to render: authoritative TTC line prices, the
 // subtotal, the VAT included in the goods, and the destinations the whole cart can
-// ship to (with their TTC charge). Shipping VAT is added client-side once a country
-// is picked (it's a flat standard rate).
+// ship to — each with its TTC charge and the total VAT that destination implies.
 export async function getCheckoutQuote(items: CheckoutItem[]): Promise<CheckoutQuote> {
   const read = await readCartLines(items)
   if ('error' in read) return { ok: false, error: read.error }
@@ -113,10 +112,22 @@ export async function getCheckoutQuote(items: CheckoutItem[]): Promise<CheckoutQ
   const subtotalEur = lines.reduce((s, l) => s + l.unitPriceEur * l.qty, 0)
   // Extract VAT once per rate, exactly as the order and invoice do — summing it
   // line by line here would show the buyer a figure a cent off the final one.
-  const goodsVatEur = vatBreakdown(lines, 0).vatEur
+  //
+  // Shipping only ever lands in the standard-rate row, so the goods are broken
+  // down once and each destination just re-extracts that single row: O(lines +
+  // countries) instead of a full breakdown per country.
+  const goods = vatBreakdown(lines, 0)
+  const goodsVatEur = goods.vatEur
+  const std = goods.buckets.find((b) => b.rate === SHIPPING_VAT_RATE)
+  const stdTtcCents = Math.round((std?.totalEur ?? 0) * 100)
+  const otherVatCents = Math.round((goods.vatEur - (std?.vatEur ?? 0)) * 100)
+
   const quotes = (await cartShippingQuotes(lines.map((l) => l.productId))).map((q) => ({
     ...q,
-    vatEur: vatBreakdown(lines, q.shippingEur).vatEur,
+    vatEur:
+      (otherVatCents +
+        vatFromTtcCents(stdTtcCents + Math.round(q.shippingEur * 100), SHIPPING_VAT_RATE)) /
+      100,
   }))
   return {
     ok: true,

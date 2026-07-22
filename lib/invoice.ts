@@ -8,7 +8,7 @@ import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { urlFor } from '@/sanity/lib/image'
 import { companySettingsQuery } from '@/sanity/lib/queries'
-import { vatBreakdown } from '@/lib/vat'
+import { vatBreakdown, reconcileBuckets } from '@/lib/vat'
 
 /**
  * Our legal identity on the invoice, edited in the Studio (Société / facturation)
@@ -112,7 +112,7 @@ function buildInvoiceData(
     // Per-rate rows are derived from the lines, but the headline figures come from
     // the order itself — an invoice must state the amount that was actually
     // charged, never a total recomputed from rounded unit prices.
-    buckets: bd.buckets,
+    buckets: reconcileBuckets(bd.buckets, Number(order.totalEur), Number(order.taxEur)),
     vatEur: Number(order.taxEur),
     totalEur: Number(order.totalEur),
     baseEur: Number(order.totalEur) - Number(order.taxEur),
