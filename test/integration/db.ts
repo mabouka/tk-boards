@@ -38,6 +38,10 @@ const TABLES = [
   'session',
   'account',
   'verification_token',
+  '"order"',
+  'order_line',
+  'shipping_rate',
+  'webhook_event',
 ]
 
 export async function truncateAll(pool: Pool) {

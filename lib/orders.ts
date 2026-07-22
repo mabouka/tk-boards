@@ -5,13 +5,17 @@ import { orders, orderLines, users } from '@/db/schema'
 import { createEmailToken } from '@/lib/auth-tokens'
 import { sendPasswordResetEmail } from '@/lib/email'
 import { orderItemCountSql } from '@/lib/order-sql'
+import type { AnyPgDatabase } from '@/lib/db-types'
 
 export type StockLine = { variantId: string; qty: number }
 
-/** Atomically hold stock for these lines. Each decrement is guarded (stock >= qty)
- *  so two concurrent buyers of the last unit can't both succeed; on any shortfall
- *  the already-held lines are released and it returns false (nothing reserved). */
-export async function reserveStock(lines: StockLine[]): Promise<boolean> {
+/** Hold stock for these lines, all or nothing. Guarded on stock >= qty, so two
+ *  buyers of the last unit can't both succeed; if any line falls short nothing is
+ *  taken at all and it returns false. */
+export async function reserveStock(
+  lines: StockLine[],
+  database: AnyPgDatabase = db
+): Promise<boolean> {
   const wanted = sumByVariant(lines)
   if (wanted.length === 0) return true
 
@@ -23,7 +27,7 @@ export async function reserveStock(lines: StockLine[]): Promise<boolean> {
     wanted.map((l) => sql`(${l.variantId}, ${l.qty}::int)`),
     sql`, `
   )
-  const res = await db.execute(sql`
+  const res = await database.execute(sql`
     with req(variant_id, qty) as (values ${rows}),
          ok as (
            select count(*) = (select count(*) from req) as all_ok
@@ -39,14 +43,17 @@ export async function reserveStock(lines: StockLine[]): Promise<boolean> {
 }
 
 /** Give stock back (session expired, order cancelled/refunded). */
-export async function releaseStock(lines: StockLine[]): Promise<void> {
+export async function releaseStock(
+  lines: StockLine[],
+  database: AnyPgDatabase = db
+): Promise<void> {
   const give = sumByVariant(lines)
   if (give.length === 0) return
   const rows = sql.join(
     give.map((l) => sql`(${l.variantId}, ${l.qty}::int)`),
     sql`, `
   )
-  await db.execute(sql`
+  await database.execute(sql`
     with req(variant_id, qty) as (values ${rows})
     update "variant" v set stock = v.stock + r.qty
       from req r
