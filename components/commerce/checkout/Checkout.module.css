@@ -1,0 +1,128 @@
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 140px 20px 100px;
+  color: var(--color-white);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  margin: 0 0 28px;
+}
+
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 22px;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ── Item lines ── */
+.line {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.line:last-child {
+  border-bottom: none;
+}
+.lineQty {
+  color: var(--color-white-50);
+  font-family: var(--font-mono);
+  margin-right: 8px;
+}
+.linePrice {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+/* ── Country field ── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.label {
+  font-size: 12px;
+  color: var(--color-white-50);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.select {
+  width: 100%;
+  height: 46px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 15px;
+  border-radius: 8px;
+}
+/* Native dropdown items render on a white surface in most browsers. */
+.select option {
+  color: #000;
+}
+
+/* ── Totals ── */
+.totals {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-white-50);
+}
+.totalRow span:last-child {
+  font-family: var(--font-mono);
+}
+.grand {
+  color: var(--color-white);
+  font-weight: 700;
+  font-size: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 14px;
+}
+.taxNote {
+  font-size: 12px;
+  color: var(--color-white-50);
+  margin: 10px 0 0;
+}
+
+.pay {
+  width: 100%;
+  margin-top: 6px;
+  text-align: center;
+}
+.error {
+  color: var(--color-danger, #dc5050);
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+.muted {
+  color: var(--color-white-50);
+  margin: 0;
+}
+.emptyCta {
+  display: inline-block;
+  margin-top: 20px;
+}

@@ -1,34 +1,20 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useTranslations } from 'next-intl'
-import { createCheckoutSession } from '@/app/[locale]/(site)/checkout/actions'
+import { useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 
-/** "Buy now": skip the cart and go straight to a one-item Stripe Checkout. */
+/** "Buy now": skip the cart and go straight to the checkout page for a single
+ *  item (sku carried in the URL). Shipping now needs a destination, so checkout
+ *  happens on our page before Stripe — errors surface there, not here. */
 export function useBuyNow(locale: string) {
-  const t = useTranslations('cart')
+  const router = useRouter()
   const [pending, startTransition] = useTransition()
-  const [error, setError] = useState<string>()
+  const error: string | undefined = undefined
 
   const buyNow = (sku: string, qty = 1) => {
     if (!sku) return
-    setError(undefined)
-    startTransition(async () => {
-      const res = await createCheckoutSession([{ sku, qty }], locale)
-      if (res.url) {
-        window.location.href = res.url
-        return
-      }
-      setError(
-        t(
-          res.error === 'stock'
-            ? 'checkout_err_stock'
-            : res.error === 'unavailable'
-              ? 'checkout_err_unavailable'
-              : 'checkout_err_generic'
-        )
-      )
-    })
+    const q = qty > 1 ? `${sku}:${qty}` : sku
+    startTransition(() => router.push(`/${locale}/checkout?buy=${encodeURIComponent(q)}`))
   }
 
   return { buyNow, pending, error }

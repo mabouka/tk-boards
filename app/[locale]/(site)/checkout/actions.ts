@@ -7,30 +7,35 @@ import { variants, products, users } from '@/db/schema'
 import { liveSession } from '@/lib/session'
 import { stripe } from '@/lib/stripe'
 import { reserveStock, releaseStock } from '@/lib/orders'
+import { cartShippingQuotes, shippingForCountry } from '@/lib/shipping'
+import { isCountryCode } from '@/lib/countries'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const LOCALES = ['fr', 'en', 'es']
 const loc = (v: unknown) => (LOCALES.includes(String(v)) ? String(v) : 'en')
-
-// Countries Stripe may collect a shipping address for. P1: a broad list so
-// checkout works everywhere; P6 restricts this to countries that have a rate.
-const SHIP_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection['allowed_countries'] =
-  ['FR', 'BE', 'ES', 'DE', 'IT', 'NL', 'LU', 'PT', 'AT', 'IE', 'FI', 'GR', 'SE', 'DK', 'PL', 'CZ',
-   'GB', 'CH', 'NO', 'US', 'CA', 'AU', 'NZ']
+const SHIP_LABEL: Record<string, string> = { fr: 'Livraison', en: 'Shipping', es: 'Envío' }
 
 export type CheckoutItem = { sku: string; qty: number }
-export type CheckoutResult = { url?: string; error?: 'empty' | 'unavailable' | 'stock' | 'failed' }
+export type CheckoutResult = {
+  url?: string
+  error?: 'empty' | 'unavailable' | 'stock' | 'failed' | 'shipping_country'
+}
 
-// Turn the (client) cart into a Stripe Checkout session. Prices, availability and
-// stock are re-read from the DB — the client only supplies variant SKU + qty, so
-// a tampered price or an out-of-stock line can never go through.
-export async function createCheckoutSession(
-  items: CheckoutItem[],
-  localeRaw: string
-): Promise<CheckoutResult> {
-  const locale = loc(localeRaw)
+type CartLineResolved = {
+  sku: string
+  name: string
+  unitPriceEur: number
+  qty: number
+  variantId: string
+  productId: string
+}
+
+// Re-read every cart line from the DB — the client only supplies variant SKU +
+// qty, so price, availability and the owning product are always authoritative.
+async function readCartLines(
+  items: CheckoutItem[]
+): Promise<{ error: 'empty' | 'unavailable' } | { lines: CartLineResolved[] }> {
   if (!Array.isArray(items) || items.length === 0) return { error: 'empty' }
-
   const skus = [...new Set(items.map((i) => String(i.sku)))]
   const rows = await db
     .select({
@@ -39,6 +44,7 @@ export async function createCheckoutSession(
       priceEur: variants.priceEur,
       salePriceEur: variants.salePriceEur,
       active: variants.active,
+      productId: products.id,
       productName: products.name,
       productActive: products.active,
     })
@@ -47,24 +53,82 @@ export async function createCheckoutSession(
     .where(inArray(variants.sku, skus))
   const bySku = new Map(rows.map((r) => [r.sku, r]))
 
-  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
-  const reserveLines: { variantId: string; qty: number }[] = []
+  const lines: CartLineResolved[] = []
   for (const it of items) {
     const qty = Math.max(1, Math.floor(Number(it.qty) || 0))
     const v = bySku.get(String(it.sku))
     if (!v || !v.active || !v.productActive) return { error: 'unavailable' }
-    const unitAmount = Math.round(Number(v.salePriceEur ?? v.priceEur) * 100) // cents
-    lineItems.push({
-      quantity: qty,
-      price_data: {
-        currency: 'eur',
-        unit_amount: unitAmount,
-        tax_behavior: 'exclusive', // price is pre-tax; Stripe Tax adds VAT on top
-        product_data: { name: v.productName, metadata: { sku: v.sku } },
-      },
+    lines.push({
+      sku: v.sku,
+      name: v.productName,
+      unitPriceEur: Number(v.salePriceEur ?? v.priceEur),
+      qty,
+      variantId: v.id,
+      productId: v.productId,
     })
-    reserveLines.push({ variantId: v.id, qty })
   }
+  return { lines }
+}
+
+export type CheckoutQuoteLine = { sku: string; name: string; unitPriceEur: number; qty: number }
+export type CheckoutQuote =
+  | { ok: false; error: 'empty' | 'unavailable' }
+  | {
+      ok: true
+      subtotalEur: number
+      lines: CheckoutQuoteLine[]
+      quotes: { country: string; shippingEur: number }[]
+    }
+
+// Everything the checkout page needs to render: authoritative line prices, the
+// subtotal, and the destinations the whole cart can ship to (with their charge).
+export async function getCheckoutQuote(items: CheckoutItem[]): Promise<CheckoutQuote> {
+  const read = await readCartLines(items)
+  if ('error' in read) return { ok: false, error: read.error }
+  const { lines } = read
+  const subtotalEur = lines.reduce((s, l) => s + l.unitPriceEur * l.qty, 0)
+  const quotes = await cartShippingQuotes(lines.map((l) => l.productId))
+  return {
+    ok: true,
+    subtotalEur,
+    lines: lines.map((l) => ({ sku: l.sku, name: l.name, unitPriceEur: l.unitPriceEur, qty: l.qty })),
+    quotes,
+  }
+}
+
+// Create a Stripe Checkout session for a cart shipped to `country`. Shipping is
+// recomputed server-side and passed as a fixed shipping option; the destination
+// is locked so the amount the customer confirms on Stripe matches what we quoted.
+export async function createCheckoutSession(
+  items: CheckoutItem[],
+  localeRaw: string,
+  country: string
+): Promise<CheckoutResult> {
+  const locale = loc(localeRaw)
+  const dest = String(country || '').toUpperCase()
+  if (!isCountryCode(dest)) return { error: 'shipping_country' }
+
+  const read = await readCartLines(items)
+  if ('error' in read) return { error: read.error }
+  const { lines } = read
+
+  // Authoritative shipping — must be deliverable to dest (every product has a rate).
+  const shipping = await shippingForCountry(
+    lines.map((l) => l.productId),
+    dest
+  )
+  if (shipping === null) return { error: 'shipping_country' }
+
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = lines.map((l) => ({
+    quantity: l.qty,
+    price_data: {
+      currency: 'eur',
+      unit_amount: Math.round(l.unitPriceEur * 100),
+      tax_behavior: 'exclusive', // price is pre-tax; Stripe Tax adds VAT on top
+      product_data: { name: l.name, metadata: { sku: l.sku } },
+    },
+  }))
+  const reserveLines = lines.map((l) => ({ variantId: l.variantId, qty: l.qty }))
 
   // Logged-in buyers get their email pre-filled; guests type it on Stripe.
   const sess = await liveSession()
@@ -74,9 +138,8 @@ export async function createCheckoutSession(
     email = u?.email ?? undefined
   }
 
-  // Hold the stock now (atomic, guarded) so two concurrent buyers of the last
-  // unit can't both check out. The webhook confirms without decrementing again;
-  // an expired/abandoned session releases it (see the webhook's `expired` case).
+  // Hold the stock now (atomic, guarded); the webhook confirms without decrementing
+  // again, and an expired/abandoned session releases it.
   if (!(await reserveStock(reserveLines))) return { error: 'stock' }
 
   try {
@@ -84,10 +147,24 @@ export async function createCheckoutSession(
       mode: 'payment',
       line_items: lineItems,
       automatic_tax: { enabled: true },
-      shipping_address_collection: { allowed_countries: SHIP_COUNTRIES },
+      shipping_address_collection: {
+        allowed_countries: [
+          dest,
+        ] as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection['allowed_countries'],
+      },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: Math.round(shipping * 100), currency: 'eur' },
+            display_name: SHIP_LABEL[locale] ?? 'Shipping',
+            tax_behavior: 'exclusive',
+          },
+        },
+      ],
       customer_email: email,
       success_url: `${BASE}/${locale}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${BASE}/${locale}?checkout=cancel`,
+      cancel_url: `${BASE}/${locale}/checkout?checkout=cancel`,
       metadata: { userId: sess?.userId ?? '', locale },
     })
     return { url: checkout.url ?? undefined }

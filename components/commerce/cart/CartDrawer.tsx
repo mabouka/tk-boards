@@ -1,41 +1,21 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 import CartModal from './CartModal'
 import { useCart } from './CartContext'
-import { createCheckoutSession } from '@/app/[locale]/(site)/checkout/actions'
 
-/** Connects the cart context to the presentational <CartModal /> overlay. */
+/** Connects the cart context to the presentational <CartModal /> overlay. The
+ *  "checkout" button leaves the drawer for the dedicated checkout page (country +
+ *  shipping happen there before Stripe). */
 export default function CartDrawer({ locale }: { locale: string }) {
   const { open, items, setOpen, setQty, removeItem } = useCart()
-  const t = useTranslations('cart')
-  const [pending, startTransition] = useTransition()
-  const [error, setError] = useState<string>()
+  const router = useRouter()
 
   if (!open) return null
 
   const onCheckout = () => {
-    setError(undefined)
-    startTransition(async () => {
-      const res = await createCheckoutSession(
-        items.map((l) => ({ sku: l.id, qty: l.qty })),
-        locale
-      )
-      if (res.url) {
-        window.location.href = res.url
-        return
-      }
-      setError(
-        t(
-          res.error === 'stock'
-            ? 'checkout_err_stock'
-            : res.error === 'unavailable'
-              ? 'checkout_err_unavailable'
-              : 'checkout_err_generic'
-        )
-      )
-    })
+    setOpen(false)
+    router.push(`/${locale}/checkout`)
   }
 
   return (
@@ -52,8 +32,6 @@ export default function CartDrawer({ locale }: { locale: string }) {
       }}
       onRemove={removeItem}
       onCheckout={onCheckout}
-      checkingOut={pending}
-      checkoutError={error}
     />
   )
 }
