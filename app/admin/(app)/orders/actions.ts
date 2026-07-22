@@ -8,6 +8,7 @@ import { requireAdmin } from '@/lib/require-admin'
 import { createOrder, releaseStock, reserveStock, type NewOrderLine } from '@/lib/orders'
 import { sendOrderConfirmationEmail, sendOrderShippedEmail } from '@/lib/email'
 import { trackingUrlFor } from '@/lib/carriers'
+import { stripe } from '@/lib/stripe'
 
 const STATUSES = [
   'pending_payment',
@@ -169,6 +170,49 @@ export async function shipOrder(input: {
 
   revalidate(input.orderId)
   return { ok: true }
+}
+
+// ── Refund an order ──
+// Stripe orders are refunded through the Stripe API (the money actually goes
+// back); cash/transfer refunds happen outside the system, so we only record them.
+// Either way the order is moved to "refunded", which releases the held stock.
+export async function refundOrder(orderId: string): Promise<Result> {
+  await requireAdmin()
+
+  const [order] = await db
+    .select({
+      status: orders.status,
+      paymentMethod: orders.paymentMethod,
+      paymentStatus: orders.paymentStatus,
+      stripePaymentIntentId: orders.stripePaymentIntentId,
+    })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1)
+  if (!order) return { ok: false, error: 'Commande introuvable.' }
+  if (order.status === 'refunded' || order.paymentStatus === 'refunded') {
+    return { ok: false, error: 'Commande déjà remboursée.' }
+  }
+  if (order.paymentStatus !== 'paid') {
+    return { ok: false, error: 'Seule une commande payée peut être remboursée.' }
+  }
+
+  if (order.paymentMethod === 'stripe') {
+    if (!order.stripePaymentIntentId) {
+      return { ok: false, error: 'Aucun paiement Stripe associé à cette commande.' }
+    }
+    try {
+      await stripe.refunds.create({ payment_intent: order.stripePaymentIntentId })
+    } catch (e) {
+      return {
+        ok: false,
+        error: `Remboursement Stripe échoué : ${e instanceof Error ? e.message : 'erreur inconnue'}`,
+      }
+    }
+  }
+
+  // Records status + paymentStatus='refunded' and releases the held stock.
+  return setOrderStatus(orderId, 'refunded')
 }
 
 // ── Manual order (admin creates a cash/transfer order for an existing account) ──
