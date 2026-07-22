@@ -5,6 +5,7 @@ import { orders, orderLines, users } from '@/db/schema'
 import { createEmailToken } from '@/lib/auth-tokens'
 import { sendPasswordResetEmail } from '@/lib/email'
 import { orderItemCountSql } from '@/lib/order-sql'
+import { getVariantAttributesFor } from '@/lib/tk-id'
 import type { AnyPgDatabase } from '@/lib/db-types'
 
 export type StockLine = { variantId: string; qty: number }
@@ -124,6 +125,29 @@ export async function resolveOrCreateUser(opts: {
     /* non-fatal: the account exists; they can use "forgot password" later */
   }
   return created.id
+}
+
+/**
+ * Human-readable axes for an order line, in the buyer's language — "Taille : 5'10"
+ * · Couleur : Rouge".
+ *
+ * Frozen onto the line at sale time like the name and price: the variant's
+ * attributes can be renamed or deleted later, and an order has to keep describing
+ * what was actually bought.
+ */
+export async function variantLabelsFor(
+  variantIds: string[],
+  locale: string
+): Promise<Map<string, string>> {
+  const ids = [...new Set(variantIds.filter(Boolean))]
+  const out = new Map<string, string>()
+  if (ids.length === 0) return out
+  const byVariant = await getVariantAttributesFor(ids, locale)
+  for (const [variantId, attrs] of byVariant) {
+    const label = attrs.map((a) => `${a.name} : ${a.value}`).join(' · ')
+    if (label) out.set(variantId, label)
+  }
+  return out
 }
 
 export type NewOrderLine = {

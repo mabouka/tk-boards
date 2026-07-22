@@ -3,7 +3,13 @@ import { eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
 import { orders, variants, products, users } from '@/db/schema'
 import { stripe } from '@/lib/stripe'
-import { createOrder, resolveOrCreateUser, releaseStock, type NewOrderLine } from '@/lib/orders'
+import {
+  createOrder,
+  resolveOrCreateUser,
+  releaseStock,
+  variantLabelsFor,
+  type NewOrderLine,
+} from '@/lib/orders'
 import {
   claimWebhookEvent,
   releaseWebhookEvent,
@@ -138,16 +144,21 @@ async function handleEvent(event: HandledEvent): Promise<Response> {
     })
   }
 
+  // Freeze the axes ("Taille : 5'10" · Couleur : Rouge") in the buyer's language,
+  // so the order keeps describing what was bought even if attributes change later.
+  const labelByVariant = await variantLabelsFor([...variantIdBySku.values()], locale)
+
   const lines: NewOrderLine[] = li.data.map((item) => {
     const sku = skuOf(item)
     const qty = item.quantity ?? 1
     const lineSubtotal = item.amount_subtotal ?? 0 // pre-tax, cents
+    const variantId = variantIdBySku.get(sku) ?? null
     return {
-      variantId: variantIdBySku.get(sku) ?? null,
+      variantId,
       productSku: sku,
       variantSku: sku || null,
       productName: item.description ?? sku,
-      variantLabel: null,
+      variantLabel: (variantId && labelByVariant.get(variantId)) || null,
       unitPriceEur: money(qty > 0 ? Math.round(lineSubtotal / qty) : lineSubtotal),
       vatRate: vatBySku.get(sku) ?? DEFAULT_VAT_RATE,
       qty,

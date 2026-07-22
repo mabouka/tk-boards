@@ -5,7 +5,13 @@ import { eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
 import { orders, orderLines, variants, products, users } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
-import { createOrder, releaseStock, reserveStock, type NewOrderLine } from '@/lib/orders'
+import {
+  createOrder,
+  releaseStock,
+  reserveStock,
+  variantLabelsFor,
+  type NewOrderLine,
+} from '@/lib/orders'
 import {
   sendOrderConfirmationEmail,
   sendOrderShippedEmail,
@@ -336,6 +342,9 @@ export async function createManualOrder(
 
   // Prices are TTC. Subtotal is TTC goods; VAT is the portion included at each
   // product's rate (plus the standard rate on shipping) — see vatBreakdown below.
+  // Same frozen axes the web flow records, in the customer's language.
+  const labelByVariant = await variantLabelsFor(ids, locale)
+
   const lines: NewOrderLine[] = []
   let subtotal = 0
   for (const l of input.lines) {
@@ -349,7 +358,7 @@ export async function createManualOrder(
       productSku: v.sku,
       variantSku: v.sku,
       productName: v.productName,
-      variantLabel: null,
+      variantLabel: labelByVariant.get(v.id) ?? null,
       unitPriceEur: price.toFixed(2),
       vatRate: v.vatRate,
       qty,

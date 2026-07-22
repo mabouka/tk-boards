@@ -75,7 +75,7 @@ export type VariantAttribute = { name: string; value: string; swatchHex: string 
  * no axes (simple product) or the variant is unknown.
  */
 /** Resolved axes for many variants at once, grouped by variantId (one query). */
-async function getVariantAttributesFor(
+export async function getVariantAttributesFor(
   variantIds: string[],
   locale: string
 ): Promise<Map<string, VariantAttribute[]>> {
