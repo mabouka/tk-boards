@@ -26,6 +26,8 @@ const STATUSES = [
 ] as const
 export type OrderStatus = (typeof STATUSES)[number]
 
+const LOCALES = ['fr', 'en', 'es']
+
 type Result = { ok: true } | { ok: false; error: string }
 
 function revalidate(orderId: string) {
@@ -47,7 +49,7 @@ export async function setOrderStatus(orderId: string, status: OrderStatus): Prom
       status: orders.status,
       email: orders.email,
       number: orders.number,
-      userId: orders.userId,
+      locale: orders.locale,
     })
     .from(orders)
     .where(eq(orders.id, orderId))
@@ -80,8 +82,11 @@ export async function setOrderStatus(orderId: string, status: OrderStatus): Prom
   // is sent by refundOrder, not here, so 'refunded' isn't handled in this branch.
   if (status === 'cancelled' && current.status !== 'cancelled') {
     try {
-      const locale = await orderLocale(current.userId)
-      await sendOrderCanceledEmail({ to: current.email, locale, orderNumber: current.number })
+      await sendOrderCanceledEmail({
+        to: current.email,
+        locale: current.locale,
+        orderNumber: current.number,
+      })
     } catch {
       /* email non-fatal */
     }
@@ -89,13 +94,6 @@ export async function setOrderStatus(orderId: string, status: OrderStatus): Prom
 
   revalidate(orderId)
   return { ok: true }
-}
-
-// The buyer's locale for transactional emails; guests (no account) default to fr.
-async function orderLocale(userId: string | null): Promise<string> {
-  if (!userId) return 'fr'
-  const [u] = await db.select({ locale: users.locale }).from(users).where(eq(users.id, userId)).limit(1)
-  return u?.locale ?? 'fr'
 }
 
 // Cash/transfer orders: the admin confirms the payment was received. Routed
@@ -123,7 +121,7 @@ export async function shipOrder(input: {
       status: orders.status,
       number: orders.number,
       email: orders.email,
-      userId: orders.userId,
+      locale: orders.locale,
       shipName: orders.shipName,
       shipLine1: orders.shipLine1,
       shipLine2: orders.shipLine2,
@@ -167,9 +165,6 @@ export async function shipOrder(input: {
 
   // Notify the buyer (best-effort — a mail failure never fails the shipment).
   try {
-    const [u] = order.userId
-      ? await db.select({ locale: users.locale }).from(users).where(eq(users.id, order.userId)).limit(1)
-      : []
     const lineRows = await db
       .select({ productName: orderLines.productName, qty: orderLines.qty })
       .from(orderLines)
@@ -185,7 +180,7 @@ export async function shipOrder(input: {
       .join(', ')
     await sendOrderShippedEmail({
       to: order.email,
-      locale: u?.locale ?? 'fr',
+      locale: order.locale,
       orderNumber: order.number,
       carrier,
       trackingNumber,
@@ -217,7 +212,7 @@ export async function refundOrder(orderId: string): Promise<Result> {
       email: orders.email,
       number: orders.number,
       totalEur: orders.totalEur,
-      userId: orders.userId,
+      locale: orders.locale,
     })
     .from(orders)
     .where(eq(orders.id, orderId))
@@ -250,10 +245,9 @@ export async function refundOrder(orderId: string): Promise<Result> {
 
   // Notify the buyer of the refund (best-effort — never fails the refund itself).
   try {
-    const locale = await orderLocale(order.userId)
     await sendOrderRefundedEmail({
       to: order.email,
-      locale,
+      locale: order.locale,
       orderNumber: order.number,
       amountEur: order.totalEur,
     })
@@ -266,6 +260,7 @@ export async function refundOrder(orderId: string): Promise<Result> {
 // ── Manual order (admin creates a cash/transfer order for an existing account) ──
 export type ManualOrderInput = {
   userId: string
+  locale: string
   paymentMethod: 'cash' | 'transfer'
   paid: boolean
   taxEur: string
@@ -288,12 +283,14 @@ export async function createManualOrder(
   await requireAdmin()
 
   const [u] = await db
-    .select({ email: users.email, locale: users.locale })
+    .select({ email: users.email })
     .from(users)
     .where(eq(users.id, input.userId))
     .limit(1)
   if (!u) return { ok: false, error: 'Client introuvable.' }
   if (!input.lines.length) return { ok: false, error: 'Ajoute au moins un article.' }
+
+  const locale = LOCALES.includes(input.locale) ? input.locale : 'fr'
 
   // Re-read variants from the DB — never trust a price coming from the client.
   const ids = [...new Set(input.lines.map((l) => l.variantId))]
@@ -348,6 +345,7 @@ export async function createManualOrder(
     created = await createOrder({
       userId: input.userId,
       email: u.email,
+      locale,
       status: input.paid ? 'paid' : 'pending_payment',
       paymentMethod: input.paymentMethod,
       paymentStatus: input.paid ? 'paid' : 'pending',
@@ -376,7 +374,7 @@ export async function createManualOrder(
       .join(', ')
     await sendOrderConfirmationEmail({
       to: u.email,
-      locale: u.locale,
+      locale,
       orderNumber: created.number,
       lines: lines.map((l) => ({
         name: l.productName,

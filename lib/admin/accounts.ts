@@ -7,6 +7,7 @@ export type AccountRow = {
   id: string
   name: string
   email: string
+  locale: string
   role: 'customer' | 'admin'
   method: 'password' | 'google'
   createdAt: Date
@@ -18,6 +19,7 @@ export async function getAccounts(): Promise<AccountRow[]> {
     id: u.id,
     name: fullName(u.firstName, u.lastName, u.name),
     email: u.email,
+    locale: u.locale ?? 'fr',
     role: u.role === 'admin' ? 'admin' : 'customer',
     method: u.passwordHash ? 'password' : 'google',
     createdAt: u.createdAt,

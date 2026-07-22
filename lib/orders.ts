@@ -92,6 +92,7 @@ export type NewOrderLine = {
 export type NewOrder = {
   userId: string | null
   email: string
+  locale: string
   status: string
   paymentMethod: 'stripe' | 'cash' | 'transfer'
   paymentStatus: 'pending' | 'paid'
@@ -129,6 +130,7 @@ export async function createOrder(input: NewOrder): Promise<{ id: string; number
         number,
         userId: input.userId,
         email: input.email.toLowerCase(),
+        locale: loc(input.locale),
         status: input.status,
         paymentMethod: input.paymentMethod,
         paymentStatus: input.paymentStatus,

@@ -22,7 +22,7 @@ export default async function NewOrderPage() {
         </p>
       </div>
       <NewOrderForm
-        accounts={accounts.map((a) => ({ id: a.id, name: a.name, email: a.email }))}
+        accounts={accounts.map((a) => ({ id: a.id, name: a.name, email: a.email, locale: a.locale }))}
         variants={variants}
       />
     </div>

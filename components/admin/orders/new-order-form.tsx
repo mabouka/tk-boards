@@ -20,16 +20,22 @@ import {
   SelectValue,
 } from '@/components/admin/ui/select'
 
-type Account = { id: string; name: string; email: string }
+type Account = { id: string; name: string; email: string; locale: string }
 type Line = { variantId: string; qty: number }
 
 const EUR = (n: number) => formatEur(n, 'fr')
+const LANGS = [
+  { v: 'fr', label: 'Français' },
+  { v: 'en', label: 'English' },
+  { v: 'es', label: 'Español' },
+]
 
 export function NewOrderForm({ accounts, variants }: { accounts: Account[]; variants: PickVariant[] }) {
   const router = useRouter()
   const vById = useMemo(() => new Map(variants.map((v) => [v.id, v])), [variants])
 
   const [userId, setUserId] = useState('')
+  const [locale, setLocale] = useState('fr')
   const [method, setMethod] = useState<'cash' | 'transfer'>('transfer')
   const [paid, setPaid] = useState(false)
   const [lines, setLines] = useState<Line[]>([])
@@ -50,6 +56,14 @@ export function NewOrderForm({ accounts, variants }: { accounts: Account[]; vari
 
   const setShipField = (k: keyof typeof ship, v: string) => setShip((s) => ({ ...s, [k]: v }))
 
+  // Picking an account defaults the order language to that account's locale — the
+  // admin can still override it below.
+  function chooseAccount(id: string) {
+    setUserId(id)
+    const a = accounts.find((x) => x.id === id)
+    if (a) setLocale(a.locale)
+  }
+
   function addLine() {
     if (!pickVariant) return
     const qty = Math.max(1, Math.floor(Number(pickQty) || 1))
@@ -64,7 +78,7 @@ export function NewOrderForm({ accounts, variants }: { accounts: Account[]; vari
 
   function submit() {
     startTransition(async () => {
-      const res = await createManualOrder({ userId, paymentMethod: method, paid, taxEur, shippingEur, ship, lines })
+      const res = await createManualOrder({ userId, locale, paymentMethod: method, paid, taxEur, shippingEur, ship, lines })
       if (res.ok) {
         toast.success('Commande créée.')
         router.push(`/admin/orders/${res.id}`)
@@ -81,8 +95,8 @@ export function NewOrderForm({ accounts, variants }: { accounts: Account[]; vari
           <CardHeader>
             <CardTitle>Client</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Select value={userId} onValueChange={setUserId}>
+          <CardContent className="flex flex-col gap-3">
+            <Select value={userId} onValueChange={chooseAccount}>
               <SelectTrigger>
                 <SelectValue placeholder="Choisir un compte existant…" />
               </SelectTrigger>
@@ -94,6 +108,24 @@ export function NewOrderForm({ accounts, variants }: { accounts: Account[]; vari
                 ))}
               </SelectContent>
             </Select>
+            <div>
+              <Label className="mb-1.5">Langue de la commande</Label>
+              <Select value={locale} onValueChange={setLocale}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGS.map((l) => (
+                    <SelectItem key={l.v} value={l.v}>
+                      {l.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground mt-1.5 text-xs">
+                Langue des emails (confirmation, expédition, etc.).
+              </p>
+            </div>
           </CardContent>
         </Card>
 

@@ -132,6 +132,7 @@ export async function POST(req: Request) {
   const created = await createOrder({
     userId,
     email,
+    locale,
     status: 'paid',
     paymentMethod: 'stripe',
     paymentStatus: 'paid',

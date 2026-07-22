@@ -379,6 +379,7 @@ export const orders = pgTable(
     paymentMethod: text('payment_method').notNull(), // stripe | cash | transfer
     paymentStatus: text('payment_status').notNull().default('pending'), // pending | paid | refunded
     currency: text('currency').notNull().default('EUR'),
+    locale: text('locale').notNull().default('fr'), // language the order was placed in — drives all its emails
     subtotalEur: numeric('subtotal_eur', { precision: 10, scale: 2 }).notNull(),
     taxEur: numeric('tax_eur', { precision: 10, scale: 2 }).notNull().default('0'), // Stripe Tax
     shippingEur: numeric('shipping_eur', { precision: 10, scale: 2 }).notNull().default('0'),
