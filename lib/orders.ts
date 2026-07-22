@@ -86,13 +86,13 @@ const loc = (v: string | null | undefined) => (LOCALES.includes(String(v)) ? Str
  *  order), and since the retry below recomputes the same value it would fail five
  *  times and then wedge order creation permanently. The unique index on
  *  order.number remains the backstop for a concurrent collision. */
-async function nextOrderNumber(): Promise<string> {
+async function nextOrderNumber(database: AnyPgDatabase = db): Promise<string> {
   const year = new Date().getFullYear()
   const prefix = `TK-${year}-`
   // max() on the numeric suffix, not on the text: a plain max would compare
   // 'TK-2026-10000' against 'TK-2026-9999' character by character and pick the
   // latter, handing back a number that already exists once the series passes 9999.
-  const [row] = await db
+  const [row] = await database
     .select({ last: sql<number | null>`max(cast(substring(${orders.number} from '[0-9]+$') as integer))` })
     .from(orders)
     .where(sql`${orders.number} like ${`${prefix}%`}`)
@@ -163,18 +163,61 @@ export type NewOrder = {
   lines: NewOrderLine[]
 }
 
-export const isUniqueViolation = (e: unknown): boolean =>
-  typeof e === 'object' && e !== null && 'code' in e && (e as { code?: unknown }).code === '23505'
+/**
+ * Postgres unique-violation (23505), looked for down the cause chain.
+ *
+ * Drivers wrap the driver error rather than throwing it directly, so checking only
+ * the top-level object silently misses it — which defeated both callers: the
+ * order-number retry never fired, and a redelivered webhook answered 500 instead of
+ * "duplicate", leaving Stripe to retry it indefinitely.
+ */
+export const isUniqueViolation = (e: unknown): boolean => {
+  for (let cur = e, depth = 0; cur != null && depth < 5; depth++) {
+    if (typeof cur === 'object' && 'code' in cur && (cur as { code?: unknown }).code === '23505') {
+      return true
+    }
+    cur = (cur as { cause?: unknown }).cause
+  }
+  return false
+}
+
+/**
+ * Run several statements as one unit on whichever driver we're given.
+ *
+ * neon-http has no interactive transactions but does have `batch`; node-postgres
+ * (used by the integration harness) has `transaction` but no `batch`. Statements
+ * are built *from the passed client* rather than pre-built, because a drizzle query
+ * builder is bound to the client that created it and can't be replayed inside
+ * someone else's transaction.
+ */
+async function writeAtomically(
+  database: AnyPgDatabase,
+  build: (client: AnyPgDatabase) => BatchItem<'pg'>[]
+): Promise<void> {
+  const batchable = database as unknown as {
+    batch?: (stmts: [BatchItem<'pg'>, ...BatchItem<'pg'>[]]) => Promise<unknown>
+  }
+  if (typeof batchable.batch === 'function') {
+    await batchable.batch(build(database) as [BatchItem<'pg'>, ...BatchItem<'pg'>[]])
+    return
+  }
+  await database.transaction(async (tx) => {
+    for (const stmt of build(tx as unknown as AnyPgDatabase)) await stmt
+  })
+}
 
 /** Insert an order + its lines atomically. Stock is never touched here — callers
  *  hold it via reserveStock (web checkout, manual paid orders, mark-paid) and give
  *  it back via releaseStock, so takes and returns always stay symmetric. */
-export async function createOrder(input: NewOrder): Promise<{ id: string; number: string }> {
+export async function createOrder(
+  input: NewOrder,
+  database: AnyPgDatabase = db
+): Promise<{ id: string; number: string }> {
   const id = crypto.randomUUID()
 
-  const buildStmts = (number: string): [BatchItem<'pg'>, ...BatchItem<'pg'>[]] => {
+  const buildStmts = (client: AnyPgDatabase, number: string): BatchItem<'pg'>[] => {
     const stmts: BatchItem<'pg'>[] = [
-      db.insert(orders).values({
+      client.insert(orders).values({
         id,
         number,
         userId: input.userId,
@@ -200,18 +243,18 @@ export async function createOrder(input: NewOrder): Promise<{ id: string; number
       }),
     ]
     if (input.lines.length) {
-      stmts.push(db.insert(orderLines).values(input.lines.map((l) => ({ orderId: id, ...l }))))
+      stmts.push(client.insert(orderLines).values(input.lines.map((l) => ({ orderId: id, ...l }))))
     }
-    return stmts as [BatchItem<'pg'>, ...BatchItem<'pg'>[]]
+    return stmts
   }
 
-  // The number is count-derived, so a concurrent order can grab the same one; the
-  // unique index rejects the loser and, because the batch is atomic, it writes
-  // nothing — so we just recompute and retry.
+  // Two orders can derive the same number concurrently; the unique index rejects
+  // the loser and, because the write is atomic, it leaves nothing behind — so we
+  // just recompute and retry.
   for (let attempt = 0; attempt < 5; attempt++) {
-    const number = await nextOrderNumber()
+    const number = await nextOrderNumber(database)
     try {
-      await db.batch(buildStmts(number))
+      await writeAtomically(database, (client) => buildStmts(client, number))
       return { id, number }
     } catch (e) {
       if (attempt < 4 && isUniqueViolation(e)) continue
