@@ -16,6 +16,10 @@ const LOCALES = ['fr', 'en', 'es']
 const loc = (v: unknown) => (LOCALES.includes(String(v)) ? String(v) : 'en')
 const SHIP_LABEL: Record<string, string> = { fr: 'Livraison', en: 'Shipping', es: 'Envío' }
 const clean = (v: unknown) => String(v ?? '').trim()
+// Checkout holds stock the moment the session is created, so we let it lapse as
+// soon as Stripe allows (30 min is their floor). An abandoned cart then fires
+// checkout.session.expired and the webhook puts the units back.
+const SESSION_TTL_SECONDS = 30 * 60
 
 export type CheckoutItem = { sku: string; qty: number }
 export type ShipAddress = {
@@ -233,6 +237,7 @@ export async function createCheckoutSession(
           },
         },
       ],
+      expires_at: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS,
       success_url: `${BASE}/${locale}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${BASE}/${locale}/checkout?checkout=cancel`,
       metadata: { userId: sess?.userId ?? '', locale, ship: shipJson },
