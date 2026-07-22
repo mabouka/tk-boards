@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
   // Keep the optional node-postgres driver (E2E only) out of the bundle; it's
   // required lazily in db/index.ts when DB_DRIVER=pg.
   serverExternalPackages: ['pg'],
+  // The invoice PDF reads its font files from disk at render time. Tracing can't
+  // follow a runtime path.join, so name them explicitly or they go missing in prod.
+  outputFileTracingIncludes: {
+    '/**': ['./invoices/fonts/**'],
+  },
   images: {
     qualities: [75, 85, 90],
     // Global Sanity loader → every <Image> is served straight from the Sanity

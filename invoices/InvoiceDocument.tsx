@@ -1,6 +1,23 @@
-import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
+import path from 'node:path'
+import { Document, Font, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
 import { invoiceT } from '@/lib/invoice-i18n'
 import type { VatBucket } from '@/lib/vat'
+
+// The brand body font, so the invoice matches the site. Static TTFs instanced from
+// the variable public/fonts/space-grotesk.woff2 — react-pdf's fontkit cannot decode
+// WOFF2, and next/font gives us no file to point at.
+const fontDir = path.join(process.cwd(), 'invoices', 'fonts')
+Font.register({
+  family: 'Space Grotesk',
+  fonts: [
+    { src: path.join(fontDir, 'SpaceGrotesk-Regular.ttf'), fontWeight: 400 },
+    { src: path.join(fontDir, 'SpaceGrotesk-Bold.ttf'), fontWeight: 700 },
+  ],
+})
+// No hyphenation dictionary here — keep words intact rather than mid-word breaks.
+Font.registerHyphenationCallback((word) => [word])
+
+const BODY = 'Space Grotesk'
 
 export type InvoiceParty = { name: string; taxId?: string; lines: string[]; email?: string }
 export type InvoiceItem = { name: string; qty: number; unitTtcEur: number; totalTtcEur: number }
@@ -23,24 +40,24 @@ export type InvoiceData = {
 }
 
 const s = StyleSheet.create({
-  page: { padding: 44, fontSize: 9.5, fontFamily: 'Helvetica', color: '#111' },
+  page: { padding: 44, fontSize: 9.5, fontFamily: BODY, color: '#111' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  brand: { fontSize: 18, fontFamily: 'Helvetica-Bold', letterSpacing: 1 },
+  brand: { fontSize: 18, fontFamily: BODY, fontWeight: 700, letterSpacing: 1 },
   // Height-constrained so any logo aspect ratio sits on the same baseline.
   logo: { height: 34, maxWidth: 200, objectFit: 'contain' },
-  title: { fontSize: 20, fontFamily: 'Helvetica-Bold', textAlign: 'right' },
+  title: { fontSize: 20, fontFamily: BODY, fontWeight: 700, textAlign: 'right' },
   meta: { marginTop: 6, textAlign: 'right', color: '#555' },
   parties: { flexDirection: 'row', gap: 24, marginTop: 28 },
   party: { flex: 1 },
   label: {
     fontSize: 7.5,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: BODY, fontWeight: 700,
     letterSpacing: 1,
     color: '#777',
     marginBottom: 4,
     textTransform: 'uppercase',
   },
-  strong: { fontFamily: 'Helvetica-Bold' },
+  strong: { fontFamily: BODY, fontWeight: 700 },
   line: { marginBottom: 1.5 },
 
   table: { marginTop: 28 },
@@ -55,7 +72,7 @@ const s = StyleSheet.create({
   cQty: { width: 42, textAlign: 'right' },
   cUnit: { width: 74, textAlign: 'right' },
   cTotal: { width: 78, textAlign: 'right' },
-  th: { fontSize: 7.5, fontFamily: 'Helvetica-Bold', letterSpacing: 0.6, color: '#777' },
+  th: { fontSize: 7.5, fontFamily: BODY, fontWeight: 700, letterSpacing: 0.6, color: '#777' },
 
   totals: { marginTop: 20, flexDirection: 'row', justifyContent: 'flex-end' },
   totalsBox: { width: 240 },
@@ -68,7 +85,7 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#111',
     fontSize: 12,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: BODY, fontWeight: 700,
   },
 
   vatTable: { marginTop: 26 },
@@ -106,7 +123,7 @@ function Party({ label, party }: { label: string; party: InvoiceParty; }) {
 export default function InvoiceDocument(d: InvoiceData) {
   const t = invoiceT(d.locale)
   // French/Spanish grouping uses U+202F (narrow no-break space) and U+00A0 before
-  // the symbol. The PDF's built-in Helvetica has neither glyph and substitutes a
+  // the symbol. Some PDF fonts lack those glyphs and substitute a
   // slash — "1/679,00 €" — so normalise them to a plain space.
   const eur = (n: number) =>
     new Intl.NumberFormat(d.locale, { style: 'currency', currency: 'EUR' })
