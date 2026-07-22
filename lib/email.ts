@@ -9,6 +9,7 @@ import FoundBoardEmail from '@/emails/found-board'
 import TransferEmail from '@/emails/transfer'
 import OrderConfirmationEmail from '@/emails/order-confirmation'
 import OrderShippedEmail from '@/emails/order-shipped'
+import OrderStatusEmail from '@/emails/order-status'
 import { emailT } from '@/lib/email-i18n'
 
 const FROM = process.env.EMAIL_FROM || 'TK Boards <onboarding@resend.dev>'
@@ -234,6 +235,59 @@ export async function sendOrderShippedEmail(opts: {
     html,
     text,
     devNote: `shipped ${opts.orderNumber} → ${opts.to} (${opts.carrier} ${opts.trackingNumber})`,
+  })
+}
+
+// Order cancelled — no money moves here (cancelling never auto-refunds).
+export async function sendOrderCanceledEmail(opts: {
+  to: string
+  locale: string
+  orderNumber: string
+}) {
+  const url = `${BASE}/${opts.locale}/account/orders`
+  const { html, text } = await renderBoth(
+    createElement(OrderStatusEmail, {
+      locale: opts.locale,
+      orderNumber: opts.orderNumber,
+      kind: 'cancelled',
+      url,
+    })
+  )
+  await send({
+    to: opts.to,
+    subject: emailT(opts.locale).cancelSubject,
+    html,
+    text,
+    devNote: `cancelled ${opts.orderNumber} → ${opts.to}`,
+  })
+}
+
+// Order refunded — shows the refunded amount.
+export async function sendOrderRefundedEmail(opts: {
+  to: string
+  locale: string
+  orderNumber: string
+  amountEur: string
+}) {
+  const fmt = new Intl.NumberFormat(opts.locale, { style: 'currency', currency: 'EUR' }).format(
+    Number(opts.amountEur)
+  )
+  const url = `${BASE}/${opts.locale}/account/orders`
+  const { html, text } = await renderBoth(
+    createElement(OrderStatusEmail, {
+      locale: opts.locale,
+      orderNumber: opts.orderNumber,
+      kind: 'refunded',
+      amount: fmt,
+      url,
+    })
+  )
+  await send({
+    to: opts.to,
+    subject: emailT(opts.locale).refundSubject,
+    html,
+    text,
+    devNote: `refunded ${opts.orderNumber} (${fmt}) → ${opts.to}`,
   })
 }
 

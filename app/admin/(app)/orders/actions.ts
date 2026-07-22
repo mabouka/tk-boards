@@ -6,7 +6,12 @@ import { db } from '@/db'
 import { orders, orderLines, variants, products, users } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
 import { createOrder, releaseStock, reserveStock, type NewOrderLine } from '@/lib/orders'
-import { sendOrderConfirmationEmail, sendOrderShippedEmail } from '@/lib/email'
+import {
+  sendOrderConfirmationEmail,
+  sendOrderShippedEmail,
+  sendOrderCanceledEmail,
+  sendOrderRefundedEmail,
+} from '@/lib/email'
 import { trackingUrlFor } from '@/lib/carriers'
 import { stripe } from '@/lib/stripe'
 
@@ -38,7 +43,12 @@ export async function setOrderStatus(orderId: string, status: OrderStatus): Prom
   if (!orderId || !STATUSES.includes(status)) return { ok: false, error: 'Statut invalide.' }
 
   const [current] = await db
-    .select({ status: orders.status })
+    .select({
+      status: orders.status,
+      email: orders.email,
+      number: orders.number,
+      userId: orders.userId,
+    })
     .from(orders)
     .where(eq(orders.id, orderId))
     .limit(1)
@@ -65,8 +75,27 @@ export async function setOrderStatus(orderId: string, status: OrderStatus): Prom
       ...(status === 'refunded' ? { paymentStatus: 'refunded' as const } : {}),
     })
     .where(eq(orders.id, orderId))
+
+  // Notify the buyer when the order is cancelled (best-effort). The refund email
+  // is sent by refundOrder, not here, so 'refunded' isn't handled in this branch.
+  if (status === 'cancelled' && current.status !== 'cancelled') {
+    try {
+      const locale = await orderLocale(current.userId)
+      await sendOrderCanceledEmail({ to: current.email, locale, orderNumber: current.number })
+    } catch {
+      /* email non-fatal */
+    }
+  }
+
   revalidate(orderId)
   return { ok: true }
+}
+
+// The buyer's locale for transactional emails; guests (no account) default to fr.
+async function orderLocale(userId: string | null): Promise<string> {
+  if (!userId) return 'fr'
+  const [u] = await db.select({ locale: users.locale }).from(users).where(eq(users.id, userId)).limit(1)
+  return u?.locale ?? 'fr'
 }
 
 // Cash/transfer orders: the admin confirms the payment was received. Routed
@@ -185,6 +214,10 @@ export async function refundOrder(orderId: string): Promise<Result> {
       paymentMethod: orders.paymentMethod,
       paymentStatus: orders.paymentStatus,
       stripePaymentIntentId: orders.stripePaymentIntentId,
+      email: orders.email,
+      number: orders.number,
+      totalEur: orders.totalEur,
+      userId: orders.userId,
     })
     .from(orders)
     .where(eq(orders.id, orderId))
@@ -212,7 +245,22 @@ export async function refundOrder(orderId: string): Promise<Result> {
   }
 
   // Records status + paymentStatus='refunded' and releases the held stock.
-  return setOrderStatus(orderId, 'refunded')
+  const res = await setOrderStatus(orderId, 'refunded')
+  if (!res.ok) return res
+
+  // Notify the buyer of the refund (best-effort — never fails the refund itself).
+  try {
+    const locale = await orderLocale(order.userId)
+    await sendOrderRefundedEmail({
+      to: order.email,
+      locale,
+      orderNumber: order.number,
+      amountEur: order.totalEur,
+    })
+  } catch {
+    /* email non-fatal */
+  }
+  return res
 }
 
 // ── Manual order (admin creates a cash/transfer order for an existing account) ──

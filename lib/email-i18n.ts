@@ -47,6 +47,15 @@ type EmailStrings = {
   shipTrackingLabel: string
   shipCta: string
   shipCtaFallback: string
+  cancelSubject: string
+  cancelPreheader: string
+  cancelHeading: string
+  cancelBody: string
+  refundSubject: string
+  refundPreheader: string
+  refundHeading: string
+  refundBody: string
+  refundAmountLabel: string
   fallback: string
   footer: string
   footer2: string
@@ -100,6 +109,16 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     shipTrackingLabel: 'N° de suivi',
     shipCta: 'Suivre mon colis',
     shipCtaFallback: 'Voir ma commande',
+    cancelSubject: 'Ta commande a été annulée — TK Boards',
+    cancelPreheader: 'Ta commande a été annulée.',
+    cancelHeading: 'Commande annulée',
+    cancelBody: "Ta commande a été annulée. Pour toute question, n'hésite pas à nous contacter.",
+    refundSubject: 'Ta commande a été remboursée — TK Boards',
+    refundPreheader: 'Ta commande a été remboursée.',
+    refundHeading: 'Commande remboursée',
+    refundBody:
+      'Ta commande a été remboursée. Selon ton moyen de paiement, le remboursement peut prendre quelques jours ouvrés pour apparaître.',
+    refundAmountLabel: 'Montant remboursé',
     fallback: 'Le bouton ne marche pas ? Copie ce lien :',
     footer: 'Tu reçois cet email suite à une action sur ton compte TK ID.',
     footer2: "Si ce n'était pas toi, ignore-le simplement.",
@@ -151,6 +170,16 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     shipTrackingLabel: 'Tracking no.',
     shipCta: 'Track my parcel',
     shipCtaFallback: 'View my order',
+    cancelSubject: 'Your order has been cancelled — TK Boards',
+    cancelPreheader: 'Your order has been cancelled.',
+    cancelHeading: 'Order cancelled',
+    cancelBody: 'Your order has been cancelled. If you have any questions, just get in touch.',
+    refundSubject: 'Your order has been refunded — TK Boards',
+    refundPreheader: 'Your order has been refunded.',
+    refundHeading: 'Order refunded',
+    refundBody:
+      'Your order has been refunded. Depending on your payment method, it may take a few business days to appear.',
+    refundAmountLabel: 'Amount refunded',
     fallback: 'Button not working? Copy this link:',
     footer: "You're receiving this email following an action on your TK ID account.",
     footer2: "If this wasn't you, just ignore it.",
@@ -201,6 +230,16 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     shipTrackingLabel: 'Nº de seguimiento',
     shipCta: 'Seguir mi paquete',
     shipCtaFallback: 'Ver mi pedido',
+    cancelSubject: 'Tu pedido ha sido cancelado — TK Boards',
+    cancelPreheader: 'Tu pedido ha sido cancelado.',
+    cancelHeading: 'Pedido cancelado',
+    cancelBody: 'Tu pedido ha sido cancelado. Si tienes alguna pregunta, no dudes en contactarnos.',
+    refundSubject: 'Tu pedido ha sido reembolsado — TK Boards',
+    refundPreheader: 'Tu pedido ha sido reembolsado.',
+    refundHeading: 'Pedido reembolsado',
+    refundBody:
+      'Tu pedido ha sido reembolsado. Según tu método de pago, puede tardar unos días hábiles en aparecer.',
+    refundAmountLabel: 'Importe reembolsado',
     fallback: '¿El botón no funciona? Copia este enlace:',
     footer: 'Recibes este correo tras una acción en tu cuenta TK ID.',
     footer2: 'Si no fuiste tú, ignóralo.',
