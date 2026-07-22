@@ -5,6 +5,7 @@ import { getAdminOrder } from '@/lib/admin/orders'
 import { fmtDate } from '@/lib/admin/format'
 import { formatEur } from '@/lib/format-price'
 import { OrderActions } from '@/components/admin/orders/order-actions'
+import { ShipForm } from '@/components/admin/orders/ship-form'
 import { orderStatusOf, PAYMENT_LABEL } from '@/components/admin/orders/status'
 import { Badge } from '@/components/admin/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/admin/ui/card'
@@ -27,6 +28,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
   const eur = (v: string) => formatEur(Number(v), 'fr')
   const st = orderStatusOf(order.status)
+  const canShip = ['paid', 'preparing', 'shipped', 'delivered'].includes(order.status)
   const shipTo = [
     order.shipName,
     order.shipLine1,
@@ -119,11 +121,6 @@ export default async function AdminOrderDetailPage({ params }: Props) {
               ) : (
                 <span className="text-muted-foreground">—</span>
               )}
-              {order.trackingNumber && (
-                <div className="text-muted-foreground mt-2">
-                  Suivi : {[order.carrier, order.trackingNumber].filter(Boolean).join(' ')}
-                </div>
-              )}
             </CardContent>
           </Card>
 
@@ -138,6 +135,16 @@ export default async function AdminOrderDetailPage({ params }: Props) {
               </div>
             </CardContent>
           </Card>
+
+          {canShip && (
+            <ShipForm
+              orderId={order.id}
+              status={order.status}
+              carrier={order.carrier}
+              trackingNumber={order.trackingNumber}
+              trackingUrl={order.trackingUrl}
+            />
+          )}
         </div>
       </div>
     </div>

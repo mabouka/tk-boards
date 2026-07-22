@@ -8,6 +8,7 @@ import ContactEmail from '@/emails/contact-email'
 import FoundBoardEmail from '@/emails/found-board'
 import TransferEmail from '@/emails/transfer'
 import OrderConfirmationEmail from '@/emails/order-confirmation'
+import OrderShippedEmail from '@/emails/order-shipped'
 import { emailT } from '@/lib/email-i18n'
 
 const FROM = process.env.EMAIL_FROM || 'TK Boards <onboarding@resend.dev>'
@@ -197,6 +198,42 @@ export async function sendOrderConfirmationEmail(opts: {
     html,
     text,
     devNote: `order ${opts.orderNumber} → ${opts.to}`,
+  })
+}
+
+// Shipping notification with the carrier + tracking number. When the carrier is
+// known we link straight to its tracking page; otherwise the button falls back to
+// the customer's account order page.
+export async function sendOrderShippedEmail(opts: {
+  to: string
+  locale: string
+  orderNumber: string
+  carrier: string
+  trackingNumber: string
+  trackingUrl?: string | null
+  lines: { name: string; qty: number }[]
+  shipTo: string
+}) {
+  const hasTracking = Boolean(opts.trackingUrl)
+  const url = opts.trackingUrl || `${BASE}/${opts.locale}/account/orders`
+  const { html, text } = await renderBoth(
+    createElement(OrderShippedEmail, {
+      locale: opts.locale,
+      orderNumber: opts.orderNumber,
+      carrier: opts.carrier,
+      trackingNumber: opts.trackingNumber,
+      lines: opts.lines,
+      shipTo: opts.shipTo,
+      url,
+      hasTracking,
+    })
+  )
+  await send({
+    to: opts.to,
+    subject: emailT(opts.locale).shipSubject,
+    html,
+    text,
+    devNote: `shipped ${opts.orderNumber} → ${opts.to} (${opts.carrier} ${opts.trackingNumber})`,
   })
 }
 

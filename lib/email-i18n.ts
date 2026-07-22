@@ -39,6 +39,14 @@ type EmailStrings = {
   orderTotal: string
   orderShipTo: string
   orderCta: string
+  shipSubject: string
+  shipPreheader: string
+  shipHeading: string
+  shipBody: string
+  shipCarrierLabel: string
+  shipTrackingLabel: string
+  shipCta: string
+  shipCtaFallback: string
   fallback: string
   footer: string
   footer2: string
@@ -84,6 +92,14 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     orderTotal: 'Total',
     orderShipTo: 'Livraison à',
     orderCta: 'Voir ma commande',
+    shipSubject: 'Ta commande est en route — TK Boards',
+    shipPreheader: 'Ta commande a été expédiée.',
+    shipHeading: 'Commande expédiée',
+    shipBody: 'Bonne nouvelle — ta commande est en route. Voici les infos de suivi.',
+    shipCarrierLabel: 'Transporteur',
+    shipTrackingLabel: 'N° de suivi',
+    shipCta: 'Suivre mon colis',
+    shipCtaFallback: 'Voir ma commande',
     fallback: 'Le bouton ne marche pas ? Copie ce lien :',
     footer: 'Tu reçois cet email suite à une action sur ton compte TK ID.',
     footer2: "Si ce n'était pas toi, ignore-le simplement.",
@@ -127,6 +143,14 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     orderTotal: 'Total',
     orderShipTo: 'Ship to',
     orderCta: 'View my order',
+    shipSubject: 'Your order is on its way — TK Boards',
+    shipPreheader: 'Your order has shipped.',
+    shipHeading: 'Order shipped',
+    shipBody: 'Good news — your order is on its way. Here are the tracking details.',
+    shipCarrierLabel: 'Carrier',
+    shipTrackingLabel: 'Tracking no.',
+    shipCta: 'Track my parcel',
+    shipCtaFallback: 'View my order',
     fallback: 'Button not working? Copy this link:',
     footer: "You're receiving this email following an action on your TK ID account.",
     footer2: "If this wasn't you, just ignore it.",
@@ -169,6 +193,14 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     orderTotal: 'Total',
     orderShipTo: 'Enviar a',
     orderCta: 'Ver mi pedido',
+    shipSubject: 'Tu pedido está en camino — TK Boards',
+    shipPreheader: 'Tu pedido ha sido enviado.',
+    shipHeading: 'Pedido enviado',
+    shipBody: 'Buenas noticias: tu pedido está en camino. Aquí tienes los datos de seguimiento.',
+    shipCarrierLabel: 'Transportista',
+    shipTrackingLabel: 'Nº de seguimiento',
+    shipCta: 'Seguir mi paquete',
+    shipCtaFallback: 'Ver mi pedido',
     fallback: '¿El botón no funciona? Copia este enlace:',
     footer: 'Recibes este correo tras una acción en tu cuenta TK ID.',
     footer2: 'Si no fuiste tú, ignóralo.',

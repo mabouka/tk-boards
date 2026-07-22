@@ -6,7 +6,8 @@ import { db } from '@/db'
 import { orders, orderLines, variants, products, users } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
 import { createOrder, releaseStock, reserveStock, type NewOrderLine } from '@/lib/orders'
-import { sendOrderConfirmationEmail } from '@/lib/email'
+import { sendOrderConfirmationEmail, sendOrderShippedEmail } from '@/lib/email'
+import { trackingUrlFor } from '@/lib/carriers'
 
 const STATUSES = [
   'pending_payment',
@@ -71,6 +72,103 @@ export async function setOrderStatus(orderId: string, status: OrderStatus): Prom
 // through setOrderStatus so the pending→paid transition also takes the stock.
 export async function markPaid(orderId: string): Promise<Result> {
   return setOrderStatus(orderId, 'paid')
+}
+
+// ── Ship an order: record carrier + tracking, move to "shipped", email the buyer ──
+export async function shipOrder(input: {
+  orderId: string
+  carrier: string
+  trackingNumber: string
+  trackingUrl?: string
+}): Promise<Result> {
+  await requireAdmin()
+  const carrier = input.carrier.trim()
+  const trackingNumber = input.trackingNumber.trim()
+  if (!carrier || !trackingNumber) {
+    return { ok: false, error: 'Transporteur et numéro de suivi requis.' }
+  }
+
+  const [order] = await db
+    .select({
+      status: orders.status,
+      number: orders.number,
+      email: orders.email,
+      userId: orders.userId,
+      shipName: orders.shipName,
+      shipLine1: orders.shipLine1,
+      shipLine2: orders.shipLine2,
+      shipPostalCode: orders.shipPostalCode,
+      shipCity: orders.shipCity,
+      shipCountry: orders.shipCountry,
+    })
+    .from(orders)
+    .where(eq(orders.id, input.orderId))
+    .limit(1)
+  if (!order) return { ok: false, error: 'Commande introuvable.' }
+  if (order.status === 'cancelled' || order.status === 'refunded') {
+    return { ok: false, error: 'Commande annulée — expédition impossible.' }
+  }
+
+  // Admin URL wins; otherwise derive it for known carriers, else no link.
+  const trackingUrl = input.trackingUrl?.trim() || trackingUrlFor(carrier, trackingNumber) || null
+
+  // Move to "shipped" unless already delivered (never downgrade). Crossing into a
+  // held state takes stock via the shared helper — same rule as setOrderStatus.
+  const nextStatus = order.status === 'delivered' ? 'delivered' : 'shipped'
+  if (!HELD_STATES.includes(order.status) && HELD_STATES.includes(nextStatus)) {
+    const rows = await db
+      .select({ variantId: orderLines.variantId, qty: orderLines.qty })
+      .from(orderLines)
+      .where(eq(orderLines.orderId, input.orderId))
+    const held = rows.filter((l): l is { variantId: string; qty: number } => l.variantId !== null)
+    await reserveStock(held)
+  }
+
+  await db
+    .update(orders)
+    .set({
+      carrier,
+      trackingNumber,
+      trackingUrl,
+      status: nextStatus,
+      ...(nextStatus === 'shipped' && order.status !== 'shipped' ? { shippedAt: new Date() } : {}),
+    })
+    .where(eq(orders.id, input.orderId))
+
+  // Notify the buyer (best-effort — a mail failure never fails the shipment).
+  try {
+    const [u] = order.userId
+      ? await db.select({ locale: users.locale }).from(users).where(eq(users.id, order.userId)).limit(1)
+      : []
+    const lineRows = await db
+      .select({ productName: orderLines.productName, qty: orderLines.qty })
+      .from(orderLines)
+      .where(eq(orderLines.orderId, input.orderId))
+    const shipTo = [
+      order.shipName,
+      order.shipLine1,
+      order.shipLine2,
+      [order.shipPostalCode, order.shipCity].filter(Boolean).join(' '),
+      order.shipCountry,
+    ]
+      .filter(Boolean)
+      .join(', ')
+    await sendOrderShippedEmail({
+      to: order.email,
+      locale: u?.locale ?? 'fr',
+      orderNumber: order.number,
+      carrier,
+      trackingNumber,
+      trackingUrl,
+      lines: lineRows.map((l) => ({ name: l.productName, qty: l.qty })),
+      shipTo,
+    })
+  } catch {
+    /* email non-fatal */
+  }
+
+  revalidate(input.orderId)
+  return { ok: true }
 }
 
 // ── Manual order (admin creates a cash/transfer order for an existing account) ──
