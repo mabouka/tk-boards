@@ -1,9 +1,9 @@
 import { and, eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
 import { shippingRates } from '@/db/schema'
+import { chargeFromRates, quotesFromRates } from '@/lib/shipping-rates'
 
-/** Countries a whole cart can ship to (every product has a rate there), each with
- *  the one-parcel charge = the highest per-product rate for that country. */
+/** Countries a whole cart can ship to, each with its one-parcel charge. */
 export async function cartShippingQuotes(
   productIds: string[]
 ): Promise<{ country: string; shippingEur: number }[]> {
@@ -17,22 +17,10 @@ export async function cartShippingQuotes(
     })
     .from(shippingRates)
     .where(inArray(shippingRates.productId, ids))
-
-  const byCountry = new Map<string, { products: Set<string>; max: number }>()
-  for (const r of rows) {
-    const e = byCountry.get(r.country) ?? { products: new Set<string>(), max: 0 }
-    e.products.add(r.productId)
-    e.max = Math.max(e.max, Number(r.amountEur))
-    byCountry.set(r.country, e)
-  }
-  // Only countries where every product in the cart is shippable.
-  return [...byCountry.entries()]
-    .filter(([, e]) => e.products.size === ids.length)
-    .map(([country, e]) => ({ country, shippingEur: e.max }))
+  return quotesFromRates(rows, ids.length)
 }
 
-/** One-parcel shipping charge to a country, or null if any product in the cart
- *  has no rate there (so the cart can't ship to that destination). */
+/** One-parcel shipping charge to a country, or null if the cart can't ship there. */
 export async function shippingForCountry(
   productIds: string[],
   country: string
@@ -43,8 +31,5 @@ export async function shippingForCountry(
     .select({ productId: shippingRates.productId, amountEur: shippingRates.amountEur })
     .from(shippingRates)
     .where(and(inArray(shippingRates.productId, ids), eq(shippingRates.country, country.toUpperCase())))
-
-  const covered = new Set(rows.map((r) => r.productId))
-  if (covered.size !== ids.length) return null
-  return rows.reduce((max, r) => Math.max(max, Number(r.amountEur)), 0)
+  return chargeFromRates(rows, ids.length)
 }
