@@ -35,7 +35,14 @@ export const TRANSLATABLE_TYPES = [
 ]
 
 // Singletons: exactly one document, edited from a fixed structure pane.
-export const SINGLETON_TYPES = ['seoSettings', 'contactSettings', 'footerSettings', 'authPage', 'accountPageSettings']
+export const SINGLETON_TYPES = [
+  'seoSettings',
+  'contactSettings',
+  'footerSettings',
+  'companySettings',
+  'authPage',
+  'accountPageSettings',
+]
 
 // Bespoke i18n singletons that live under Pages → <language>, in display order.
 const BESPOKE_PAGES: ReadonlyArray<readonly [type: string, title: string]> = [
@@ -210,6 +217,15 @@ const structure = (S: StructureBuilder) =>
                 .title('Footer')
                 .icon(CogIcon)
                 .child(S.document().schemaType('footerSettings').documentId('footerSettings').title('Footer')),
+              S.listItem()
+                .title('Société (facturation)')
+                .icon(CogIcon)
+                .child(
+                  S.document()
+                    .schemaType('companySettings')
+                    .documentId('companySettings')
+                    .title('Société (facturation)')
+                ),
               S.listItem()
                 .title('Login')
                 .icon(CogIcon)
