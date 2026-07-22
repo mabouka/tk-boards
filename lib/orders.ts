@@ -1,8 +1,41 @@
-import { and, desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, sql } from 'drizzle-orm'
+import type { BatchItem } from 'drizzle-orm/batch'
 import { db } from '@/db'
 import { orders, orderLines, users, variants } from '@/db/schema'
 import { createEmailToken } from '@/lib/auth-tokens'
 import { sendPasswordResetEmail } from '@/lib/email'
+
+export type StockLine = { variantId: string; qty: number }
+
+/** Atomically hold stock for these lines. Each decrement is guarded (stock >= qty)
+ *  so two concurrent buyers of the last unit can't both succeed; on any shortfall
+ *  the already-held lines are released and it returns false (nothing reserved). */
+export async function reserveStock(lines: StockLine[]): Promise<boolean> {
+  const held: StockLine[] = []
+  for (const l of lines) {
+    const res = await db
+      .update(variants)
+      .set({ stock: sql`${variants.stock} - ${l.qty}` })
+      .where(and(eq(variants.id, l.variantId), gte(variants.stock, l.qty)))
+      .returning({ id: variants.id })
+    if (res.length === 0) {
+      await releaseStock(held)
+      return false
+    }
+    held.push(l)
+  }
+  return true
+}
+
+/** Give stock back (session expired, order cancelled/refunded). */
+export async function releaseStock(lines: StockLine[]): Promise<void> {
+  for (const l of lines) {
+    await db
+      .update(variants)
+      .set({ stock: sql`${variants.stock} + ${l.qty}` })
+      .where(eq(variants.id, l.variantId))
+  }
+}
 
 const LOCALES = ['fr', 'en', 'es']
 const loc = (v: string | null | undefined) => (LOCALES.includes(String(v)) ? String(v) : 'fr')
@@ -80,50 +113,60 @@ export type NewOrder = {
   lines: NewOrderLine[]
 }
 
-/** Insert an order + its lines and decrement stock. Sequential writes (neon-http
- *  has no interactive transaction), so stock is clamped at 0 defensively. */
-export async function createOrder(input: NewOrder): Promise<{ id: string; number: string }> {
+/** Insert an order + its lines (and, unless the stock was already reserved at
+ *  checkout, decrement it) in a single atomic batch — so a failure never leaves a
+ *  half-written order. The id is generated up front so the lines can reference it
+ *  inside the same batch. */
+export async function createOrder(
+  input: NewOrder,
+  opts: { decrementStock?: boolean } = {}
+): Promise<{ id: string; number: string }> {
+  const id = crypto.randomUUID()
   const number = await nextOrderNumber()
-  const [order] = await db
-    .insert(orders)
-    .values({
-      number,
-      userId: input.userId,
-      email: input.email.toLowerCase(),
-      status: input.status,
-      paymentMethod: input.paymentMethod,
-      paymentStatus: input.paymentStatus,
-      subtotalEur: input.subtotalEur,
-      taxEur: input.taxEur,
-      shippingEur: input.shippingEur,
-      totalEur: input.totalEur,
-      shipName: input.ship.name ?? null,
-      shipLine1: input.ship.line1 ?? null,
-      shipLine2: input.ship.line2 ?? null,
-      shipPostalCode: input.ship.postalCode ?? null,
-      shipCity: input.ship.city ?? null,
-      shipCountry: input.ship.country ?? null,
-      shipPhone: input.ship.phone ?? null,
-      stripeSessionId: input.stripeSessionId ?? null,
-      stripePaymentIntentId: input.stripePaymentIntentId ?? null,
-      paidAt: input.paymentStatus === 'paid' ? new Date() : null,
-    })
-    .returning({ id: orders.id })
 
+  const insertOrder = db.insert(orders).values({
+    id,
+    number,
+    userId: input.userId,
+    email: input.email.toLowerCase(),
+    status: input.status,
+    paymentMethod: input.paymentMethod,
+    paymentStatus: input.paymentStatus,
+    subtotalEur: input.subtotalEur,
+    taxEur: input.taxEur,
+    shippingEur: input.shippingEur,
+    totalEur: input.totalEur,
+    shipName: input.ship.name ?? null,
+    shipLine1: input.ship.line1 ?? null,
+    shipLine2: input.ship.line2 ?? null,
+    shipPostalCode: input.ship.postalCode ?? null,
+    shipCity: input.ship.city ?? null,
+    shipCountry: input.ship.country ?? null,
+    shipPhone: input.ship.phone ?? null,
+    stripeSessionId: input.stripeSessionId ?? null,
+    stripePaymentIntentId: input.stripePaymentIntentId ?? null,
+    paidAt: input.paymentStatus === 'paid' ? new Date() : null,
+  })
+
+  const rest: BatchItem<'pg'>[] = []
   if (input.lines.length) {
-    await db.insert(orderLines).values(input.lines.map((l) => ({ orderId: order.id, ...l })))
+    rest.push(db.insert(orderLines).values(input.lines.map((l) => ({ orderId: id, ...l }))))
   }
-
-  for (const l of input.lines) {
-    if (l.variantId) {
-      await db
-        .update(variants)
-        .set({ stock: sql`greatest(${variants.stock} - ${l.qty}, 0)` })
-        .where(eq(variants.id, l.variantId))
+  if (opts.decrementStock ?? true) {
+    for (const l of input.lines) {
+      if (l.variantId) {
+        rest.push(
+          db
+            .update(variants)
+            .set({ stock: sql`greatest(${variants.stock} - ${l.qty}, 0)` })
+            .where(eq(variants.id, l.variantId))
+        )
+      }
     }
   }
 
-  return { id: order.id, number }
+  await db.batch([insertOrder, ...rest] as [BatchItem<'pg'>, ...BatchItem<'pg'>[]])
+  return { id, number }
 }
 
 // ── Account: read a user's orders ──

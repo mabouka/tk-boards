@@ -3,12 +3,35 @@ import { eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
 import { orders, variants } from '@/db/schema'
 import { stripe } from '@/lib/stripe'
-import { createOrder, resolveOrCreateUser, type NewOrderLine } from '@/lib/orders'
+import { createOrder, resolveOrCreateUser, releaseStock, type NewOrderLine } from '@/lib/orders'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 
 export const runtime = 'nodejs'
 
 const money = (cents: number | null | undefined) => ((cents ?? 0) / 100).toFixed(2)
+
+// The variant SKU we stashed in the line item's product metadata at checkout.
+const skuOf = (item: Stripe.LineItem): string => {
+  const p = item.price?.product
+  return p && typeof p === 'object' && 'metadata' in p ? (p.metadata?.sku ?? '') : ''
+}
+
+// Map a session's line items back to variant ids + quantities (for stock).
+async function sessionStockLines(sessionId: string): Promise<{ variantId: string; qty: number }[]> {
+  const li = await stripe.checkout.sessions.listLineItems(sessionId, {
+    expand: ['data.price.product'],
+    limit: 100,
+  })
+  const skus = [...new Set(li.data.map(skuOf).filter(Boolean))]
+  const idBySku = new Map<string, string>()
+  if (skus.length) {
+    const rows = await db.select({ id: variants.id, sku: variants.sku }).from(variants).where(inArray(variants.sku, skus))
+    rows.forEach((r) => idBySku.set(r.sku, r.id))
+  }
+  return li.data
+    .map((it) => ({ variantId: idBySku.get(skuOf(it)) ?? '', qty: it.quantity ?? 1 }))
+    .filter((l) => l.variantId !== '')
+}
 
 // Stripe payment webhook — the source of truth for turning a paid Checkout
 // session into an order. Verifies the signature, is idempotent (one order per
@@ -27,9 +50,21 @@ export async function POST(req: Request) {
     return new Response('Invalid signature', { status: 400 })
   }
 
-  if (event.type !== 'checkout.session.completed') return new Response('ignored', { status: 200 })
+  if (
+    event.type !== 'checkout.session.completed' &&
+    event.type !== 'checkout.session.expired'
+  ) {
+    return new Response('ignored', { status: 200 })
+  }
 
   const session = event.data.object
+
+  // Abandoned/expired session → give back the stock reserved at checkout.
+  if (event.type === 'checkout.session.expired') {
+    await releaseStock(await sessionStockLines(session.id))
+    return new Response('released', { status: 200 })
+  }
+
   if (session.payment_status !== 'paid') return new Response('unpaid', { status: 200 })
 
   // Idempotency: the unique index on stripe_session_id backs this too.
@@ -45,11 +80,10 @@ export async function POST(req: Request) {
   if (!email) return new Response('no email', { status: 200 })
 
   // Line items carry the variant SKU in the product metadata we set at checkout.
-  const li = await stripe.checkout.sessions.listLineItems(session.id, { expand: ['data.price.product'] })
-  const skuOf = (item: Stripe.LineItem): string => {
-    const p = item.price?.product
-    return p && typeof p === 'object' && 'metadata' in p ? (p.metadata?.sku ?? '') : ''
-  }
+  const li = await stripe.checkout.sessions.listLineItems(session.id, {
+    expand: ['data.price.product'],
+    limit: 100,
+  })
   const skus = [...new Set(li.data.map(skuOf).filter(Boolean))]
   const variantIdBySku = new Map<string, string>()
   if (skus.length) {
@@ -113,7 +147,8 @@ export async function POST(req: Request) {
         ? session.payment_intent
         : (session.payment_intent?.id ?? null),
     lines,
-  })
+    // Stock was already reserved when the session was created (checkout action).
+  }, { decrementStock: false })
 
   // Confirmation email — best effort; never fail the webhook on a mail error.
   try {

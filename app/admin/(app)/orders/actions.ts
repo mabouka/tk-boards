@@ -3,9 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
-import { orders, variants, products, users } from '@/db/schema'
+import { orders, orderLines, variants, products, users } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
-import { createOrder, type NewOrderLine } from '@/lib/orders'
+import { createOrder, releaseStock, reserveStock, type NewOrderLine } from '@/lib/orders'
 
 const STATUSES = [
   'pending_payment',
@@ -25,9 +25,32 @@ function revalidate(orderId: string) {
   revalidatePath('/admin/orders')
 }
 
+const RELEASED_STATES = ['cancelled', 'refunded']
+
 export async function setOrderStatus(orderId: string, status: OrderStatus): Promise<Result> {
   await requireAdmin()
   if (!orderId || !STATUSES.includes(status)) return { ok: false, error: 'Statut invalide.' }
+
+  const [current] = await db
+    .select({ status: orders.status })
+    .from(orders)
+    .where(eq(orders.id, orderId))
+    .limit(1)
+  if (!current) return { ok: false, error: 'Commande introuvable.' }
+
+  // Return stock when an order moves into cancelled/refunded (its units were
+  // decremented at creation); take it back if the order is reactivated.
+  const wasReleased = RELEASED_STATES.includes(current.status)
+  const willRelease = RELEASED_STATES.includes(status)
+  if (wasReleased !== willRelease) {
+    const rows = await db
+      .select({ variantId: orderLines.variantId, qty: orderLines.qty })
+      .from(orderLines)
+      .where(eq(orderLines.orderId, orderId))
+    const held = rows.filter((l): l is { variantId: string; qty: number } => l.variantId !== null)
+    if (willRelease) await releaseStock(held)
+    else await reserveStock(held)
+  }
 
   await db
     .update(orders)

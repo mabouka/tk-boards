@@ -6,6 +6,7 @@ import { db } from '@/db'
 import { variants, products, users } from '@/db/schema'
 import { liveSession } from '@/lib/session'
 import { stripe } from '@/lib/stripe'
+import { reserveStock, releaseStock } from '@/lib/orders'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const LOCALES = ['fr', 'en', 'es']
@@ -33,10 +34,10 @@ export async function createCheckoutSession(
   const skus = [...new Set(items.map((i) => String(i.sku)))]
   const rows = await db
     .select({
+      id: variants.id,
       sku: variants.sku,
       priceEur: variants.priceEur,
       salePriceEur: variants.salePriceEur,
-      stock: variants.stock,
       active: variants.active,
       productName: products.name,
       productActive: products.active,
@@ -47,11 +48,11 @@ export async function createCheckoutSession(
   const bySku = new Map(rows.map((r) => [r.sku, r]))
 
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
+  const reserveLines: { variantId: string; qty: number }[] = []
   for (const it of items) {
     const qty = Math.max(1, Math.floor(Number(it.qty) || 0))
     const v = bySku.get(String(it.sku))
     if (!v || !v.active || !v.productActive) return { error: 'unavailable' }
-    if (v.stock < qty) return { error: 'stock' }
     const unitAmount = Math.round(Number(v.salePriceEur ?? v.priceEur) * 100) // cents
     lineItems.push({
       quantity: qty,
@@ -62,6 +63,7 @@ export async function createCheckoutSession(
         product_data: { name: v.productName, metadata: { sku: v.sku } },
       },
     })
+    reserveLines.push({ variantId: v.id, qty })
   }
 
   // Logged-in buyers get their email pre-filled; guests type it on Stripe.
@@ -71,6 +73,11 @@ export async function createCheckoutSession(
     const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, sess.userId)).limit(1)
     email = u?.email ?? undefined
   }
+
+  // Hold the stock now (atomic, guarded) so two concurrent buyers of the last
+  // unit can't both check out. The webhook confirms without decrementing again;
+  // an expired/abandoned session releases it (see the webhook's `expired` case).
+  if (!(await reserveStock(reserveLines))) return { error: 'stock' }
 
   try {
     const checkout = await stripe.checkout.sessions.create({
@@ -85,6 +92,7 @@ export async function createCheckoutSession(
     })
     return { url: checkout.url ?? undefined }
   } catch {
+    await releaseStock(reserveLines) // Stripe failed — give the held stock back
     return { error: 'failed' }
   }
 }
