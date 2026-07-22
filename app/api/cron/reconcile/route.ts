@@ -28,6 +28,21 @@ export async function GET(req: Request) {
   }
 
   const total = missing.reduce((s, m) => s + Number(m.amountEur), 0).toFixed(2)
+
+  // Say so loudly rather than mail a noreply address nobody reads: monitoring that
+  // reports success while alerting into the void is worse than none. The failure is
+  // visible in the cron's own logs and response.
+  if (!process.env.CONTACT_EMAIL) {
+    return Response.json(
+      {
+        ok: false,
+        unreconciled: missing.length,
+        totalEur: total,
+        error: 'CONTACT_EMAIL is not set — no alert could be delivered.',
+      },
+      { status: 500 }
+    )
+  }
   await sendOpsAlertEmail({
     subject: `⚠️ ${missing.length} paiement(s) sans commande — ${total} €`,
     lines: [
