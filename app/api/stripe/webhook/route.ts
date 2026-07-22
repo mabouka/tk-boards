@@ -1,10 +1,11 @@
 import type Stripe from 'stripe'
 import { eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
-import { orders, variants, users } from '@/db/schema'
+import { orders, variants, products, users } from '@/db/schema'
 import { stripe } from '@/lib/stripe'
 import { createOrder, resolveOrCreateUser, releaseStock, type NewOrderLine } from '@/lib/orders'
 import { sendOrderConfirmationEmail } from '@/lib/email'
+import { vatFromTtcCents, SHIPPING_VAT_RATE, DEFAULT_VAT_RATE } from '@/lib/vat'
 
 export const runtime = 'nodejs'
 
@@ -86,13 +87,27 @@ export async function POST(req: Request) {
   })
   const skus = [...new Set(li.data.map(skuOf).filter(Boolean))]
   const variantIdBySku = new Map<string, string>()
+  const vatBySku = new Map<string, number>()
   if (skus.length) {
     const rows = await db
-      .select({ id: variants.id, sku: variants.sku })
+      .select({ id: variants.id, sku: variants.sku, vatRate: products.vatRate })
       .from(variants)
+      .innerJoin(products, eq(products.id, variants.productId))
       .where(inArray(variants.sku, skus))
-    rows.forEach((r) => variantIdBySku.set(r.sku, r.id))
+    rows.forEach((r) => {
+      variantIdBySku.set(r.sku, r.id)
+      vatBySku.set(r.sku, r.vatRate)
+    })
   }
+
+  // We compute VAT ourselves (prices are TTC). Sum the VAT contained in each line
+  // at its product's rate, plus the shipping VAT at the standard rate.
+  let vatCents = 0
+  for (const item of li.data) {
+    const rate = vatBySku.get(skuOf(item)) ?? DEFAULT_VAT_RATE
+    vatCents += vatFromTtcCents(item.amount_subtotal ?? 0, rate)
+  }
+  vatCents += vatFromTtcCents(session.total_details?.amount_shipping ?? 0, SHIPPING_VAT_RATE)
 
   const lines: NewOrderLine[] = li.data.map((item) => {
     const sku = skuOf(item)
@@ -173,7 +188,7 @@ export async function POST(req: Request) {
     paymentMethod: 'stripe',
     paymentStatus: 'paid',
     subtotalEur: money(session.amount_subtotal),
-    taxEur: money(session.total_details?.amount_tax),
+    taxEur: money(vatCents),
     shippingEur: money(session.total_details?.amount_shipping),
     totalEur: money(session.amount_total),
     ship: {
@@ -215,7 +230,7 @@ export async function POST(req: Request) {
         totalEur: (Number(l.unitPriceEur) * l.qty).toFixed(2),
       })),
       subtotalEur: money(session.amount_subtotal),
-      taxEur: money(session.total_details?.amount_tax),
+      taxEur: money(vatCents),
       shippingEur: money(session.total_details?.amount_shipping),
       totalEur: money(session.amount_total),
       shipTo,

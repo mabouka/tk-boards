@@ -83,6 +83,7 @@ export const productInputSchema = z.object({
   kind: z.enum(['board', 'accessory']),
   active: z.boolean(),
   miniConfigurator: z.boolean().default(false),
+  vatRate: z.union([z.literal(21), z.literal(10), z.literal(4)]).default(21), // % VAT included (TTC)
   options: z.array(optionSchema), // variant axes (→ product_attribute)
   variants: z.array(editorVariantSchema).min(1, 'Au moins une variante'),
   addons: z.array(addonSchema).default([]), // paid add-ons (→ product_option)

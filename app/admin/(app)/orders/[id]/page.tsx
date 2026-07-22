@@ -93,9 +93,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           </Table>
           <CardContent className="mt-4 flex flex-col gap-1.5 text-sm">
             <Row label="Sous-total" value={eur(order.subtotalEur)} />
-            <Row label="TVA" value={eur(order.taxEur)} />
             <Row label="Livraison" value={eur(order.shippingEur)} />
             <Row label="Total" value={eur(order.totalEur)} strong />
+            <Row label="Dont TVA" value={eur(order.taxEur)} />
           </CardContent>
         </Card>
 

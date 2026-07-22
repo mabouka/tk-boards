@@ -65,16 +65,16 @@ export default async function OrderDetailPage({ params }: Props) {
             <span>{eur(order.subtotalEur)}</span>
           </div>
           <div className={styles.orderTotalRow}>
-            <span>{t('order_tax')}</span>
-            <span>{eur(order.taxEur)}</span>
-          </div>
-          <div className={styles.orderTotalRow}>
             <span>{t('order_shipping')}</span>
             <span>{eur(order.shippingEur)}</span>
           </div>
           <div className={`${styles.orderTotalRow} ${styles.orderTotalStrong}`}>
             <span>{t('order_total')}</span>
             <span>{eur(order.totalEur)}</span>
+          </div>
+          <div className={styles.orderTotalRow}>
+            <span>{t('order_vat_incl')}</span>
+            <span>{eur(order.taxEur)}</span>
           </div>
         </div>
       </section>

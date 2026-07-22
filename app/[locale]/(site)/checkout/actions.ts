@@ -9,6 +9,7 @@ import { stripe } from '@/lib/stripe'
 import { reserveStock, releaseStock } from '@/lib/orders'
 import { cartShippingQuotes, shippingForCountry } from '@/lib/shipping'
 import { isCountryCode } from '@/lib/countries'
+import { vatFromTtc } from '@/lib/vat'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const LOCALES = ['fr', 'en', 'es']
@@ -34,10 +35,11 @@ export type CheckoutResult = {
 type CartLineResolved = {
   sku: string
   name: string
-  unitPriceEur: number
+  unitPriceEur: number // TTC (VAT included)
   qty: number
   variantId: string
   productId: string
+  vatRate: number
 }
 
 // Re-read every cart line from the DB — the client only supplies variant SKU +
@@ -57,6 +59,7 @@ async function readCartLines(
       productId: products.id,
       productName: products.name,
       productActive: products.active,
+      vatRate: products.vatRate,
     })
     .from(variants)
     .innerJoin(products, eq(products.id, variants.productId))
@@ -75,6 +78,7 @@ async function readCartLines(
       qty,
       variantId: v.id,
       productId: v.productId,
+      vatRate: v.vatRate,
     })
   }
   return { lines }
@@ -85,22 +89,27 @@ export type CheckoutQuote =
   | { ok: false; error: 'empty' | 'unavailable' }
   | {
       ok: true
-      subtotalEur: number
+      subtotalEur: number // TTC (VAT included)
+      goodsVatEur: number // VAT contained in the goods subtotal
       lines: CheckoutQuoteLine[]
       quotes: { country: string; shippingEur: number }[]
     }
 
-// Everything the checkout page needs to render: authoritative line prices, the
-// subtotal, and the destinations the whole cart can ship to (with their charge).
+// Everything the checkout page needs to render: authoritative TTC line prices, the
+// subtotal, the VAT included in the goods, and the destinations the whole cart can
+// ship to (with their TTC charge). Shipping VAT is added client-side once a country
+// is picked (it's a flat standard rate).
 export async function getCheckoutQuote(items: CheckoutItem[]): Promise<CheckoutQuote> {
   const read = await readCartLines(items)
   if ('error' in read) return { ok: false, error: read.error }
   const { lines } = read
   const subtotalEur = lines.reduce((s, l) => s + l.unitPriceEur * l.qty, 0)
+  const goodsVatEur = lines.reduce((s, l) => s + vatFromTtc(l.unitPriceEur * l.qty, l.vatRate), 0)
   const quotes = await cartShippingQuotes(lines.map((l) => l.productId))
   return {
     ok: true,
     subtotalEur,
+    goodsVatEur,
     lines: lines.map((l) => ({ sku: l.sku, name: l.name, unitPriceEur: l.unitPriceEur, qty: l.qty })),
     quotes,
   }
@@ -182,12 +191,13 @@ export async function createCheckoutSession(
   )
   if (shipping === null) return { error: 'shipping_country' }
 
+  // Prices are TTC (VAT included) and we compute VAT ourselves, so Stripe applies
+  // no tax — it just charges the amounts.
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = lines.map((l) => ({
     quantity: l.qty,
     price_data: {
       currency: 'eur',
       unit_amount: Math.round(l.unitPriceEur * 100),
-      tax_behavior: 'exclusive', // price is pre-tax; Stripe Tax adds VAT on top
       product_data: { name: l.name, metadata: { sku: l.sku } },
     },
   }))
@@ -205,38 +215,21 @@ export async function createCheckoutSession(
   if (!(await reserveStock(reserveLines))) return { error: 'stock' }
 
   try {
-    const stripeAddress = {
-      line1,
-      line2: line2 || undefined,
-      postal_code: postalCode,
-      city,
-      country: dest,
-    }
-    // The customer carries the address so Stripe Tax uses it and Checkout doesn't
-    // ask for one again (customer_update: never).
-    const customer = await stripe.customers.create({
-      ...(email ? { email } : {}),
-      name,
-      phone: phone || undefined,
-      address: stripeAddress,
-      shipping: { name, phone: phone || undefined, address: stripeAddress },
-    })
-
+    // The address is collected on our page and carried to the order via metadata;
+    // Stripe collects no address (we don't use Stripe Tax). Logged-in buyers get
+    // their email pre-filled; guests type it on Stripe.
     const shipJson = JSON.stringify({ name, line1, line2, postalCode, city, country: dest, phone })
 
     const checkout = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: lineItems,
-      automatic_tax: { enabled: true },
-      customer: customer.id,
-      customer_update: { address: 'never', shipping: 'never' },
+      customer_email: email,
       shipping_options: [
         {
           shipping_rate_data: {
             type: 'fixed_amount',
             fixed_amount: { amount: Math.round(shipping * 100), currency: 'eur' },
             display_name: SHIP_LABEL[locale] ?? 'Shipping',
-            tax_behavior: 'exclusive',
           },
         },
       ],

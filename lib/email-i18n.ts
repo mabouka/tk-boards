@@ -35,6 +35,7 @@ type EmailStrings = {
   orderBody: string
   orderSubtotal: string
   orderTax: string
+  orderVatIncl: string
   orderShipping: string
   orderTotal: string
   orderShipTo: string
@@ -97,6 +98,7 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     orderBody: 'Merci ! Voici le récapitulatif de ta commande. Tu recevras un email dès son expédition.',
     orderSubtotal: 'Sous-total',
     orderTax: 'TVA',
+    orderVatIncl: 'Dont TVA',
     orderShipping: 'Livraison',
     orderTotal: 'Total',
     orderShipTo: 'Livraison à',
@@ -158,6 +160,7 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     orderBody: "Thank you! Here's a summary of your order. We'll email you as soon as it ships.",
     orderSubtotal: 'Subtotal',
     orderTax: 'VAT',
+    orderVatIncl: 'Incl. VAT',
     orderShipping: 'Shipping',
     orderTotal: 'Total',
     orderShipTo: 'Ship to',
@@ -218,6 +221,7 @@ const emailCopy: Record<EmailLocale, EmailStrings> = {
     orderBody: '¡Gracias! Aquí tienes el resumen de tu pedido. Te avisaremos por email en cuanto se envíe.',
     orderSubtotal: 'Subtotal',
     orderTax: 'IVA',
+    orderVatIncl: 'IVA incluido',
     orderShipping: 'Envío',
     orderTotal: 'Total',
     orderShipTo: 'Enviar a',

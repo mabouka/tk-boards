@@ -112,6 +112,7 @@ export const products = pgTable(
     kind: text('kind').notNull(), // 'board' | 'accessory' — admin filter only
     active: boolean('active').notNull().default(true),
     miniConfigurator: boolean('mini_configurator').notNull().default(false),
+    vatRate: integer('vat_rate').notNull().default(21), // % VAT included in the (TTC) price — 21 | 10 | 4
     createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { mode: 'date' })
       .notNull()

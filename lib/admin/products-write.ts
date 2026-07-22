@@ -43,12 +43,12 @@ export async function persistProduct(db: AnyPgDatabase, input: ProductInput): Pr
   if (productId) {
     await db
       .update(products)
-      .set({ name: input.name, sku: input.sku, kind: input.kind, active: input.active, miniConfigurator: input.miniConfigurator })
+      .set({ name: input.name, sku: input.sku, kind: input.kind, active: input.active, miniConfigurator: input.miniConfigurator, vatRate: input.vatRate })
       .where(eq(products.id, productId))
   } else {
     const [created] = await db
       .insert(products)
-      .values({ name: input.name, sku: input.sku, kind: input.kind, active: input.active, miniConfigurator: input.miniConfigurator })
+      .values({ name: input.name, sku: input.sku, kind: input.kind, active: input.active, miniConfigurator: input.miniConfigurator, vatRate: input.vatRate })
       .returning({ id: products.id })
     productId = created.id
   }

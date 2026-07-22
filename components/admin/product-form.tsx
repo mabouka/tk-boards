@@ -96,6 +96,7 @@ export function ProductForm({
   const [sku, setSku] = useState(initial?.sku ?? '')
   const [kind, setKind] = useState<'board' | 'accessory' | 'none'>(initial?.kind ?? 'none')
   const [miniConfigurator, setMiniConfigurator] = useState(initial?.miniConfigurator ?? false)
+  const [vatRate, setVatRate] = useState<21 | 10 | 4>(initial?.vatRate ?? 21)
   // Required fields flagged red after a failed publish/save attempt; cleared on edit.
   const [errors, setErrors] = useState<Set<string>>(new Set())
   const clearError = (field: string) =>
@@ -208,6 +209,7 @@ export function ProductForm({
       kind: productKind,
       active,
       miniConfigurator,
+      vatRate,
       options: validOptions,
       variants,
       addons: addons
@@ -665,6 +667,25 @@ export function ProductForm({
                 <SelectContent>
                   <SelectItem value="board">Board</SelectItem>
                   <SelectItem value="accessory">Accessoire</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>TVA</CardTitle>
+              <CardDescription>Taux de TVA inclus dans le prix (TTC).</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Select value={String(vatRate)} onValueChange={(v) => setVatRate(Number(v) as 21 | 10 | 4)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="21">21 % (standard)</SelectItem>
+                  <SelectItem value="10">10 % (réduit)</SelectItem>
+                  <SelectItem value="4">4 % (super-réduit)</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>

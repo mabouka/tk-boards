@@ -19,6 +19,7 @@ function boardInput(sizes: string[], id?: string, sku = 'BX'): ProductInput {
     kind: 'board',
     active: true,
     miniConfigurator: false,
+    vatRate: 21,
     options: [
       {
         code: 'SIZE',

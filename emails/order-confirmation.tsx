@@ -64,9 +64,9 @@ function OrderConfirmationEmail({
 
       <Section>
         {totalRow(c.orderSubtotal, subtotal)}
-        {totalRow(c.orderTax, tax)}
         {totalRow(c.orderShipping, shipping)}
         {totalRow(c.orderTotal, total, true)}
+        {totalRow(c.orderVatIncl, tax)}
       </Section>
 
       <Text className="text-muted m-0 mt-6 text-[13px] leading-[1.6]">
@@ -103,9 +103,9 @@ OrderConfirmationEmail.PreviewProps = {
     { name: 'Leash Premium', qty: 2, total: '58,00 €' },
   ],
   subtotal: '548,00 €',
-  tax: '115,08 €',
+  tax: '99,45 €',
   shipping: '25,00 €',
-  total: '688,08 €',
+  total: '573,00 €',
   shipTo: '18 rue Hocheporte, 4000 Liège, Belgique',
   url: 'http://localhost:3000/fr/account/orders',
 } as Props

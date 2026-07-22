@@ -11,6 +11,7 @@ import {
   type CheckoutQuote,
 } from '@/app/[locale]/(site)/checkout/actions'
 import { countryName } from '@/lib/countries'
+import { vatFromTtc, SHIPPING_VAT_RATE } from '@/lib/vat'
 import { formatEur } from '@/lib/format-price'
 import styles from './Checkout.module.css'
 
@@ -134,6 +135,7 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
 
   const shipping = quote.quotes.find((q) => q.country === country)?.shippingEur
   const total = quote.subtotalEur + (shipping ?? 0)
+  const vatIncl = quote.goodsVatEur + (shipping != null ? vatFromTtc(shipping, SHIPPING_VAT_RATE) : 0)
   const noShipping = quote.quotes.length === 0
 
   return (
@@ -220,8 +222,11 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
               <span>{t('total')}</span>
               <span>{eur(total)}</span>
             </div>
+            <div className={styles.vatRow}>
+              <span>{t('vat_incl')}</span>
+              <span>{eur(vatIncl)}</span>
+            </div>
           </div>
-          <p className={styles.taxNote}>{t('tax_note')}</p>
         </section>
 
         <div>

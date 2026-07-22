@@ -139,6 +139,7 @@ export async function getProduct(id: string): Promise<ProductEditInput | null> {
     kind: (p.kind as 'board' | 'accessory' | null) ?? null,
     active: p.active,
     miniConfigurator: p.miniConfigurator,
+    vatRate: p.vatRate === 10 ? 10 : p.vatRate === 4 ? 4 : 21,
     options,
     variants: editorVariants,
     addons: opts.map((o) => ({

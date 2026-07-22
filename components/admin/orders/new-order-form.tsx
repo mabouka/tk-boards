@@ -41,7 +41,6 @@ export function NewOrderForm({ accounts, variants }: { accounts: Account[]; vari
   const [lines, setLines] = useState<Line[]>([])
   const [pickVariant, setPickVariant] = useState('')
   const [pickQty, setPickQty] = useState('1')
-  const [taxEur, setTaxEur] = useState('0')
   const [shippingEur, setShippingEur] = useState('0')
   const [ship, setShip] = useState({
     name: '',
@@ -73,12 +72,12 @@ export function NewOrderForm({ accounts, variants }: { accounts: Account[]; vari
   }
 
   const subtotal = lines.reduce((s, l) => s + Number(vById.get(l.variantId)?.priceEur ?? 0) * l.qty, 0)
-  const total = subtotal + (Number(taxEur) || 0) + (Number(shippingEur) || 0)
+  const total = subtotal + (Number(shippingEur) || 0)
   const canSubmit = userId !== '' && lines.length > 0 && ship.line1.trim() !== '' && !pending
 
   function submit() {
     startTransition(async () => {
-      const res = await createManualOrder({ userId, locale, paymentMethod: method, paid, taxEur, shippingEur, ship, lines })
+      const res = await createManualOrder({ userId, locale, paymentMethod: method, paid, shippingEur, ship, lines })
       if (res.ok) {
         toast.success('Commande créée.')
         router.push(`/admin/orders/${res.id}`)
@@ -247,18 +246,7 @@ export function NewOrderForm({ accounts, variants }: { accounts: Account[]; vari
               <span className="tabular-nums">{EUR(subtotal)}</span>
             </div>
             <div className="flex items-center justify-between gap-2 text-muted-foreground">
-              <span>TVA</span>
-              <Input
-                type="number"
-                min={0}
-                step="0.01"
-                value={taxEur}
-                onChange={(e) => setTaxEur(e.target.value)}
-                className="h-8 w-24 text-right"
-              />
-            </div>
-            <div className="flex items-center justify-between gap-2 text-muted-foreground">
-              <span>Livraison</span>
+              <span>Livraison (TTC)</span>
               <Input
                 type="number"
                 min={0}
