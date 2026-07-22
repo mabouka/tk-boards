@@ -28,7 +28,7 @@ export default function MiniConfigurator({ product, locale, labels, productName,
   const { selected, isAvailable, resolved, pick, canBuy, displayPrice, oldPrice } =
     useVariantSelection(product)
   const { addItem } = useCart()
-  const { buyNow, pending, error } = useBuyNow(locale)
+  const { buyNow, pending } = useBuyNow(locale)
   const savings = oldPrice != null && displayPrice != null ? oldPrice - displayPrice : null
 
   function handleAdd() {
@@ -112,7 +112,6 @@ export default function MiniConfigurator({ product, locale, labels, productName,
           {labels.cart}
         </button>
       </div>
-      {error && <p className="u-buy-error">{error}</p>}
     </div>
   )
 }

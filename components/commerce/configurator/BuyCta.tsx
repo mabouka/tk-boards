@@ -21,7 +21,7 @@ type Props = {
 export default function BuyCta({ product, locale, labels, productName, previewImage }: Props) {
   const [open, setOpen] = useState(false)
   const { addItem } = useCart()
-  const { buyNow, pending, error } = useBuyNow(locale)
+  const { buyNow, pending } = useBuyNow(locale)
 
   // Board has a skuCode but no linked product in the admin yet → placeholder buttons.
   if (!product) {
@@ -100,7 +100,6 @@ export default function BuyCta({ product, locale, labels, productName, previewIm
           {labels.cart}
         </button>
       </div>
-      {error && <p className="u-buy-error">{error}</p>}
     </div>
   )
 }

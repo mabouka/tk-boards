@@ -286,9 +286,6 @@
     "remove": "Eliminar",
     "included": "Incluido",
     "checkout": "Tramitar pedido",
-    "checkout_err_stock": "Stock insuficiente para un artículo — ajusta la cantidad.",
-    "checkout_err_unavailable": "Un artículo ya no está disponible.",
-    "checkout_err_generic": "No se pudo iniciar el pago. Inténtalo de nuevo.",
     "note": "Los gastos de envío, los impuestos aplicables y los códigos promocionales se calculan al finalizar la compra."
   },
   "checkout": {
@@ -320,7 +317,6 @@
     "shipping": "Envío",
     "total": "Total",
     "vat_incl": "IVA incluido",
-    "tax_note": "IVA incluido.",
     "pay": "Ir al pago",
     "err_stock": "Stock insuficiente para un artículo.",
     "err_unavailable": "Un artículo ya no está disponible.",
