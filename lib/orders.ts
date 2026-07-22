@@ -113,60 +113,61 @@ export type NewOrder = {
   lines: NewOrderLine[]
 }
 
-/** Insert an order + its lines (and, unless the stock was already reserved at
- *  checkout, decrement it) in a single atomic batch — so a failure never leaves a
- *  half-written order. The id is generated up front so the lines can reference it
- *  inside the same batch. */
-export async function createOrder(
-  input: NewOrder,
-  opts: { decrementStock?: boolean } = {}
-): Promise<{ id: string; number: string }> {
+const isUniqueViolation = (e: unknown): boolean =>
+  typeof e === 'object' && e !== null && 'code' in e && (e as { code?: unknown }).code === '23505'
+
+/** Insert an order + its lines atomically. Stock is never touched here — callers
+ *  hold it via reserveStock (web checkout, manual paid orders, mark-paid) and give
+ *  it back via releaseStock, so takes and returns always stay symmetric. */
+export async function createOrder(input: NewOrder): Promise<{ id: string; number: string }> {
   const id = crypto.randomUUID()
-  const number = await nextOrderNumber()
 
-  const insertOrder = db.insert(orders).values({
-    id,
-    number,
-    userId: input.userId,
-    email: input.email.toLowerCase(),
-    status: input.status,
-    paymentMethod: input.paymentMethod,
-    paymentStatus: input.paymentStatus,
-    subtotalEur: input.subtotalEur,
-    taxEur: input.taxEur,
-    shippingEur: input.shippingEur,
-    totalEur: input.totalEur,
-    shipName: input.ship.name ?? null,
-    shipLine1: input.ship.line1 ?? null,
-    shipLine2: input.ship.line2 ?? null,
-    shipPostalCode: input.ship.postalCode ?? null,
-    shipCity: input.ship.city ?? null,
-    shipCountry: input.ship.country ?? null,
-    shipPhone: input.ship.phone ?? null,
-    stripeSessionId: input.stripeSessionId ?? null,
-    stripePaymentIntentId: input.stripePaymentIntentId ?? null,
-    paidAt: input.paymentStatus === 'paid' ? new Date() : null,
-  })
-
-  const rest: BatchItem<'pg'>[] = []
-  if (input.lines.length) {
-    rest.push(db.insert(orderLines).values(input.lines.map((l) => ({ orderId: id, ...l }))))
+  const buildStmts = (number: string): [BatchItem<'pg'>, ...BatchItem<'pg'>[]] => {
+    const stmts: BatchItem<'pg'>[] = [
+      db.insert(orders).values({
+        id,
+        number,
+        userId: input.userId,
+        email: input.email.toLowerCase(),
+        status: input.status,
+        paymentMethod: input.paymentMethod,
+        paymentStatus: input.paymentStatus,
+        subtotalEur: input.subtotalEur,
+        taxEur: input.taxEur,
+        shippingEur: input.shippingEur,
+        totalEur: input.totalEur,
+        shipName: input.ship.name ?? null,
+        shipLine1: input.ship.line1 ?? null,
+        shipLine2: input.ship.line2 ?? null,
+        shipPostalCode: input.ship.postalCode ?? null,
+        shipCity: input.ship.city ?? null,
+        shipCountry: input.ship.country ?? null,
+        shipPhone: input.ship.phone ?? null,
+        stripeSessionId: input.stripeSessionId ?? null,
+        stripePaymentIntentId: input.stripePaymentIntentId ?? null,
+        paidAt: input.paymentStatus === 'paid' ? new Date() : null,
+      }),
+    ]
+    if (input.lines.length) {
+      stmts.push(db.insert(orderLines).values(input.lines.map((l) => ({ orderId: id, ...l }))))
+    }
+    return stmts as [BatchItem<'pg'>, ...BatchItem<'pg'>[]]
   }
-  if (opts.decrementStock ?? true) {
-    for (const l of input.lines) {
-      if (l.variantId) {
-        rest.push(
-          db
-            .update(variants)
-            .set({ stock: sql`greatest(${variants.stock} - ${l.qty}, 0)` })
-            .where(eq(variants.id, l.variantId))
-        )
-      }
+
+  // The number is count-derived, so a concurrent order can grab the same one; the
+  // unique index rejects the loser and, because the batch is atomic, it writes
+  // nothing — so we just recompute and retry.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const number = await nextOrderNumber()
+    try {
+      await db.batch(buildStmts(number))
+      return { id, number }
+    } catch (e) {
+      if (attempt < 4 && isUniqueViolation(e)) continue
+      throw e
     }
   }
-
-  await db.batch([insertOrder, ...rest] as [BatchItem<'pg'>, ...BatchItem<'pg'>[]])
-  return { id, number }
+  throw new Error('order number generation exhausted retries')
 }
 
 // ── Account: read a user's orders ──

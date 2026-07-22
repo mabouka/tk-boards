@@ -1,7 +1,7 @@
 import type Stripe from 'stripe'
 import { eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
-import { orders, variants } from '@/db/schema'
+import { orders, variants, users } from '@/db/schema'
 import { stripe } from '@/lib/stripe'
 import { createOrder, resolveOrCreateUser, releaseStock, type NewOrderLine } from '@/lib/orders'
 import { sendOrderConfirmationEmail } from '@/lib/email'
@@ -110,11 +110,18 @@ export async function POST(req: Request) {
     }
   })
 
-  const userId = await resolveOrCreateUser({
-    email,
-    name: session.customer_details?.name ?? null,
-    locale,
-  })
+  // Prefer the signed-in buyer's account (stashed in metadata at checkout, and
+  // re-checked here); fall back to resolving/creating an account by email for
+  // guests.
+  let userId: string | null = null
+  const metaUserId = session.metadata?.userId
+  if (metaUserId) {
+    const [u] = await db.select({ id: users.id }).from(users).where(eq(users.id, metaUserId)).limit(1)
+    userId = u?.id ?? null
+  }
+  if (!userId) {
+    userId = await resolveOrCreateUser({ email, name: session.customer_details?.name ?? null, locale })
+  }
 
   // Shipping address the customer entered on Stripe (Basil API: under
   // collected_information); fall back to the billing/customer address.
@@ -146,9 +153,9 @@ export async function POST(req: Request) {
       typeof session.payment_intent === 'string'
         ? session.payment_intent
         : (session.payment_intent?.id ?? null),
-    lines,
     // Stock was already reserved when the session was created (checkout action).
-  }, { decrementStock: false })
+    lines,
+  })
 
   // Confirmation email — best effort; never fail the webhook on a mail error.
   try {
