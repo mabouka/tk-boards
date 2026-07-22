@@ -246,6 +246,7 @@
     "order_total": "Total",
     "order_ship_to": "Dirección de envío",
     "order_tracking": "Seguimiento",
+    "order_invoice": "Factura",
     "order_status_pending_payment": "Pendiente de pago",
     "order_status_paid": "Pagado",
     "order_status_preparing": "En preparación",

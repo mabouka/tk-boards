@@ -26,6 +26,7 @@
     "@portabletext/types": "^4.0.2",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.0.8",
+    "@react-pdf/renderer": "^4.5.1",
     "@sanity/document-internationalization": "^6.2.9",
     "@sanity/icons": "^3.7.4",
     "@sanity/image-url": "^2.1.1",

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { liveSession } from '@/lib/session'
 import { getUserOrder } from '@/lib/orders'
+import { invoicingConfigured } from '@/lib/invoice'
 import { formatEur } from '@/lib/format-price'
 import { ORDER_STATUS_CLASS } from '../status'
 import styles from '../../account.module.css'
@@ -43,6 +44,17 @@ export default async function OrderDetailPage({ params }: Props) {
           {t(`order_status_${order.status}`)}
         </span>
       </div>
+
+      {order.paymentStatus === 'paid' && invoicingConfigured() && (
+        <a
+          href={`/${locale}/account/orders/${encodeURIComponent(order.number)}/invoice`}
+          className="u-card-btn"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('order_invoice')}
+        </a>
+      )}
 
       <section className={styles.infoCard}>
         <div className={styles.infoCardHead}>

@@ -1,13 +1,15 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, FileText } from 'lucide-react'
 import { getAdminOrder } from '@/lib/admin/orders'
+import { invoicingConfigured } from '@/lib/invoice'
 import { fmtDate } from '@/lib/admin/format'
 import { formatEur } from '@/lib/format-price'
 import { OrderActions } from '@/components/admin/orders/order-actions'
 import { ShipForm } from '@/components/admin/orders/ship-form'
 import { orderStatusOf, PAYMENT_LABEL } from '@/components/admin/orders/status'
 import { Badge } from '@/components/admin/ui/badge'
+import { Button } from '@/components/admin/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/admin/ui/card'
 import {
   Table,
@@ -51,12 +53,21 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           <h1 className="font-mono text-2xl font-semibold tracking-tight">#{order.number}</h1>
           <Badge variant={st.variant}>{st.label}</Badge>
         </div>
-        <OrderActions
-          orderId={order.id}
-          status={order.status}
-          paymentStatus={order.paymentStatus}
-          paymentMethod={order.paymentMethod}
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          {order.paymentStatus === 'paid' && invoicingConfigured() && (
+            <Button asChild variant="outline">
+              <a href={`/admin/orders/${order.id}/invoice`} target="_blank" rel="noopener noreferrer">
+                <FileText className="size-4" /> Facture
+              </a>
+            </Button>
+          )}
+          <OrderActions
+            orderId={order.id}
+            status={order.status}
+            paymentStatus={order.paymentStatus}
+            paymentMethod={order.paymentMethod}
+          />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
