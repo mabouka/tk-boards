@@ -6,6 +6,7 @@ import { orders, orderLines } from '@/db/schema'
 import InvoiceDocument, { type InvoiceData, type InvoiceParty } from '@/invoices/InvoiceDocument'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
+import { urlFor } from '@/sanity/lib/image'
 import { companySettingsQuery } from '@/sanity/lib/queries'
 import { vatBreakdown } from '@/lib/vat'
 
@@ -15,8 +16,11 @@ import { vatBreakdown } from '@/lib/vat'
  * invoice. An invoice without a real tax id is worthless, so an unfilled setting
  * disables invoicing rather than emitting an invalid document.
  */
+const companySettings = () =>
+  client.fetch(companySettingsQuery, {}, sanityCache('companySettings'))
+
 export async function invoiceSeller(): Promise<InvoiceParty | null> {
-  const c = await client.fetch(companySettingsQuery, {}, sanityCache('companySettings'))
+  const c = await companySettings()
   const name = (c?.legalName ?? '').trim()
   const taxId = (c?.taxId ?? '').trim()
   if (!name || !taxId) return null
@@ -33,13 +37,48 @@ export async function invoiceSeller(): Promise<InvoiceParty | null> {
 
 export const invoicingConfigured = async () => (await invoiceSeller()) !== null
 
+/**
+ * The logo as a data URI, ready for the PDF.
+ *
+ * react-pdf only decodes PNG and JPEG, and Sanity serves SVG uploads untouched
+ * (its pipeline can't rasterise them), so we check the actual bytes rather than
+ * trusting the extension. Anything else — wrong format, asset missing, network
+ * hiccup — returns undefined and the invoice falls back to the wordmark. A logo
+ * must never be the reason an invoice fails to render.
+ */
+async function invoiceLogo(): Promise<string | undefined> {
+  const c = await companySettings()
+  if (!c?.logo) return undefined
+  try {
+    const url = urlFor(c.logo).width(600).format('png').url()
+    const res = await fetch(url)
+    if (!res.ok) return undefined
+    const bytes = new Uint8Array(await res.arrayBuffer())
+
+    const isPng =
+      bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47
+    const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
+    if (!isPng && !isJpeg) return undefined // an SVG upload lands here
+
+    const mime = isPng ? 'image/png' : 'image/jpeg'
+    return `data:${mime};base64,${Buffer.from(bytes).toString('base64')}`
+  } catch {
+    return undefined
+  }
+}
+
 type OrderRow = typeof orders.$inferSelect
 type LineRow = Pick<
   typeof orderLines.$inferSelect,
   'productName' | 'variantLabel' | 'unitPriceEur' | 'qty' | 'vatRate'
 >
 
-function buildInvoiceData(order: OrderRow, lines: LineRow[], seller: InvoiceParty): InvoiceData {
+function buildInvoiceData(
+  order: OrderRow,
+  lines: LineRow[],
+  seller: InvoiceParty,
+  logo?: string
+): InvoiceData {
   const locale = order.locale || 'es'
   const issued = order.paidAt ?? order.createdAt
   const addr = [
@@ -53,6 +92,7 @@ function buildInvoiceData(order: OrderRow, lines: LineRow[], seller: InvoicePart
 
   return {
     locale,
+    logo,
     number: order.number,
     date: new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(new Date(issued)),
     seller,
@@ -103,7 +143,7 @@ export async function getUserInvoice(userId: string, number: string): Promise<In
     .where(and(eq(orders.userId, userId), eq(orders.number, number)))
     .limit(1)
   if (!order || !invoiceable(order)) return null
-  return buildInvoiceData(order, await loadLines(order.id), seller)
+  return buildInvoiceData(order, await loadLines(order.id), seller, await invoiceLogo())
 }
 
 /** Invoice for any order, for the back-office (caller must gate on admin). */
@@ -112,7 +152,7 @@ export async function getAdminInvoice(orderId: string): Promise<InvoiceData | nu
   if (!seller || !orderId) return null
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1)
   if (!order || !invoiceable(order)) return null
-  return buildInvoiceData(order, await loadLines(order.id), seller)
+  return buildInvoiceData(order, await loadLines(order.id), seller, await invoiceLogo())
 }
 
 export async function renderInvoicePdf(data: InvoiceData): Promise<Uint8Array> {

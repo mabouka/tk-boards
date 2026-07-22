@@ -33,6 +33,14 @@ export const companySettings = defineType({
       title: 'Email de contact',
       type: 'string',
     }),
+    defineField({
+      name: 'logo',
+      title: 'Logo de la facture',
+      type: 'image',
+      description:
+        'Affiché en haut à gauche de la facture. PNG ou JPEG uniquement (le PDF ne gère pas le SVG). ' +
+        'La facture est sur fond blanc : utilise une version sombre du logo, sinon il sera invisible.',
+    }),
   ],
   preview: { prepare: () => ({ title: 'Société (facturation)' }) },
 })

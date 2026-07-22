@@ -1,4 +1,4 @@
-import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
+import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
 import { invoiceT } from '@/lib/invoice-i18n'
 import type { VatBucket } from '@/lib/vat'
 
@@ -7,6 +7,7 @@ export type InvoiceItem = { name: string; qty: number; unitTtcEur: number; total
 
 export type InvoiceData = {
   locale: string
+  logo?: string // data URI (PNG/JPEG); falls back to the wordmark when absent
   number: string
   date: string // already formatted for the locale
   seller: InvoiceParty
@@ -25,6 +26,8 @@ const s = StyleSheet.create({
   page: { padding: 44, fontSize: 9.5, fontFamily: 'Helvetica', color: '#111' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   brand: { fontSize: 18, fontFamily: 'Helvetica-Bold', letterSpacing: 1 },
+  // Height-constrained so any logo aspect ratio sits on the same baseline.
+  logo: { height: 34, maxWidth: 200, objectFit: 'contain' },
   title: { fontSize: 20, fontFamily: 'Helvetica-Bold', textAlign: 'right' },
   meta: { marginTop: 6, textAlign: 'right', color: '#555' },
   parties: { flexDirection: 'row', gap: 24, marginTop: 28 },
@@ -122,7 +125,13 @@ export default function InvoiceDocument(d: InvoiceData) {
       <Page size="A4" style={s.page}>
         <View style={s.header}>
           <View>
-            <Text style={s.brand}>TK BOARDS</Text>
+            {d.logo ? (
+              // react-pdf's <Image> is not an HTML <img> — a PDF has no alt attribute.
+              // eslint-disable-next-line jsx-a11y/alt-text
+              <Image src={d.logo} style={s.logo} />
+            ) : (
+              <Text style={s.brand}>TK BOARDS</Text>
+            )}
           </View>
           <View>
             <Text style={s.title}>{t.title}</Text>

@@ -453,7 +453,7 @@ export const contactSettingsQuery = defineQuery(`
 
 // Seller identity printed on invoices.
 export const companySettingsQuery = defineQuery(`
-  *[_type == "companySettings"][0] { legalName, taxId, address, email }
+  *[_type == "companySettings"][0] { legalName, taxId, address, email, logo }
 `)
 
 export const navigationQuery = defineQuery(`
