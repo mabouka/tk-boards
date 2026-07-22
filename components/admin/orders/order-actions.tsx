@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { setOrderStatus, markPaid, refundOrder, type OrderStatus } from '@/app/admin/(app)/orders/actions'
 import { Button } from '@/components/admin/ui/button'
+import { Input } from '@/components/admin/ui/input'
+import { Label } from '@/components/admin/ui/label'
 import {
   Select,
   SelectContent,
@@ -33,12 +35,18 @@ type Props = {
 // Stripe refund), never as a free status change — so it's dropped from the menu.
 const SELECTABLE = ORDER_STATUS_KEYS.filter((k) => k !== 'refunded')
 
+// The admin must type this word to arm the refund — a deliberate speed bump on an
+// irreversible action.
+const CONFIRM_WORD = 'rembourser'
+
 export function OrderActions({ orderId, status, paymentStatus, paymentMethod }: Props) {
   const router = useRouter()
   const [current, setCurrent] = useState(status)
   const [paid, setPaid] = useState(paymentStatus === 'paid')
   const [pending, startTransition] = useTransition()
   const [refundOpen, setRefundOpen] = useState(false)
+  const [confirmText, setConfirmText] = useState('')
+  const canRefund = confirmText.trim().toLowerCase() === CONFIRM_WORD
 
   function change(next: string) {
     const prev = current
@@ -71,10 +79,12 @@ export function OrderActions({ orderId, status, paymentStatus, paymentMethod }: 
   }
 
   function refund() {
+    if (!canRefund) return
     startTransition(async () => {
       const res = await refundOrder(orderId)
       if (res.ok) {
         setRefundOpen(false)
+        setConfirmText('')
         setCurrent('refunded')
         setPaid(false)
         toast.success('Commande remboursée.')
@@ -113,12 +123,25 @@ export function OrderActions({ orderId, status, paymentStatus, paymentMethod }: 
       )}
 
       {paid && (
-        <Button onClick={() => setRefundOpen(true)} disabled={pending} variant="outline">
+        <Button
+          onClick={() => {
+            setConfirmText('')
+            setRefundOpen(true)
+          }}
+          disabled={pending}
+          variant="outline"
+        >
           Rembourser
         </Button>
       )}
 
-      <Dialog open={refundOpen} onOpenChange={setRefundOpen}>
+      <Dialog
+        open={refundOpen}
+        onOpenChange={(o) => {
+          setRefundOpen(o)
+          if (!o) setConfirmText('')
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rembourser la commande ?</DialogTitle>
@@ -128,11 +151,27 @@ export function OrderActions({ orderId, status, paymentStatus, paymentMethod }: 
                 : "La commande sera marquée remboursée — le remboursement espèces/virement est à effectuer manuellement. Cette action est irréversible."}
             </DialogDescription>
           </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="refund-confirm">
+              Tape <span className="text-foreground font-semibold">rembourser</span> pour confirmer
+            </Label>
+            <Input
+              id="refund-confirm"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && canRefund && !pending) refund()
+              }}
+              placeholder="rembourser"
+              autoComplete="off"
+              autoFocus
+            />
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRefundOpen(false)} disabled={pending}>
               Annuler
             </Button>
-            <Button variant="destructive" onClick={refund} disabled={pending}>
+            <Button variant="destructive" onClick={refund} disabled={pending || !canRefund}>
               {pending ? 'Remboursement…' : 'Rembourser'}
             </Button>
           </DialogFooter>
