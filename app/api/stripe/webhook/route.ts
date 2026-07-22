@@ -1,9 +1,15 @@
 import type Stripe from 'stripe'
 import { eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
-import { orders, variants, products, users } from '@/db/schema'
+import { orders, variants, products, users, webhookEvents } from '@/db/schema'
 import { stripe } from '@/lib/stripe'
-import { createOrder, resolveOrCreateUser, releaseStock, type NewOrderLine } from '@/lib/orders'
+import {
+  createOrder,
+  resolveOrCreateUser,
+  releaseStock,
+  isUniqueViolation,
+  type NewOrderLine,
+} from '@/lib/orders'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 import { vatBreakdown, DEFAULT_VAT_RATE } from '@/lib/vat'
 
@@ -58,6 +64,28 @@ export async function POST(req: Request) {
     return new Response('ignored', { status: 200 })
   }
 
+  // Claim the event before doing anything with side effects. Stripe delivers
+  // at-least-once and retries every non-2xx, so without this a redelivered
+  // `expired` would release the same stock twice. The claim is dropped again if
+  // processing throws, so a genuine retry still gets its chance.
+  try {
+    await db.insert(webhookEvents).values({ id: event.id, type: event.type })
+  } catch (e) {
+    if (isUniqueViolation(e)) return new Response('duplicate', { status: 200 })
+    throw e
+  }
+
+  try {
+    return await handleEvent(event)
+  } catch (e) {
+    await db.delete(webhookEvents).where(eq(webhookEvents.id, event.id))
+    throw e
+  }
+}
+
+async function handleEvent(
+  event: Stripe.CheckoutSessionCompletedEvent | Stripe.CheckoutSessionExpiredEvent
+): Promise<Response> {
   const session = event.data.object
 
   // Abandoned/expired session → give back the stock reserved at checkout.

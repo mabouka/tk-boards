@@ -51,11 +51,18 @@ export async function setOrderStatus(orderId: string, status: OrderStatus): Prom
       email: orders.email,
       number: orders.number,
       locale: orders.locale,
+      paidAt: orders.paidAt,
     })
     .from(orders)
     .where(eq(orders.id, orderId))
     .limit(1)
   if (!current) return { ok: false, error: 'Commande introuvable.' }
+
+  // A refund is final: letting an order climb back out of it would re-take stock
+  // and re-flag it paid after Stripe already sent the money back.
+  if (current.status === 'refunded' && status !== 'refunded') {
+    return { ok: false, error: 'Commande remboursée — son statut ne peut plus changer.' }
+  }
 
   const wasHeld = HELD_STATES.includes(current.status)
   const willHold = HELD_STATES.includes(status)
@@ -65,8 +72,13 @@ export async function setOrderStatus(orderId: string, status: OrderStatus): Prom
       .from(orderLines)
       .where(eq(orderLines.orderId, orderId))
     const held = rows.filter((l): l is { variantId: string; qty: number } => l.variantId !== null)
-    if (willHold) await reserveStock(held) // now committed → take stock
-    else await releaseStock(held) // released → give it back
+    // Refuse rather than record a held order backed by no stock: the later
+    // release would invent units that were never taken.
+    if (willHold) {
+      if (!(await reserveStock(held))) return { ok: false, error: 'Stock insuffisant.' }
+    } else {
+      await releaseStock(held)
+    }
   }
 
   await db
@@ -74,7 +86,10 @@ export async function setOrderStatus(orderId: string, status: OrderStatus): Prom
     .set({
       status,
       ...(status === 'shipped' ? { shippedAt: new Date() } : {}),
-      ...(status === 'paid' ? { paymentStatus: 'paid' as const, paidAt: new Date() } : {}),
+      // Keep the first payment date — the invoice is dated from it.
+      ...(status === 'paid'
+        ? { paymentStatus: 'paid' as const, ...(current.paidAt ? {} : { paidAt: new Date() }) }
+        : {}),
       ...(status === 'refunded' ? { paymentStatus: 'refunded' as const } : {}),
     })
     .where(eq(orders.id, orderId))
@@ -150,7 +165,7 @@ export async function shipOrder(input: {
       .from(orderLines)
       .where(eq(orderLines.orderId, input.orderId))
     const held = rows.filter((l): l is { variantId: string; qty: number } => l.variantId !== null)
-    await reserveStock(held)
+    if (!(await reserveStock(held))) return { ok: false, error: 'Stock insuffisant.' }
   }
 
   await db

@@ -443,6 +443,15 @@ export const orders = pgTable(
   ]
 )
 
+// Stripe delivers at-least-once and retries every non-2xx, so an event can arrive
+// more than once. Claiming the event id here makes every handler idempotent —
+// notably the expired branch, whose stock release is otherwise repeatable.
+export const webhookEvents = pgTable('webhook_event', {
+  id: text('id').primaryKey(), // Stripe event id (evt_…)
+  type: text('type').notNull(),
+  receivedAt: timestamp('received_at', { mode: 'date' }).notNull().defaultNow(),
+})
+
 export const orderLines = pgTable(
   'order_line',
   {

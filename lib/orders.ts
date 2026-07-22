@@ -41,16 +41,22 @@ export async function releaseStock(lines: StockLine[]): Promise<void> {
 const LOCALES = ['fr', 'en', 'es']
 const loc = (v: string | null | undefined) => (LOCALES.includes(String(v)) ? String(v) : 'fr')
 
-/** Sequential human-readable number, e.g. TK-2026-0001. Low volume; the unique
- *  index on order.number is the backstop against a rare concurrent collision. */
+/** Sequential human-readable number, e.g. TK-2026-0001.
+ *
+ *  Derived from the highest number already issued this year, not from a row count:
+ *  a count silently reuses a number as soon as the series has a gap (a deleted
+ *  order), and since the retry below recomputes the same value it would fail five
+ *  times and then wedge order creation permanently. The unique index on
+ *  order.number remains the backstop for a concurrent collision. */
 async function nextOrderNumber(): Promise<string> {
   const year = new Date().getFullYear()
   const prefix = `TK-${year}-`
-  const [{ n }] = await db
-    .select({ n: sql<number>`count(*)` })
+  const [row] = await db
+    .select({ last: sql<string | null>`max(${orders.number})` })
     .from(orders)
     .where(sql`${orders.number} like ${`${prefix}%`}`)
-  return `${prefix}${String(Number(n) + 1).padStart(4, '0')}`
+  const seq = row?.last ? Number(row.last.slice(prefix.length)) : 0
+  return `${prefix}${String((Number.isFinite(seq) ? seq : 0) + 1).padStart(4, '0')}`
 }
 
 /** Find the account for this email, or create a light one (no password) and email
@@ -116,7 +122,7 @@ export type NewOrder = {
   lines: NewOrderLine[]
 }
 
-const isUniqueViolation = (e: unknown): boolean =>
+export const isUniqueViolation = (e: unknown): boolean =>
   typeof e === 'object' && e !== null && 'code' in e && (e as { code?: unknown }).code === '23505'
 
 /** Insert an order + its lines atomically. Stock is never touched here — callers

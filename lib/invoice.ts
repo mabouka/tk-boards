@@ -109,10 +109,13 @@ function buildInvoiceData(
       totalTtcEur: Number(l.unitPriceEur) * l.qty,
     })),
     shippingEur: Number(order.shippingEur),
+    // Per-rate rows are derived from the lines, but the headline figures come from
+    // the order itself — an invoice must state the amount that was actually
+    // charged, never a total recomputed from rounded unit prices.
     buckets: bd.buckets,
-    baseEur: bd.baseEur,
-    vatEur: bd.vatEur,
-    totalEur: bd.totalEur,
+    vatEur: Number(order.taxEur),
+    totalEur: Number(order.totalEur),
+    baseEur: Number(order.totalEur) - Number(order.taxEur),
     paymentMethod: order.paymentMethod,
   }
 }

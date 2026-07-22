@@ -11,7 +11,6 @@ import {
   type CheckoutQuote,
 } from '@/app/[locale]/(site)/checkout/actions'
 import { countryName } from '@/lib/countries'
-import { vatFromTtc, SHIPPING_VAT_RATE } from '@/lib/vat'
 import { formatEur } from '@/lib/format-price'
 import styles from './Checkout.module.css'
 
@@ -47,7 +46,13 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
       if (!alive) return
       setQuote(q)
       setPayError(undefined)
-      if (q.ok && q.quotes.length === 1) setCountry(q.quotes[0].country) // preselect the only option
+      if (q.ok) {
+        // Drop a selection the new cart can no longer ship to, otherwise the totals
+        // would render without its shipping while the pay button stayed enabled.
+        setCountry((c) =>
+          q.quotes.length === 1 ? q.quotes[0].country : q.quotes.some((x) => x.country === c) ? c : ''
+        )
+      }
       setLoading(false)
     })
     return () => {
@@ -133,9 +138,11 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
     )
   }
 
-  const shipping = quote.quotes.find((q) => q.country === country)?.shippingEur
+  const selected = quote.quotes.find((q) => q.country === country)
+  const shipping = selected?.shippingEur
   const total = quote.subtotalEur + (shipping ?? 0)
-  const vatIncl = quote.goodsVatEur + (shipping != null ? vatFromTtc(shipping, SHIPPING_VAT_RATE) : 0)
+  // Server-computed, per rate — identical to the figure the order will store.
+  const vatIncl = selected?.vatEur ?? quote.goodsVatEur
   const noShipping = quote.quotes.length === 0
 
   return (

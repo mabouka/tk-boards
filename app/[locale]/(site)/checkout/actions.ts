@@ -9,17 +9,18 @@ import { stripe } from '@/lib/stripe'
 import { reserveStock, releaseStock } from '@/lib/orders'
 import { cartShippingQuotes, shippingForCountry } from '@/lib/shipping'
 import { isCountryCode } from '@/lib/countries'
-import { vatFromTtc } from '@/lib/vat'
+import { vatBreakdown } from '@/lib/vat'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const LOCALES = ['fr', 'en', 'es']
 const loc = (v: unknown) => (LOCALES.includes(String(v)) ? String(v) : 'en')
 const SHIP_LABEL: Record<string, string> = { fr: 'Livraison', en: 'Shipping', es: 'Envío' }
 const clean = (v: unknown) => String(v ?? '').trim()
-// Checkout holds stock the moment the session is created, so we let it lapse as
-// soon as Stripe allows (30 min is their floor). An abandoned cart then fires
-// checkout.session.expired and the webhook puts the units back.
-const SESSION_TTL_SECONDS = 30 * 60
+// Checkout holds stock the moment the session is created, so we let it lapse
+// close to Stripe's 30-minute floor. The extra minute is deliberate: Stripe
+// validates expires_at against its own clock, so landing exactly on 1800s means
+// any clock skew or request latency gets the session rejected outright.
+const SESSION_TTL_SECONDS = 31 * 60
 
 export type CheckoutItem = { sku: string; qty: number }
 export type ShipAddress = {
@@ -94,9 +95,11 @@ export type CheckoutQuote =
   | {
       ok: true
       subtotalEur: number // TTC (VAT included)
-      goodsVatEur: number // VAT contained in the goods subtotal
+      goodsVatEur: number // VAT in the goods alone, before a country is picked
       lines: CheckoutQuoteLine[]
-      quotes: { country: string; shippingEur: number }[]
+      // vatEur is the total VAT for that destination (goods + its shipping),
+      // computed with the same helper the order and invoice use.
+      quotes: { country: string; shippingEur: number; vatEur: number }[]
     }
 
 // Everything the checkout page needs to render: authoritative TTC line prices, the
@@ -108,8 +111,13 @@ export async function getCheckoutQuote(items: CheckoutItem[]): Promise<CheckoutQ
   if ('error' in read) return { ok: false, error: read.error }
   const { lines } = read
   const subtotalEur = lines.reduce((s, l) => s + l.unitPriceEur * l.qty, 0)
-  const goodsVatEur = lines.reduce((s, l) => s + vatFromTtc(l.unitPriceEur * l.qty, l.vatRate), 0)
-  const quotes = await cartShippingQuotes(lines.map((l) => l.productId))
+  // Extract VAT once per rate, exactly as the order and invoice do — summing it
+  // line by line here would show the buyer a figure a cent off the final one.
+  const goodsVatEur = vatBreakdown(lines, 0).vatEur
+  const quotes = (await cartShippingQuotes(lines.map((l) => l.productId))).map((q) => ({
+    ...q,
+    vatEur: vatBreakdown(lines, q.shippingEur).vatEur,
+  }))
   return {
     ok: true,
     subtotalEur,
@@ -150,23 +158,24 @@ export async function getSavedAddress(): Promise<SavedAddress | null> {
     .where(eq(addresses.userId, sess.userId))
     .orderBy(desc(addresses.isDefault))
     .limit(1)
-  if (!a) return null
   const name = [u?.firstName, u?.lastName].filter(Boolean).join(' ') || u?.name || ''
+  // Still worth returning with no saved address: the account name alone spares the
+  // buyer from retyping it.
+  if (!a && !name) return null
   return {
     name,
-    line1: a.line1 ?? '',
-    line2: a.line2 ?? '',
-    postalCode: a.postalCode ?? '',
-    city: a.city ?? '',
-    phone: a.phone ?? '',
+    line1: a?.line1 ?? '',
+    line2: a?.line2 ?? '',
+    postalCode: a?.postalCode ?? '',
+    city: a?.city ?? '',
+    phone: a?.phone ?? '',
   }
 }
 
-// Create a Stripe Checkout session for a cart shipped to `address`. The address
-// is collected on our page: we attach it to a Stripe Customer so Stripe Tax bills
-// VAT on the destination (correct for physical goods) and Stripe never re-collects
-// it. Shipping is recomputed server-side and passed as a fixed shipping option;
-// the address travels to the order via session metadata (read by the webhook).
+// Create a Stripe Checkout session for a cart shipped to `address`. VAT is ours
+// (prices are TTC), so Stripe applies no tax and collects no address: it just
+// charges the amounts. Shipping is recomputed server-side as a fixed shipping
+// option, and the address travels to the order via session metadata.
 export async function createCheckoutSession(
   items: CheckoutItem[],
   localeRaw: string,

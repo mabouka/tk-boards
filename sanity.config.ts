@@ -218,13 +218,13 @@ const structure = (S: StructureBuilder) =>
                 .icon(CogIcon)
                 .child(S.document().schemaType('footerSettings').documentId('footerSettings').title('Footer')),
               S.listItem()
-                .title('Société (facturation)')
+                .title('Company (invoicing)')
                 .icon(CogIcon)
                 .child(
                   S.document()
                     .schemaType('companySettings')
                     .documentId('companySettings')
-                    .title('Société (facturation)')
+                    .title('Company (invoicing)')
                 ),
               S.listItem()
                 .title('Login')

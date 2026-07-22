@@ -1,46 +1,50 @@
 import { defineField, defineType } from 'sanity'
 
 /** Legal identity of the seller, printed on every invoice. Lives here rather than
- *  in env so it can be changed without a deploy — none of it is secret. */
+ *  in env so it can be changed without a deploy — none of it is secret.
+ *
+ *  Not internationalized (see sanity/I18N.md): a legal name, tax id and registered
+ *  address are the same in every locale, so neither the document-level nor the
+ *  field-array model applies. */
 export const companySettings = defineType({
   name: 'companySettings',
-  title: 'Société (facturation)',
+  title: 'Company (invoicing)',
   type: 'document',
   fields: [
     defineField({
       name: 'legalName',
-      title: 'Raison sociale',
+      title: 'Legal Name',
       type: 'string',
-      description: 'Nom légal de la société, tel qu’il doit apparaître sur la facture.',
+      description: 'Registered company name, as it must appear on the invoice.',
       validation: (r) => r.required(),
     }),
     defineField({
       name: 'taxId',
-      title: 'NIF / CIF',
+      title: 'Tax ID (NIF/CIF)',
       type: 'string',
-      description: 'Numéro d’identification fiscale. Sans lui, aucune facture n’est émise.',
+      description: 'Without it, no invoice is issued at all.',
       validation: (r) => r.required(),
     }),
     defineField({
       name: 'address',
-      title: 'Adresse fiscale',
+      title: 'Registered Address',
       type: 'text',
       rows: 3,
-      description: 'Une ligne par ligne d’adresse.',
+      description: 'One address line per line.',
     }),
     defineField({
       name: 'email',
-      title: 'Email de contact',
+      title: 'Contact Email',
       type: 'string',
     }),
     defineField({
       name: 'logo',
-      title: 'Logo de la facture',
+      title: 'Invoice Logo',
       type: 'image',
       description:
-        'Affiché en haut à gauche de la facture. PNG ou JPEG uniquement (le PDF ne gère pas le SVG). ' +
-        'La facture est sur fond blanc : utilise une version sombre du logo, sinon il sera invisible.',
+        'Shown top-left of the invoice. PNG or JPEG only — the PDF renderer cannot read SVG. ' +
+        'The invoice is on a white background, so upload a dark version or it will be invisible.',
     }),
   ],
-  preview: { prepare: () => ({ title: 'Société (facturation)' }) },
+  preview: { prepare: () => ({ title: 'Company (invoicing)' }) },
 })
