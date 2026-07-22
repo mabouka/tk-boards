@@ -6,12 +6,16 @@ import { useTranslations } from 'next-intl'
 import { useCart } from '@/components/commerce/cart/CartContext'
 import {
   getCheckoutQuote,
+  getSavedAddress,
   createCheckoutSession,
   type CheckoutQuote,
 } from '@/app/[locale]/(site)/checkout/actions'
 import { countryName } from '@/lib/countries'
 import { formatEur } from '@/lib/format-price'
 import styles from './Checkout.module.css'
+
+type Addr = { name: string; line1: string; line2: string; postalCode: string; city: string; phone: string }
+const EMPTY_ADDR: Addr = { name: '', line1: '', line2: '', postalCode: '', city: '', phone: '' }
 
 export default function CheckoutClient({ locale, buy }: { locale: string; buy: string | null }) {
   const t = useTranslations('checkout')
@@ -32,6 +36,7 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
   const [quote, setQuote] = useState<CheckoutQuote | null>(null)
   const [loading, setLoading] = useState(true)
   const [country, setCountry] = useState('')
+  const [addr, setAddr] = useState<Addr>(EMPTY_ADDR)
   const [paying, startPay] = useTransition()
   const [payError, setPayError] = useState<string>()
 
@@ -51,7 +56,19 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemsKey])
 
+  // Prefill from the signed-in buyer's saved address (once).
+  useEffect(() => {
+    let alive = true
+    getSavedAddress().then((a) => {
+      if (alive && a) setAddr({ name: a.name, line1: a.line1, line2: a.line2, postalCode: a.postalCode, city: a.city, phone: a.phone })
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
+
   const eur = (n: number) => formatEur(n, locale)
+  const setField = (k: keyof Addr, v: string) => setAddr((a) => ({ ...a, [k]: v }))
 
   const countryOpts = useMemo(() => {
     if (!quote?.ok) return []
@@ -60,11 +77,18 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
       .sort((a, b) => a.name.localeCompare(b.name, locale))
   }, [quote, locale])
 
+  const addrComplete =
+    Boolean(country) &&
+    addr.name.trim() !== '' &&
+    addr.line1.trim() !== '' &&
+    addr.postalCode.trim() !== '' &&
+    addr.city.trim() !== ''
+
   function pay() {
-    if (!country) return
+    if (!addrComplete) return
     setPayError(undefined)
     startPay(async () => {
-      const res = await createCheckoutSession(items, locale, country)
+      const res = await createCheckoutSession(items, locale, { ...addr, country })
       if (res.url) {
         window.location.href = res.url
         return
@@ -77,7 +101,9 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
               ? 'err_unavailable'
               : res.error === 'shipping_country'
                 ? 'err_country'
-                : 'err_generic'
+                : res.error === 'address'
+                  ? 'err_address'
+                  : 'err_generic'
         )
       )
     })
@@ -129,24 +155,53 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
         </section>
 
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>{t('country_label')}</h2>
+          <h2 className={styles.cardTitle}>{t('addr_title')}</h2>
           {noShipping ? (
             <p className={styles.muted}>{t('no_shipping')}</p>
           ) : (
-            <div className={styles.field}>
-              <select
-                className={styles.select}
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                aria-label={t('country_label')}
-              >
-                <option value="">{t('country_ph')}</option>
-                {countryOpts.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name} — {eur(c.shippingEur)}
-                  </option>
-                ))}
-              </select>
+            <div className={styles.form}>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('country_label')}</label>
+                <select
+                  className={styles.select}
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  aria-label={t('country_label')}
+                >
+                  <option value="">{t('country_ph')}</option>
+                  {countryOpts.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name} — {eur(c.shippingEur)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('addr_name')}</label>
+                <input className={styles.input} value={addr.name} onChange={(e) => setField('name', e.target.value)} autoComplete="name" />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('addr_line1')}</label>
+                <input className={styles.input} value={addr.line1} onChange={(e) => setField('line1', e.target.value)} autoComplete="address-line1" />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('addr_line2')}</label>
+                <input className={styles.input} value={addr.line2} onChange={(e) => setField('line2', e.target.value)} autoComplete="address-line2" />
+              </div>
+              <div className={styles.grid2}>
+                <div className={styles.field}>
+                  <label className={styles.label}>{t('addr_postal')}</label>
+                  <input className={styles.input} value={addr.postalCode} onChange={(e) => setField('postalCode', e.target.value)} autoComplete="postal-code" />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label}>{t('addr_city')}</label>
+                  <input className={styles.input} value={addr.city} onChange={(e) => setField('city', e.target.value)} autoComplete="address-level2" />
+                </div>
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('addr_phone')}</label>
+                <input className={styles.input} value={addr.phone} onChange={(e) => setField('phone', e.target.value)} autoComplete="tel" />
+              </div>
             </div>
           )}
         </section>
@@ -175,7 +230,7 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
             type="button"
             className={`u-cta u-cta--white-fill ${styles.pay}`}
             onClick={pay}
-            disabled={paying || noShipping || !country}
+            disabled={paying || noShipping || !addrComplete}
           >
             {paying ? `${t('pay')}…` : t('pay')}
           </button>

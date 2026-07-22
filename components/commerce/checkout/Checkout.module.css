@@ -81,6 +81,36 @@
   color: #000;
 }
 
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.input {
+  width: 100%;
+  height: 46px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 15px;
+  border-radius: 8px;
+}
+.input::placeholder {
+  color: var(--color-white-50);
+}
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 /* ── Totals ── */
 .totals {
   display: flex;

@@ -123,11 +123,47 @@ export async function POST(req: Request) {
     userId = await resolveOrCreateUser({ email, name: session.customer_details?.name ?? null, locale })
   }
 
-  // Shipping address the customer entered on Stripe (Basil API: under
-  // collected_information); fall back to the billing/customer address.
-  const shipping = session.collected_information?.shipping_details
-  const addr = shipping?.address ?? session.customer_details?.address ?? null
-  const shipName = shipping?.name ?? session.customer_details?.name ?? null
+  // Shipping address we collected on our checkout page (carried in session
+  // metadata); fall back to anything Stripe collected, for safety.
+  let ship: {
+    name: string | null
+    line1: string | null
+    line2: string | null
+    postalCode: string | null
+    city: string | null
+    country: string | null
+    phone: string | null
+  } = { name: null, line1: null, line2: null, postalCode: null, city: null, country: null, phone: null }
+
+  if (session.metadata?.ship) {
+    try {
+      const p = JSON.parse(session.metadata.ship)
+      ship = {
+        name: p.name || null,
+        line1: p.line1 || null,
+        line2: p.line2 || null,
+        postalCode: p.postalCode || null,
+        city: p.city || null,
+        country: p.country || null,
+        phone: p.phone || null,
+      }
+    } catch {
+      /* fall through to Stripe-collected below */
+    }
+  }
+  if (!ship.line1) {
+    const sd = session.collected_information?.shipping_details
+    const addr = sd?.address ?? session.customer_details?.address ?? null
+    ship = {
+      name: sd?.name ?? session.customer_details?.name ?? null,
+      line1: addr?.line1 ?? null,
+      line2: addr?.line2 ?? null,
+      postalCode: addr?.postal_code ?? null,
+      city: addr?.city ?? null,
+      country: addr?.country ?? null,
+      phone: session.customer_details?.phone ?? null,
+    }
+  }
 
   const created = await createOrder({
     userId,
@@ -141,13 +177,13 @@ export async function POST(req: Request) {
     shippingEur: money(session.total_details?.amount_shipping),
     totalEur: money(session.amount_total),
     ship: {
-      name: shipName,
-      line1: addr?.line1 ?? null,
-      line2: addr?.line2 ?? null,
-      postalCode: addr?.postal_code ?? null,
-      city: addr?.city ?? null,
-      country: addr?.country ?? null,
-      phone: session.customer_details?.phone ?? null,
+      name: ship.name,
+      line1: ship.line1,
+      line2: ship.line2,
+      postalCode: ship.postalCode,
+      city: ship.city,
+      country: ship.country,
+      phone: ship.phone,
     },
     stripeSessionId: session.id,
     stripePaymentIntentId:
@@ -161,11 +197,11 @@ export async function POST(req: Request) {
   // Confirmation email — best effort; never fail the webhook on a mail error.
   try {
     const shipTo = [
-      shipName,
-      addr?.line1,
-      addr?.line2,
-      [addr?.postal_code, addr?.city].filter(Boolean).join(' '),
-      addr?.country,
+      ship.name,
+      ship.line1,
+      ship.line2,
+      [ship.postalCode, ship.city].filter(Boolean).join(' '),
+      ship.country,
     ]
       .filter(Boolean)
       .join(', ')
