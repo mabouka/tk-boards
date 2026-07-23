@@ -59,7 +59,12 @@ export function EmailLayout({
         </Head>
         <Preview>{preheader}</Preview>
         <Body className="bg-void m-0 p-0 font-sans">
-          <Container className="bg-ink mx-auto max-w-[600px]">
+          {/* text-paper here, not on <Body>: React Email forwards background and
+              spacing to <body> but drops colour, so text with no colour of its own
+              fell back to the client's default — Gmail's near-black, unreadable on
+              `void`. On the Container it lands on a <td>, which <p> children inherit
+              from; a child's own text-muted still wins. */}
+          <Container className="bg-ink text-paper mx-auto max-w-[600px]">
             <Section className="border-stroke border-b px-8 py-6">
               <Img
                 src={`${BASE}/email/logo-tk-white.png`}

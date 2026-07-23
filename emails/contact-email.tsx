@@ -14,7 +14,7 @@ type Props = {
 function ContactEmail({ firstName, lastName, email, phone, product, message }: Props) {
   const row = (label: string, value?: string) =>
     value ? (
-      <Text className="m-0 mt-2 text-[14px] leading-[1.6]">
+      <Text className="text-paper m-0 mt-2 text-[14px] leading-[1.6]">
         <span className="text-muted">{label}: </span>
         {value}
       </Text>
@@ -34,7 +34,9 @@ function ContactEmail({ firstName, lastName, email, phone, product, message }: P
       </Section>
       <Hr className="my-6 border-[#2a2a2a]" />
       <Text className="text-muted m-0 text-[12px] uppercase tracking-[0.08em]">Message</Text>
-      <Text className="m-0 mt-2 whitespace-pre-line text-[15px] leading-[1.65]">{message}</Text>
+      <Text className="text-paper m-0 mt-2 whitespace-pre-line text-[15px] leading-[1.65]">
+        {message}
+      </Text>
     </EmailLayout>
   )
 }
