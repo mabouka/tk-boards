@@ -208,32 +208,135 @@
   .menu {
     overflow-y: auto;
   }
-  /* back to normal flow on mobile so nothing overlaps (higher specificity than u-grid) */
+  /* Out of the desktop grid on mobile so nothing overlaps (beats u-grid on
+     specificity). One grid for the whole panel rather than nested boxes: `.body` and
+     `.foot` become `display: contents`, which drops their own box and promotes their
+     children to grid items here. That is what lets the socials share a row with the
+     nav — aligned because they are literally on the same grid line, not because of a
+     hand-tuned offset that a longer board list would break. */
   .menu .inner {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'bar     bar'
+      'boards  boards'
+      'nav     socials'
+      'actions actions'
+      'legal   legal';
+    align-content: start;
+    row-gap: 40px;
+    column-gap: 24px;
     min-height: 100%;
     height: auto;
-    padding-block: 24px;
-    gap: 40px;
+    /* The inline inset used to come from the u-grid that .body and .foot composed;
+       `display: contents` removes those boxes, so it has to live here now. */
+    padding: 24px var(--gutter);
   }
-  .menu .bar,
   .menu .body,
   .menu .foot {
+    display: contents;
+  }
+  .menu .bar,
+  .menu .boards,
+  .menu .nav,
+  .menu .socials,
+  .menu .legal {
     position: static;
   }
-  .menu .body {
-    flex: 1;
-    display: flex;
+  /* The inset now comes from .inner; the bar's own would double it. */
+  .menu .bar { grid-area: bar; padding-inline: 0; }
+  .menu .boards { grid-area: boards; }
+  .menu .nav { grid-area: nav; }
+  .menu .legal { grid-area: legal; }
+
+  .menu .socials {
+    grid-area: socials;
     flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 40px;
-  }
-  .menu .foot {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    align-self: start;
     gap: 20px;
+  }
+
+  /* Placed by the grid here; the row-gap already spaces it, so the top padding the
+     769-899 range needs (where this panel is still on the desktop grid) is dropped. */
+  .menu .actions {
+    grid-area: actions;
+    margin-top: 0;
+    padding: 0;
+  }
+}
+
+/* ── Cart / account / language, mobile only ──
+   The header hides its actions row under 900px; without these the cart has no
+   entry point on a phone and checkout is unreachable. Hidden above that width,
+   where the header still shows them and this would duplicate them. */
+.actions {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+    margin-top: auto;
+    /* .inner has no horizontal padding — every other block gets its inset from the
+       u-grid it composes, which this row doesn't. Without this it sits flush against
+       both edges while the nav above starts at the gutter. */
+    padding: 32px var(--gutter) 0;
+  }
+
+  .actionItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-white);
+    text-decoration: none;
+  }
+
+  .actionItem svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .actionCount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--color-white);
+    color: var(--color-dark);
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  .actionLangs {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .actionLang {
+    padding: 4px 8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: var(--color-muted, rgba(255, 255, 255, 0.5));
+    text-decoration: none;
+  }
+
+  .actionLangActive {
+    color: var(--color-white);
   }
 }

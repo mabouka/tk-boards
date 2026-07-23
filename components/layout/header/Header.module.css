@@ -147,3 +147,33 @@
   text-decoration: none;
   padding: 4px 8px;
 }
+
+/* ── Under 900px: logo left, menu right, actions dropped ──
+   The three-column grid (menu | logo | actions) with a fixed 48px inset was the
+   same at every width, so the actions ran past the right edge on a phone. Here the
+   header keeps only its two essentials and swaps their order, and the inset follows
+   --gutter like the rest of the site instead of staying at the desktop value. */
+@media (max-width: 899px) {
+  /* :not(--fixed) on purpose — this rule sits after .header--fixed in the file and
+     matches its specificity, so a bare .header would also override the 60px compact
+     height the scrolled state relies on. */
+  .header:not(.header--fixed) {
+    height: 138px;
+  }
+  .header__inner {
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    padding: 0 var(--gutter);
+  }
+  .header__logo {
+    order: 1;
+    justify-content: flex-start;
+  }
+  .header__menu {
+    order: 2;
+    justify-self: end;
+  }
+  .header__actions {
+    display: none;
+  }
+}

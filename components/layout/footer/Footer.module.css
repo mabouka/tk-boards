@@ -140,3 +140,44 @@
   color: var(--color-muted);
   border-color: var(--color-muted);
 }
+
+/* ── Responsive ──
+   The 12-column grid was applied at every width, so on a phone a `span 2` column
+   was about 45px — narrower than the word "Accessoires" — and the links ran past
+   the right edge. Two steps down, on the breakpoints the rest of the site uses. */
+
+/* Tablet: brand takes the full row, the three link lists share it below. */
+@media (max-width: 1023px) {
+  .footer__grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .footer__brand {
+    grid-column: 1 / -1;
+  }
+  .footer__series,
+  .footer__series:nth-child(2),
+  .footer__sitemap {
+    grid-column: span 2;
+  }
+}
+
+/* Phone: two columns. Stacking three short lists one under another would stretch
+   the footer for no gain. minmax(0, 1fr) rather than 1fr so a long link shrinks
+   its column instead of forcing the grid wider — the original overflow. */
+@media (max-width: 639px) {
+  .footer__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--space-xl);
+  }
+  .footer__series,
+  .footer__series:nth-child(2),
+  .footer__sitemap {
+    grid-column: span 1;
+  }
+  /* Copyright and legal links stop competing for one line. */
+  .footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+}

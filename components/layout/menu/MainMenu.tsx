@@ -1,9 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
 import { useDrawer } from '@/lib/use-drawer'
-import { Link } from '@/i18n/navigation'
+import { useCart } from '@/lib/use-cart'
+import { Link, usePathname } from '@/i18n/navigation'
+import { useLocalePaths } from '@/components/i18n/LocalePaths'
 import LogoTK from '@/components/ui/icons/LogoTK'
+import IconCart from '@/components/ui/icons/IconCart'
+import IconAccount from '@/components/ui/icons/IconAccount'
 import IconInstagram from '@/components/ui/icons/IconInstagram'
 import IconFacebook from '@/components/ui/icons/IconFacebook'
 import IconLinkedin from '@/components/ui/icons/IconLinkedin'
@@ -21,6 +26,8 @@ export type MenuFeaturedBoard = { _key: string; name: string; href: string; imag
 export type MenuSocial = { key: string; url: string }
 
 type IconComponent = React.ComponentType<{ className?: string }>
+
+const LOCALES = ['fr', 'en', 'es'] as const
 
 const SOCIAL_ICONS: Record<string, IconComponent> = {
   instagram: IconInstagram,
@@ -48,6 +55,11 @@ export default function MainMenu({
   const { open, setOpen } = useMenu()
   const close = () => setOpen(false)
   const [hovered, setHovered] = useState<number | null>(null)
+  const t = useTranslations('nav')
+  const locale = useLocale()
+  const pathname = usePathname()
+  const localePaths = useLocalePaths()
+  const cart = useCart()
 
   const socialLinks = socials.filter((s) => SOCIAL_ICONS[s.key])
 
@@ -122,6 +134,48 @@ export default function MainMenu({
               </Link>
             ))}
           </nav>
+        </div>
+
+        {/* Cart, account and language. Shown only under 900px, where the header
+            drops its own actions row — above that width the header still carries
+            them and this would be a duplicate. Without it, a phone has no route to
+            the cart at all, so checkout becomes unreachable. */}
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={styles.actionItem}
+            onClick={() => {
+              close()
+              cart.setOpen(true)
+            }}
+          >
+            <IconCart />
+            <span>{t('cart')}</span>
+            {cart.count > 0 && <span className={styles.actionCount}>{cart.count}</span>}
+          </button>
+
+          <Link href="/account" className={styles.actionItem} onClick={close}>
+            <IconAccount />
+            <span>{t('account')}</span>
+          </Link>
+
+          <div className={styles.actionLangs}>
+            {LOCALES.map((l) => (
+              <Link
+                key={l}
+                // Same rule as the header: a page publishing per-locale paths uses the
+                // translated one (home if that language has no translation), never the
+                // current slug under another locale, which 404s.
+                href={localePaths ? (localePaths[l] ?? '/') : pathname}
+                locale={l}
+                onClick={close}
+                className={`${styles.actionLang} ${l === locale ? styles.actionLangActive : ''}`}
+                aria-current={l === locale ? 'true' : undefined}
+              >
+                {l.toUpperCase()}
+              </Link>
+            ))}
+          </div>
         </div>
 
         <div className={styles.foot}>
