@@ -69,6 +69,18 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
     return { error: 'signup' }
   }
 
+  // Throttled like the other mail-sending flows, and for the same reason plus two
+  // more. Each call sends a verification email to an address the caller chose, so
+  // unthrottled it delivers mail from our domain into anyone's inbox — the cost
+  // lands on our sending reputation, not on the attacker. It also runs bcrypt at
+  // cost 12 (~250ms of CPU per call), and answers 'exists' for a known address,
+  // which would otherwise be an account-enumeration oracle looser than the one
+  // /api/check-email deliberately caps.
+  const ip = await clientIp()
+  const allowed =
+    (await rateLimit('signup-ip', ip, 5, 900)) && (await rateLimit('signup-email', email, 3, 900))
+  if (!allowed) return { error: 'rate' }
+
   const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1)
   if (existing) return { error: 'exists' }
 

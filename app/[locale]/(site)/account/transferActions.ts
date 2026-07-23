@@ -5,6 +5,7 @@ import { and, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { units, variants, products, registrations, transfers, users } from '@/db/schema'
 import { liveSession } from '@/lib/session'
+import { writeAtomically } from '@/lib/db-write'
 import { EMAIL_RE } from '@/lib/email-validation'
 import { rateLimit } from '@/lib/rate-limit'
 import { createTransfer, getPendingTransfer } from '@/lib/transfers'
@@ -115,19 +116,25 @@ export async function acceptTransfer(formData: FormData) {
   if (!current || current.userId !== transfer.fromUserId) redirect(`${back}&status=invalid`)
 
   // Retire the current owner's registration, register the board to the recipient,
-  // and close the transfer. Sequential (the neon-http driver has no interactive tx).
-  await db
-    .update(registrations)
-    .set({ status: 'transferred' })
-    .where(and(eq(registrations.unitId, transfer.unitId), eq(registrations.status, 'active')))
-  await db.insert(registrations).values({ userId: s.userId, unitId: transfer.unitId, status: 'active' })
-  await db.update(transfers).set({ status: 'accepted' }).where(eq(transfers.id, transfer.id))
-  // Invalidate any other pending invites for this unit so a former owner's
-  // outstanding link can never fire against the new owner.
-  await db
-    .update(transfers)
-    .set({ status: 'expired' })
-    .where(and(eq(transfers.unitId, transfer.unitId), eq(transfers.status, 'pending')))
+  // close the transfer, and expire any other pending invite for this unit so a
+  // former owner's outstanding link can never fire against the new owner.
+  //
+  // All four as one unit. Run sequentially, a failure after the first — a serverless
+  // timeout, a deploy, a Neon hiccup — would leave the board with no active
+  // registration at all: owned by nobody, so neither party could transfer it or
+  // report it lost, and TK-ID would show it as unregistered.
+  await writeAtomically(db, (tx) => [
+    tx
+      .update(registrations)
+      .set({ status: 'transferred' })
+      .where(and(eq(registrations.unitId, transfer.unitId), eq(registrations.status, 'active'))),
+    tx.insert(registrations).values({ userId: s.userId, unitId: transfer.unitId, status: 'active' }),
+    tx.update(transfers).set({ status: 'accepted' }).where(eq(transfers.id, transfer.id)),
+    tx
+      .update(transfers)
+      .set({ status: 'expired' })
+      .where(and(eq(transfers.unitId, transfer.unitId), eq(transfers.status, 'pending'))),
+  ])
 
   redirect(`/${locale}/account?transfer=done`)
 }

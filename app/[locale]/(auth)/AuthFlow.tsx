@@ -312,7 +312,13 @@ export default function AuthFlow({
             showLabel={t('show_password')}
             hideLabel={t('hide_password')}
           />
-          {signupState?.error && <p className={styles.error}>{t('error_signup')}</p>}
+          {signupState?.error && (
+            <p className={styles.error}>
+              {/* Throttling isn't the user's details being wrong — saying so would
+                  send them round the form fixing something that is already fine. */}
+              {signupState.error === 'rate' ? t('error_rate') : t('error_signup')}
+            </p>
+          )}
           <div className={styles.actions}>
             <button
               className={`u-cta u-cta--white-fill ${styles.btnRow}`}

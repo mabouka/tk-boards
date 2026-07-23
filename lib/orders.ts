@@ -7,6 +7,7 @@ import { sendPasswordResetEmail } from '@/lib/email'
 import { orderItemCountSql } from '@/lib/order-sql'
 import { getVariantAttributesFor } from '@/lib/tk-id'
 import type { AnyPgDatabase } from '@/lib/db-types'
+import { writeAtomically } from '@/lib/db-write'
 
 export type StockLine = { variantId: string; qty: number }
 
@@ -205,30 +206,6 @@ export const isUniqueViolation = (e: unknown): boolean => {
   return false
 }
 
-/**
- * Run several statements as one unit on whichever driver we're given.
- *
- * neon-http has no interactive transactions but does have `batch`; node-postgres
- * (used by the integration harness) has `transaction` but no `batch`. Statements
- * are built *from the passed client* rather than pre-built, because a drizzle query
- * builder is bound to the client that created it and can't be replayed inside
- * someone else's transaction.
- */
-async function writeAtomically(
-  database: AnyPgDatabase,
-  build: (client: AnyPgDatabase) => BatchItem<'pg'>[]
-): Promise<void> {
-  const batchable = database as unknown as {
-    batch?: (stmts: [BatchItem<'pg'>, ...BatchItem<'pg'>[]]) => Promise<unknown>
-  }
-  if (typeof batchable.batch === 'function') {
-    await batchable.batch(build(database) as [BatchItem<'pg'>, ...BatchItem<'pg'>[]])
-    return
-  }
-  await database.transaction(async (tx) => {
-    for (const stmt of build(tx as unknown as AnyPgDatabase)) await stmt
-  })
-}
 
 /** Insert an order + its lines atomically. Stock is never touched here — callers
  *  hold it via reserveStock (web checkout, manual paid orders, mark-paid) and give

@@ -1,5 +1,6 @@
 import { unreconciledPayments } from '@/lib/reconcile'
 import { sendOpsAlertEmail } from '@/lib/email'
+import { safeEqual } from '@/lib/safe-compare'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -14,11 +15,12 @@ export const dynamic = 'force-dynamic'
  *
  * Vercel Cron sends `Authorization: Bearer $CRON_SECRET`; the route refuses
  * everything else so it can't be triggered (or used to probe payments) publicly.
- * With no secret configured it stays closed rather than open.
+ * With no secret configured it stays closed rather than open. The header is matched
+ * in constant time so response latency can't be used to walk the secret out.
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET
-  if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
+  if (!secret || !safeEqual(req.headers.get('authorization'), `Bearer ${secret}`)) {
     return new Response('Unauthorized', { status: 401 })
   }
 
