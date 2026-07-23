@@ -130,6 +130,7 @@
     "last_name": "Nom",
     "password_min": "Mot de passe (8 caractères min.)",
     "confirm_password": "Confirme le mot de passe",
+    "error_captcha": "Échec de la vérification anti-spam — réessaie.",
     "error_signup": "Impossible de créer le compte. Vérifie tes informations.",
     "check_email": "Vérifie ta boîte mail pour confirmer ton email, puis connecte-toi.",
     "sign_up": "Créer mon TK ID",

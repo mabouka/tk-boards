@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { login, signup, signInWithGoogle, signInWithFacebook, resendVerification } from './actions'
 import PasswordField from './PasswordField'
+import TurnstileField from '@/components/auth/TurnstileField'
 import { AtIcon, GoogleIcon, FacebookIcon } from '@/components/auth/icons'
 import { EMAIL_RE } from '@/lib/email-validation'
 import styles from './auth.module.css'
@@ -312,11 +313,18 @@ export default function AuthFlow({
             showLabel={t('show_password')}
             hideLabel={t('hide_password')}
           />
+          {/* Creating an account sends mail to whatever address was typed, so this is
+              the form worth making a machine work for. */}
+          <TurnstileField />
           {signupState?.error && (
             <p className={styles.error}>
-              {/* Throttling isn't the user's details being wrong — saying so would
-                  send them round the form fixing something that is already fine. */}
-              {signupState.error === 'rate' ? t('error_rate') : t('error_signup')}
+              {/* Neither throttling nor a failed captcha is the user's details being
+                  wrong — saying so sends them round the form fixing what is fine. */}
+              {signupState.error === 'rate'
+                ? t('error_rate')
+                : signupState.error === 'captcha'
+                  ? t('error_captcha')
+                  : t('error_signup')}
             </p>
           )}
           <div className={styles.actions}>

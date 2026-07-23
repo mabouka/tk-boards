@@ -11,6 +11,7 @@ import { createEmailToken, consumeEmailToken, applyPasswordReset } from '@/lib/a
 import { sendVerificationEmail, sendPasswordResetEmail } from '@/lib/email'
 import { rateLimit } from '@/lib/rate-limit'
 import { clientIp } from '@/lib/client-ip'
+import { verifyTurnstile } from '@/lib/turnstile'
 import { EMAIL_RE } from '@/lib/email-validation'
 
 const LOCALES = ['fr', 'en', 'es'] as const
@@ -80,6 +81,14 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   const allowed =
     (await rateLimit('signup-ip', ip, 5, 900)) && (await rateLimit('signup-email', email, 3, 900))
   if (!allowed) return { error: 'rate' }
+
+  // Rate limiting caps how fast one caller goes; the captcha is what makes the
+  // caller be a person at all. Checked after the limiter so a flood of captcha-less
+  // requests can't make us call Cloudflare on every one of them.
+  const captchaToken = formData.get('cf-turnstile-response')
+  if (!(await verifyTurnstile(typeof captchaToken === 'string' ? captchaToken : null, ip))) {
+    return { error: 'captcha' }
+  }
 
   const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1)
   if (existing) return { error: 'exists' }
