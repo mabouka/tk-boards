@@ -44,6 +44,14 @@ export function countryName(code: string, locale = 'fr'): string {
   }
 }
 
+/**
+ * Country name for an address block: null when the order has no country stored,
+ * so it drops out of the `.filter(Boolean)` every address builder already does.
+ */
+export function countryLabel(code: string | null | undefined, locale = 'fr'): string | null {
+  return code ? countryName(code, locale) : null
+}
+
 /** All countries as { code, name }, sorted by localised name. */
 export function countryOptions(locale = 'fr'): { code: string; name: string }[] {
   let dn: Intl.DisplayNames | null = null

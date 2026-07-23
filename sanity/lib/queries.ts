@@ -115,14 +115,20 @@ export const boardsQuery = defineQuery(`
   }
 `)
 
+// Which catalogue document represents a SKU. board/accessory are document-translated
+// (sanity/I18N.md), so a SKU matches one document per language: the reader's language
+// wins, any other serves as a fallback since the picture is shared. Never a draft —
+// an unpublished edit shares the SKU *and* the language of the published document.
+//
+// Defined once and interpolated, so the single-SKU lookup below and the batch one
+// used by orders can't drift into disagreeing about which document wins.
+const PUBLISHED = `!(_id in path("drafts.**"))`
+const LOCALE_FIRST = `order(select(language == $locale => 0, 1) asc)`
+
 // Board main image by SKU (board.skuCode == the commerce product's parent SKU).
-// Used by the TK-ID page to show the registered board's photo. Prefers the
-// requested locale, falls back to any language (the image is shared).
+// Used by the TK-ID page to show the registered board's photo.
 export const boardImageBySkuQuery = defineQuery(`
-  coalesce(
-    *[_type == "board" && skuCode == $sku && language == $locale && !(_id in path("drafts.**"))][0],
-    *[_type == "board" && skuCode == $sku && !(_id in path("drafts.**"))][0]
-  ) {
+  *[_type == "board" && skuCode == $sku && ${PUBLISHED}] | ${LOCALE_FIRST} [0] {
     "name": name,
     mainImage,
     "aspectRatio": mainImage.asset->metadata.dimensions.aspectRatio
@@ -449,6 +455,21 @@ export const tkIdPageByLocaleQuery = defineQuery(`
 
 export const contactSettingsQuery = defineQuery(`
   *[_type == "contactSettings"][0] { email, whatsapp }
+`)
+
+// Thumbnails for order lines, looked up by the product SKU the order line carries.
+// Same document-precedence rule as boardImageBySkuQuery, batched: one row per SKU
+// per language, ordered so the reader's language comes first, so the caller only has
+// to keep the first row it sees for each SKU.
+export const productImagesBySkuQuery = defineQuery(`
+  *[_type in ["board", "accessory"] && skuCode in $skus && ${PUBLISHED}] | ${LOCALE_FIRST} {
+    skuCode,
+    // Only what urlFor reads. crop/hotspot look unused — no image sets them today —
+    // but both schemas enable hotspot, so dropping them would silently ignore an
+    // editor's framing the first time one is applied. alt is left out on purpose:
+    // every call site prints the product name beside the picture.
+    mainImage { asset, crop, hotspot }
+  }
 `)
 
 // Seller identity printed on invoices.

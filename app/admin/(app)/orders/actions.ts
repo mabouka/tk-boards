@@ -19,6 +19,7 @@ import {
   sendOrderRefundedEmail,
 } from '@/lib/email'
 import { trackingUrlFor } from '@/lib/carriers'
+import { countryLabel } from '@/lib/countries'
 import { stripe } from '@/lib/stripe'
 import { vatBreakdown } from '@/lib/vat'
 
@@ -196,7 +197,7 @@ export async function shipOrder(input: {
       order.shipLine1,
       order.shipLine2,
       [order.shipPostalCode, order.shipCity].filter(Boolean).join(' '),
-      order.shipCountry,
+      countryLabel(order.shipCountry, order.locale),
     ]
       .filter(Boolean)
       .join(', ')
@@ -330,6 +331,7 @@ export async function createManualOrder(
     .select({
       id: variants.id,
       sku: variants.sku,
+      productSku: products.sku,
       priceEur: variants.priceEur,
       salePriceEur: variants.salePriceEur,
       productName: products.name,
@@ -355,7 +357,7 @@ export async function createManualOrder(
     subtotal += price * qty
     lines.push({
       variantId: v.id,
-      productSku: v.sku,
+      productSku: v.productSku,
       variantSku: v.sku,
       productName: v.productName,
       variantLabel: labelByVariant.get(v.id) ?? null,
@@ -407,7 +409,7 @@ export async function createManualOrder(
       input.ship.line1,
       input.ship.line2,
       [input.ship.postalCode, input.ship.city].filter(Boolean).join(' '),
-      input.ship.country,
+      countryLabel(input.ship.country, locale),
     ]
       .filter(Boolean)
       .join(', ')

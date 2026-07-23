@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { COUNTRY_CODES, countryName, countryOptions, isCountryCode } from './countries'
+import {
+  COUNTRY_CODES,
+  countryLabel,
+  countryName,
+  countryOptions,
+  isCountryCode,
+} from './countries'
 
 describe('COUNTRY_CODES', () => {
   it('is a non-empty list of unique ISO 3166-1 alpha-2 codes', () => {
@@ -53,6 +59,22 @@ describe('countryName', () => {
     for (const code of COUNTRY_CODES) {
       expect(countryName(code, 'fr')).toBeTruthy()
     }
+  })
+})
+
+describe('countryLabel', () => {
+  it('spells the country out in the reading language', () => {
+    expect(countryLabel('BE', 'fr')).toBe('Belgique')
+    expect(countryLabel('BE', 'en')).toBe('Belgium')
+    expect(countryLabel('BE', 'es')).toBe('Bélgica')
+  })
+
+  // Address builders concatenate then .filter(Boolean); returning '' or 'null'
+  // here would print a stray separator on an order with no country stored.
+  it('returns null when there is no country, so the line drops out', () => {
+    expect(countryLabel(null, 'fr')).toBeNull()
+    expect(countryLabel(undefined, 'fr')).toBeNull()
+    expect(countryLabel('', 'fr')).toBeNull()
   })
 })
 

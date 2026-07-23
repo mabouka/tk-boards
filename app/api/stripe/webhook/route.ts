@@ -17,6 +17,7 @@ import {
 } from '@/lib/webhook-events'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 import { vatBreakdown, DEFAULT_VAT_RATE } from '@/lib/vat'
+import { countryLabel } from '@/lib/countries'
 
 export const runtime = 'nodejs'
 
@@ -132,15 +133,24 @@ async function handleEvent(event: HandledEvent): Promise<Response> {
   const skus = [...new Set(li.data.map(skuOf).filter(Boolean))]
   const variantIdBySku = new Map<string, string>()
   const vatBySku = new Map<string, number>()
+  // Stripe only knows the variant SKU; the parent product's SKU is what identifies
+  // the product itself (and is the key the Sanity catalogue is filed under).
+  const productSkuByVariantSku = new Map<string, string>()
   if (skus.length) {
     const rows = await db
-      .select({ id: variants.id, sku: variants.sku, vatRate: products.vatRate })
+      .select({
+        id: variants.id,
+        sku: variants.sku,
+        productSku: products.sku,
+        vatRate: products.vatRate,
+      })
       .from(variants)
       .innerJoin(products, eq(products.id, variants.productId))
       .where(inArray(variants.sku, skus))
     rows.forEach((r) => {
       variantIdBySku.set(r.sku, r.id)
       vatBySku.set(r.sku, r.vatRate)
+      productSkuByVariantSku.set(r.sku, r.productSku)
     })
   }
 
@@ -155,7 +165,9 @@ async function handleEvent(event: HandledEvent): Promise<Response> {
     const variantId = variantIdBySku.get(sku) ?? null
     return {
       variantId,
-      productSku: sku,
+      // Falls back to the variant SKU for a line whose variant we no longer carry:
+      // the column is NOT NULL and this is the only identifier Stripe gave us.
+      productSku: productSkuByVariantSku.get(sku) ?? sku,
       variantSku: sku || null,
       productName: item.description ?? sku,
       variantLabel: (variantId && labelByVariant.get(variantId)) || null,
@@ -262,7 +274,7 @@ async function handleEvent(event: HandledEvent): Promise<Response> {
       ship.line1,
       ship.line2,
       [ship.postalCode, ship.city].filter(Boolean).join(' '),
-      ship.country,
+      countryLabel(ship.country, locale),
     ]
       .filter(Boolean)
       .join(', ')

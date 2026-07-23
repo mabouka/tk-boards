@@ -430,8 +430,11 @@
   flex: 1;
   min-width: 0;
 }
+/* The order number carries the display face rather than .mono, which stays
+   genuinely monospaced for board serials and line prices. */
 .orderNumber {
-  font-size: 15px;
+  font-family: var(--font-display, sans-serif);
+  font-size: 18px;
   color: var(--color-white, #fff);
 }
 .orderSub {
@@ -499,10 +502,36 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+  /* The badge is `flex: none` and its longest label ("En attente de paiement") is
+     178px wide — on a 320px screen that leaves 94px for the title, less than the
+     order number needs at any readable size. Let it drop to its own line instead. */
+  flex-wrap: wrap;
 }
+/* Deliberately outranks .orderNumber: this is the detail page's title, where the
+   number is the heading, while the listing keeps it at list size.
+   Clamped because "#TK-2026-0010" is one unbreakable token: 314px at 36px, wider
+   than a 320px viewport can show even with the badge out of the way. */
 .orderHead h2 {
   margin: 0;
-  font-size: 22px;
+  font-size: clamp(28px, 9vw, 36px);
+}
+/* Summary on the left, shipping + invoice in a narrower column on the right.
+   Collapses to one column at the same width as the rest of the account pages. */
+.orderGrid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  align-items: start;
+}
+.orderAside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+@media (max-width: 1023px) {
+  .orderGrid {
+    grid-template-columns: 1fr;
+  }
 }
 .orderLines {
   list-style: none;
@@ -512,12 +541,36 @@
   flex-direction: column;
   gap: 10px;
 }
+/* No justify-content: .orderLineBody grows to fill the row, so the price is pushed
+   right by that, not by any distribution here. */
 .orderLine {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  align-items: center;
+  gap: 14px;
   font-size: 14px;
   color: var(--color-white, #fff);
+}
+/* Fixed box, kept even with no picture, so every line stays on the same grid. */
+.orderLineMedia {
+  position: relative;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.orderLineBody {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.orderLineVariant {
+  font-size: 12px;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
 }
 .orderTotals {
   display: flex;
@@ -539,13 +592,32 @@
   font-size: 15px;
   margin-top: 4px;
 }
-.orderTracking {
-  margin: 14px 0 0;
-  font-size: 14px;
-  color: var(--color-white-72, rgba(255, 255, 255, 0.72));
+/* Carrier card: the name reads as the card's subject, the number as its payload. */
+.trackCarrier {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-white, #fff);
 }
-.orderTracking a {
+.trackLabel {
+  margin: 0 0 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+}
+.trackNumber {
+  display: inline-block;
+  font-family: var(--font-mono, monospace);
+  font-size: 15px;
   color: var(--color-paulownia);
+  text-decoration: none;
+  /* Some carriers' numbers are long; break rather than widen the 320px column. */
+  overflow-wrap: anywhere;
+}
+a.trackNumber:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 639px) {

@@ -462,8 +462,13 @@ export const orderLines = pgTable(
     // Link to the variant for stock decrement / fulfillment; nullable so a later
     // variant deletion never orphans the order line (the snapshots below stay).
     variantId: text('variant_id').references(() => variants.id, { onDelete: 'set null' }),
+    // The PARENT product's SKU ("TK-RKT"), not the variant's — it identifies the
+    // product across its variants and is the key the Sanity catalogue is filed
+    // under (product.skuCode). Both writers used to copy the variant SKU here,
+    // which made this column a duplicate of variantSku and cost every reader a
+    // lookup to undo.
     productSku: text('product_sku').notNull(), // snapshot
-    variantSku: text('variant_sku'), // snapshot
+    variantSku: text('variant_sku'), // snapshot — the exact variant ("TK-RKT-BLUE-510")
     productName: text('product_name').notNull(), // snapshot
     variantLabel: text('variant_label'), // snapshot of axes, e.g. "Bleu · 5'10\""
     unitPriceEur: numeric('unit_price_eur', { precision: 10, scale: 2 }).notNull(), // frozen, TTC

@@ -1,7 +1,10 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, FileText } from 'lucide-react'
 import { getAdminOrder } from '@/lib/admin/orders'
+import { productThumbnails } from '@/lib/product-images'
+import { countryLabel } from '@/lib/countries'
 import { invoicingConfigured } from '@/lib/invoice'
 import { fmtDate } from '@/lib/admin/format'
 import { formatEur } from '@/lib/format-price'
@@ -32,12 +35,15 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   const st = orderStatusOf(order.status)
   const canShip = ['paid', 'preparing', 'shipped', 'delivered'].includes(order.status)
   const canInvoice = order.paymentStatus === 'paid' && (await invoicingConfigured())
+  // The order's language, not the admin's: whoever handles a claim should be looking
+  // at the same picture the customer sees on their own order page.
+  const thumbs = await productThumbnails(lines.map((l) => l.productSku), order.locale)
   const shipTo = [
     order.shipName,
     order.shipLine1,
     order.shipLine2,
     [order.shipPostalCode, order.shipCity].filter(Boolean).join(' '),
-    order.shipCountry,
+    countryLabel(order.shipCountry, 'fr'),
   ].filter(Boolean) as string[]
 
   return (
@@ -86,12 +92,22 @@ export default async function AdminOrderDetailPage({ params }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {lines.map((l, i) => (
+              {lines.map((l, i) => {
+                const thumb = thumbs.get(l.productSku)
+                return (
                 <TableRow key={i}>
                   <TableCell>
-                    <div className="text-sm">{l.productName}</div>
-                    <div className="text-muted-foreground font-mono text-xs">
-                      {[l.variantSku, l.variantLabel].filter(Boolean).join(' · ')}
+                    <div className="flex items-center gap-3">
+                      {/* Kept even when empty so the product names stay aligned. */}
+                      <div className="bg-muted relative size-10 shrink-0 overflow-hidden rounded border">
+                        {thumb && <Image src={thumb} alt="" fill sizes="40px" className="object-contain" />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm">{l.productName}</div>
+                        <div className="text-muted-foreground font-mono text-xs">
+                          {[l.variantSku, l.variantLabel].filter(Boolean).join(' · ')}
+                        </div>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell className="text-center tabular-nums">{l.qty}</TableCell>
@@ -100,7 +116,8 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                     {eur((Number(l.unitPriceEur) * l.qty).toFixed(2))}
                   </TableCell>
                 </TableRow>
-              ))}
+                )
+              })}
             </TableBody>
           </Table>
           <CardContent className="mt-4 flex flex-col gap-1.5 text-sm">

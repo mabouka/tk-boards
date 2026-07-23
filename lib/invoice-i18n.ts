@@ -7,7 +7,6 @@ type InvoiceStrings = {
   title: string
   number: string
   date: string
-  seller: string
   billTo: string
   shipTo: string
   taxId: string
@@ -34,7 +33,6 @@ const copy: Record<InvoiceLocale, InvoiceStrings> = {
     title: 'Facture',
     number: 'Facture n°',
     date: 'Date',
-    seller: 'Vendeur',
     billTo: 'Facturé à',
     shipTo: 'Livré à',
     taxId: 'NIF/CIF',
@@ -59,7 +57,6 @@ const copy: Record<InvoiceLocale, InvoiceStrings> = {
     title: 'Invoice',
     number: 'Invoice no.',
     date: 'Date',
-    seller: 'Seller',
     billTo: 'Billed to',
     shipTo: 'Shipped to',
     taxId: 'VAT ID',
@@ -84,7 +81,6 @@ const copy: Record<InvoiceLocale, InvoiceStrings> = {
     title: 'Factura',
     number: 'Factura n.º',
     date: 'Fecha',
-    seller: 'Vendedor',
     billTo: 'Facturado a',
     shipTo: 'Enviado a',
     taxId: 'NIF/CIF',

@@ -85,6 +85,7 @@ export async function getAdminOrder(id: string) {
   const lines = await db
     .select({
       productName: orderLines.productName,
+      productSku: orderLines.productSku, // resolves the thumbnail against the Sanity catalogue
       variantSku: orderLines.variantSku,
       variantLabel: orderLines.variantLabel,
       unitPriceEur: orderLines.unitPriceEur,

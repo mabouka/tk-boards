@@ -9,6 +9,7 @@ import { sanityCache } from '@/sanity/lib/fetch'
 import { urlFor } from '@/sanity/lib/image'
 import { companySettingsQuery } from '@/sanity/lib/queries'
 import { vatBreakdown, reconcileBuckets } from '@/lib/vat'
+import { countryLabel } from '@/lib/countries'
 
 /**
  * Our legal identity on the invoice, edited in the Studio (Société / facturation)
@@ -73,7 +74,9 @@ type LineRow = Pick<
   'productName' | 'variantLabel' | 'unitPriceEur' | 'qty' | 'vatRate'
 >
 
-function buildInvoiceData(
+/** Order row + lines → everything the PDF prints. Pure (no I/O), and exported so
+ *  the money and address rules can be tested without rendering a document. */
+export function buildInvoiceData(
   order: OrderRow,
   lines: LineRow[],
   seller: InvoiceParty,
@@ -85,10 +88,20 @@ function buildInvoiceData(
     order.shipLine1,
     order.shipLine2,
     [order.shipPostalCode, order.shipCity].filter(Boolean).join(' '),
-    order.shipCountry,
+    countryLabel(order.shipCountry, locale),
   ].filter(Boolean) as string[]
 
   const bd = vatBreakdown(lines, order.shippingEur)
+
+  const buyer: InvoiceParty = {
+    name: order.shipName || order.email,
+    lines: addr,
+    email: order.email,
+  }
+  const deliveredTo: InvoiceParty = { name: order.shipName ?? '', lines: addr }
+  const sameAsBilled =
+    deliveredTo.lines.length === buyer.lines.length &&
+    deliveredTo.lines.every((l, i) => l === buyer.lines[i])
 
   return {
     locale,
@@ -96,12 +109,13 @@ function buildInvoiceData(
     number: order.number,
     date: new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(new Date(issued)),
     seller,
-    buyer: {
-      name: order.shipName || order.email,
-      lines: addr,
-      email: order.email,
-    },
-    shipTo: order.shipName ? [order.shipName, ...addr] : addr,
+    buyer,
+    // An order carries one address, used both to bill and to deliver, so a "delivered
+    // to" block would repeat "billed to" line for line — glaringly, now that the two
+    // sit side by side. Printed only when it says something different, which today is
+    // never; the day the schema grows a separate billing address, feed it to `buyer`
+    // above and this block starts appearing on its own.
+    shipTo: sameAsBilled ? null : deliveredTo,
     items: lines.map((l) => ({
       name: [l.productName, l.variantLabel].filter(Boolean).join(' — '),
       qty: l.qty,

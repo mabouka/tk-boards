@@ -30,7 +30,7 @@ export default async function MyOrdersPage({ params }: Props) {
       {orders.map((o) => (
         <Link key={o.number} href={`/${locale}/account/orders/${o.number}`} className={styles.orderRow}>
           <div className={styles.orderMain}>
-            <span className={`${styles.orderNumber} ${styles.mono}`}>#{o.number}</span>
+            <span className={styles.orderNumber}>#{o.number}</span>
             <span className={styles.orderSub}>
               {fmtDate(o.createdAt)} · {t('order_items', { count: o.itemCount })}
             </span>

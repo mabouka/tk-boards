@@ -29,7 +29,7 @@ export type InvoiceData = {
   date: string // already formatted for the locale
   seller: InvoiceParty
   buyer: InvoiceParty
-  shipTo: string[]
+  shipTo: InvoiceParty | null
   items: InvoiceItem[]
   shippingEur: number
   buckets: VatBucket[]
@@ -42,13 +42,18 @@ export type InvoiceData = {
 const s = StyleSheet.create({
   page: { padding: 44, fontSize: 9.5, fontFamily: BODY, color: '#111' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  // Leaves room for the invoice number block on the right without crowding it.
+  // alignItems keeps the logo at its own width: stretched, objectFit would centre it.
+  headerLeft: { flex: 1, paddingRight: 24, alignItems: 'flex-start' },
+  sellerBlock: { marginTop: 14 },
   brand: { fontSize: 18, fontFamily: BODY, fontWeight: 700, letterSpacing: 1 },
   // Height-constrained so any logo aspect ratio sits on the same baseline.
   logo: { height: 34, maxWidth: 200, objectFit: 'contain' },
   title: { fontSize: 20, fontFamily: BODY, fontWeight: 700, textAlign: 'right' },
   meta: { marginTop: 6, textAlign: 'right', color: '#555' },
-  parties: { flexDirection: 'row', gap: 24, marginTop: 28 },
-  party: { flex: 1 },
+  parties: { flexDirection: 'row', justifyContent: 'flex-end', gap: 32, marginTop: 28 },
+  // No flex: in a column, a flex-basis of 0 collapses the block and clips the address.
+  party: {},
   label: {
     fontSize: 7.5,
     fontFamily: BODY, fontWeight: 700,
@@ -105,11 +110,13 @@ const s = StyleSheet.create({
   },
 })
 
-function Party({ label, party }: { label: string; party: InvoiceParty; }) {
+// `label` is optional: the seller block sits under the logo as the letterhead,
+// where a "Seller" heading would just restate what the logo already says.
+function Party({ label, party }: { label?: string; party: InvoiceParty }) {
   return (
     <View style={s.party}>
-      <Text style={s.label}>{label}</Text>
-      <Text style={[s.line, s.strong]}>{party.name}</Text>
+      {label ? <Text style={s.label}>{label}</Text> : null}
+      {party.name ? <Text style={[s.line, s.strong]}>{party.name}</Text> : null}
       {party.lines.map((l, i) => (
         <Text key={i} style={s.line}>
           {l}
@@ -141,7 +148,7 @@ export default function InvoiceDocument(d: InvoiceData) {
     <Document title={`${t.title} ${d.number}`} author={d.seller.name}>
       <Page size="A4" style={s.page}>
         <View style={s.header}>
-          <View>
+          <View style={s.headerLeft}>
             {d.logo ? (
               // react-pdf's <Image> is not an HTML <img> — a PDF has no alt attribute.
               // eslint-disable-next-line jsx-a11y/alt-text
@@ -149,6 +156,9 @@ export default function InvoiceDocument(d: InvoiceData) {
             ) : (
               <Text style={s.brand}>TK BOARDS</Text>
             )}
+            <View style={s.sellerBlock}>
+              <Party party={d.seller} />
+            </View>
           </View>
           <View>
             <Text style={s.title}>{t.title}</Text>
@@ -161,21 +171,11 @@ export default function InvoiceDocument(d: InvoiceData) {
           </View>
         </View>
 
+        {/* Buyer and delivery side by side on the right, opposite the letterhead. */}
         <View style={s.parties}>
-          <Party label={t.seller} party={d.seller} />
           <Party label={t.billTo} party={d.buyer} />
+          {d.shipTo && <Party label={t.shipTo} party={d.shipTo} />}
         </View>
-
-        {d.shipTo.length > 0 && (
-          <View style={{ marginTop: 16 }}>
-            <Text style={s.label}>{t.shipTo}</Text>
-            {d.shipTo.map((l, i) => (
-              <Text key={i} style={s.line}>
-                {l}
-              </Text>
-            ))}
-          </View>
-        )}
 
         {/* Items */}
         <View style={s.table}>
