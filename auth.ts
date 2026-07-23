@@ -7,11 +7,40 @@ import bcrypt from 'bcryptjs'
 import { eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { users, accounts, sessions, verificationTokens } from '@/db/schema'
+import { rateLimit } from '@/lib/rate-limit'
+import { clientIp } from '@/lib/client-ip'
 
 // A valid cost-12 bcrypt hash with an unknown plaintext, used only to equalize
 // login response time for non-existent / password-less accounts — so timing
 // doesn't reveal whether an email is registered (no user-enumeration oracle).
 const DUMMY_PASSWORD_HASH = '$2b$12$mzuDMsM4WFhBO.qxDOOiZ.sxGzBOf6h4FHyuwb.kjInaF1vh/GABq'
+
+/**
+ * Hard throttle on password attempts, applied here rather than in the login form.
+ *
+ * `authorize` is the one place every credentials path goes through: the customer
+ * form, the admin form, and `POST /api/auth/callback/credentials`, which is public
+ * because the route re-exports the NextAuth handlers. A limiter in a server action
+ * guards only that action, so the admin password could be attacked at full speed.
+ *
+ * Ceilings sit above the form's own (10/min per IP, 5/min per email) so a legitimate
+ * user meets the form's friendly "too many attempts" first and never both counters;
+ * this one exists for callers that skip the form. Checked before bcrypt so a flood
+ * costs us a row update, not 250ms of hashing per try.
+ */
+async function withinAttemptBudget(email: string): Promise<boolean> {
+  let ip = 'unknown'
+  try {
+    ip = await clientIp()
+  } catch {
+    /* no request scope — fall back to the per-email budget alone */
+  }
+  const [ipOk, emailOk] = await Promise.all([
+    rateLimit('auth-credentials-ip', ip, 20, 60),
+    rateLimit('auth-credentials-email', email, 10, 60),
+  ])
+  return ipOk && emailOk
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -34,6 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = String(creds?.email ?? '').toLowerCase().trim()
         const password = String(creds?.password ?? '')
         if (!email || !password) return null
+        if (!(await withinAttemptBudget(email))) return null
 
         const [u] = await db.select().from(users).where(eq(users.email, email)).limit(1)
 

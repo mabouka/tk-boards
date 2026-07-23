@@ -325,6 +325,8 @@
     "pay": "Ir al pago",
     "err_stock": "Stock insuficiente para un artículo.",
     "err_unavailable": "Un artículo ya no está disponible.",
+    "err_rate": "Demasiados intentos. Inténtalo de nuevo en unos minutos.",
+    "err_too_large": "Carrito demasiado grande. Reduce las cantidades.",
     "err_country": "Este país no está disponible para el envío.",
     "err_generic": "Se ha producido un error. Inténtalo de nuevo."
   },

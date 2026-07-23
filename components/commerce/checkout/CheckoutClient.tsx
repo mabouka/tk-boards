@@ -116,7 +116,11 @@ export default function CheckoutClient({ locale, buy }: { locale: string; buy: s
                 ? 'err_country'
                 : res.error === 'address'
                   ? 'err_address'
-                  : 'err_generic'
+                  : res.error === 'rate'
+                    ? 'err_rate'
+                    : res.error === 'too_large'
+                      ? 'err_too_large'
+                      : 'err_generic'
         )
       )
     })

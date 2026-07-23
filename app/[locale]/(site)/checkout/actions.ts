@@ -10,6 +10,8 @@ import { reserveStock, releaseStock } from '@/lib/orders'
 import { cartShippingQuotes, shippingForCountry } from '@/lib/shipping'
 import { isCountryCode } from '@/lib/countries'
 import { vatBreakdown, vatFromTtcCents, SHIPPING_VAT_RATE } from '@/lib/vat'
+import { rateLimit } from '@/lib/rate-limit'
+import { clientIp } from '@/lib/client-ip'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const LOCALES = ['fr', 'en', 'es']
@@ -34,7 +36,7 @@ export type ShipAddress = {
 }
 export type CheckoutResult = {
   url?: string
-  error?: 'empty' | 'unavailable' | 'stock' | 'failed' | 'shipping_country' | 'address'
+  error?: 'empty' | 'unavailable' | 'stock' | 'failed' | 'shipping_country' | 'address' | 'too_large' | 'rate'
 }
 
 type CartLineResolved = {
@@ -47,12 +49,19 @@ type CartLineResolved = {
   vatRate: number
 }
 
+// Bounds on a cart, far above anything a real order looks like. Their job is to
+// stop a caller asking to hold a whole warehouse: stock is reserved the moment a
+// session is created, so an unbounded qty is an unbounded reservation.
+const MAX_CART_LINES = 20
+const MAX_QTY_PER_LINE = 10
+
 // Re-read every cart line from the DB — the client only supplies variant SKU +
 // qty, so price, availability and the owning product are always authoritative.
 async function readCartLines(
   items: CheckoutItem[]
-): Promise<{ error: 'empty' | 'unavailable' } | { lines: CartLineResolved[] }> {
+): Promise<{ error: 'empty' | 'unavailable' | 'too_large' } | { lines: CartLineResolved[] }> {
   if (!Array.isArray(items) || items.length === 0) return { error: 'empty' }
+  if (items.length > MAX_CART_LINES) return { error: 'too_large' }
   const skus = [...new Set(items.map((i) => String(i.sku)))]
   const rows = await db
     .select({
@@ -74,6 +83,7 @@ async function readCartLines(
   const lines: CartLineResolved[] = []
   for (const it of items) {
     const qty = Math.max(1, Math.floor(Number(it.qty) || 0))
+    if (qty > MAX_QTY_PER_LINE) return { error: 'too_large' }
     const v = bySku.get(String(it.sku))
     if (!v || !v.active || !v.productActive) return { error: 'unavailable' }
     lines.push({
@@ -91,7 +101,7 @@ async function readCartLines(
 
 export type CheckoutQuoteLine = { sku: string; name: string; unitPriceEur: number; qty: number }
 export type CheckoutQuote =
-  | { ok: false; error: 'empty' | 'unavailable' }
+  | { ok: false; error: 'empty' | 'unavailable' | 'too_large' }
   | {
       ok: true
       subtotalEur: number // TTC (VAT included)
@@ -232,6 +242,14 @@ export async function createCheckoutSession(
   if (sess) {
     const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, sess.userId)).limit(1)
     email = u?.email ?? undefined
+  }
+
+  // Throttle before reserving. Creating a session costs the caller nothing but
+  // takes real stock off the shelf for SESSION_TTL_SECONDS, so without a limit an
+  // anonymous loop can keep the whole catalogue showing as sold out. Generous
+  // enough that a buyer retrying a declined card never notices.
+  if (!(await rateLimit('checkout-session-ip', await clientIp(), 8, 600))) {
+    return { error: 'rate' }
   }
 
   // Hold the stock now (atomic, guarded); the webhook confirms without decrementing
