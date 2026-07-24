@@ -164,6 +164,11 @@
     grid-template-columns: auto auto;
     justify-content: space-between;
     padding: 0 var(--gutter);
+    /* The row occupies the top 90px of the 138px header rather than all of it, so
+       its centred contents land at y=45 — where the open menu puts its own logo and
+       close button. The panel sets that position (24px of padding above a 42px
+       control); the header follows it, so opening the menu moves nothing. */
+    height: 90px;
   }
   .header__logo {
     order: 1;

@@ -204,7 +204,12 @@
   height: 22px;
 }
 
-@media (max-width: 768px) {
+/* 899, matching the header: it drops its actions row at the same width, and this
+   panel has to be in flow layout to receive them. When the two disagreed, the
+   769-899 band showed the desktop panel — bar, body and foot all absolute — with
+   the actions as its only in-flow child, so they climbed to the top and sat on
+   the logo. */
+@media (max-width: 899px) {
   .menu {
     overflow-y: auto;
   }
