@@ -77,11 +77,11 @@ export default function TransferModal({ locale, token }: { locale: string; token
                     </label>
                     {state?.error && <p className={modal.formError}>{t('transfer_error')}</p>}
                     <div className={modal.modalActions}>
-                      <button type="button" className={modal.cancel} onClick={() => setOpen(false)}>
-                        {t('cancel')}
-                      </button>
                       <button type="submit" className="u-cta u-cta--white-fill" disabled={pending}>
                         {t('transfer_send')}
+                      </button>
+                      <button type="button" className={modal.cancel} onClick={() => setOpen(false)}>
+                        {t('cancel')}
                       </button>
                     </div>
                   </form>

@@ -276,9 +276,14 @@
   border-color: rgba(255, 255, 255, 0.4);
 }
 
+/* Stacked, not side by side. The modal is capped at 420px at every viewport, which
+   leaves 364px of content, and the pair measures 355px in French, 315px in English
+   but 385px in Spanish — so the labels wrap and stretch their button. No breakpoint
+   would fix that, since the constraint is the modal's own width, not the screen's.
+   Full width also stops the destructive action from being the narrow one. */
 .modalActions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: 10px;
   margin-top: 4px;
 }

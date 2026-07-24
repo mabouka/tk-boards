@@ -13,6 +13,25 @@
   padding-bottom: var(--space-4xl);
 }
 
+/* Same block-padding scale as the text/image and text/video sections — 180 down to
+   48 — so a page built from those and this one keep one rhythm. Written as
+   max-width overrides because this file is desktop-first, unlike those two. */
+@media (max-width: 1023px) {
+  .page {
+    padding-block: 96px;
+  }
+}
+@media (max-width: 799px) {
+  .page {
+    padding-block: 72px;
+  }
+}
+@media (max-width: 599px) {
+  .page {
+    padding-block: 48px;
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);

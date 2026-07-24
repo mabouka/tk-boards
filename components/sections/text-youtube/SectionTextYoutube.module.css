@@ -84,11 +84,24 @@
 }
 
 /* ── Content ── */
+/* Same scale as SectionTextImage — the two are structurally twins (media beside
+   text, stacking under 1024) and should breathe identically. */
 .textYoutube__content {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: var(--space-4xl) var(--gutter);
+  padding: 96px var(--gutter);
+}
+
+@media (max-width: 799px) {
+  .textYoutube__content {
+    padding-block: 72px;
+  }
+}
+@media (max-width: 599px) {
+  .textYoutube__content {
+    padding-block: 48px;
+  }
 }
 
 .textYoutube__eyebrow {

@@ -32,7 +32,25 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: var(--space-4xl) var(--gutter);
+  /* 96px rather than --space-4xl (180px): stacked under 1024 the text sits directly
+     under its image, and that much air read as a gap between two unrelated blocks.
+     From 1024 up the two are side by side and the desktop block below resets this
+     to 0, so this value only ever applies to the stacked layout. */
+  padding: 96px var(--gutter);
+}
+
+/* Tightened again on a phone, where the column is narrow and the same air reads as
+   much more of the screen. Only the block padding — the gutter still comes from the
+   shared token. */
+@media (max-width: 799px) {
+  .textImage__content {
+    padding-block: 72px;
+  }
+}
+@media (max-width: 599px) {
+  .textImage__content {
+    padding-block: 48px;
+  }
 }
 
 /* ── Typography (reused globals) ── */

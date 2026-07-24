@@ -108,11 +108,11 @@ export default function ContactOwnerModal({ locale, token }: { locale: string; t
                     {state?.error && <p className={styles.formError}>{t('contact_owner_error')}</p>}
 
                     <div className={styles.modalActions}>
-                      <button type="button" className={styles.cancel} onClick={() => setOpen(false)}>
-                        {t('cancel')}
-                      </button>
                       <button type="submit" className="u-cta u-cta--white-fill" disabled={pending}>
                         {t('contact_owner_send')}
+                      </button>
+                      <button type="button" className={styles.cancel} onClick={() => setOpen(false)}>
+                        {t('cancel')}
                       </button>
                     </div>
                   </form>

@@ -15,6 +15,19 @@
   margin: 0 0 40px;
 }
 
+/* Stacked below 900: the greeting carries the member's first name, so the row has
+   no fixed width, and measured against the sign-out button it stops fitting right
+   around here — a longer name moves that a little either way, which is the reason
+   to stack rather than shrink. align-items resets from flex-end, which would push
+   the button to the far right of its own line. */
+@media (max-width: 899px) {
+  .titleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+}
+
 .eyebrow {
   display: flex;
   align-items: center;

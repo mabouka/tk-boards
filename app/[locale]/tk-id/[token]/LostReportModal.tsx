@@ -92,11 +92,11 @@ export default function LostReportModal({ locale, token }: { locale: string; tok
                 </label>
 
                 <div className={styles.modalActions}>
-                  <button type="button" className={styles.cancel} onClick={() => setOpen(false)}>
-                    {t('cancel')}
-                  </button>
                   <button type="submit" className="u-cta u-cta--red-fill">
                     {t('declare_stolen')}
+                  </button>
+                  <button type="button" className={styles.cancel} onClick={() => setOpen(false)}>
+                    {t('cancel')}
                   </button>
                 </div>
               </form>
