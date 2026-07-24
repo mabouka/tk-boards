@@ -33,7 +33,25 @@ export const users = pgTable('user', {
   locale: text('locale').notNull().default('fr'),
   // Bumped on password reset / "log out everywhere" → old JWTs are rejected by the gates.
   tokenVersion: integer('token_version').notNull().default(0),
+  // Force-shows the storefront to this account while the shop is globally off (V1
+  // is contact-only). Lets the owner and the client work on / preview the real
+  // checkout without turning it on for the public. Force-on only: once the global
+  // flag is set, this is moot.
+  eshopPreview: boolean('eshop_preview').notNull().default(false),
   createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+})
+
+// One-row table of site-wide switches, edited from /admin. A row, not an env var,
+// because the shop owner flips it themselves. `id` is pinned to 'default' so there
+// is exactly one row and reads/writes always target it.
+export const siteSettings = pgTable('site_settings', {
+  id: text('id').primaryKey().default('default'),
+  // The public storefront: buy/cart/checkout when true, contact-only V1 when false.
+  eshopEnabled: boolean('eshop_enabled').notNull().default(false),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 })
 
 export const accounts = pgTable(

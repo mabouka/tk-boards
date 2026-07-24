@@ -3,7 +3,7 @@ import { auth } from '@/auth'
 import { db } from '@/db'
 import { users } from '@/db/schema'
 
-export type LiveSession = { userId: string; role: string }
+export type LiveSession = { userId: string; role: string; eshopPreview: boolean }
 
 /**
  * The current session, but only if it is still live: the user exists and the
@@ -17,11 +17,11 @@ export async function liveSession(): Promise<LiveSession | null> {
   if (!session?.user?.id) return null
 
   const [u] = await db
-    .select({ role: users.role, tokenVersion: users.tokenVersion })
+    .select({ role: users.role, tokenVersion: users.tokenVersion, eshopPreview: users.eshopPreview })
     .from(users)
     .where(eq(users.id, session.user.id))
     .limit(1)
 
   if (!u || (u.tokenVersion ?? 0) !== (session.user.tokenVersion ?? 0)) return null
-  return { userId: session.user.id, role: u.role }
+  return { userId: session.user.id, role: u.role, eshopPreview: u.eshopPreview }
 }

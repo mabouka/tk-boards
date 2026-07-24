@@ -8,9 +8,12 @@ import { Button } from '@/components/admin/ui/button'
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/admin/ui/card'
+import { SettingToggle } from '@/components/admin/settings/setting-toggle'
+import { setEshopPreview } from '../../settings/actions'
 import {
   Table,
   TableBody,
@@ -72,6 +75,28 @@ export default async function AccountDetailPage({
         />
         <AddressManager userId={a.id} addresses={a.addresses} />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Aperçu boutique</CardTitle>
+          <CardDescription>
+            Force l’affichage de la boutique (achat, panier, paiement) pour ce compte, même quand la
+            boutique est désactivée pour le public. Pour que le client ou toi puissiez travailler
+            dessus avant l’ouverture. Sans effet une fois la boutique activée pour tout le monde.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SettingToggle
+            initial={a.eshopPreview}
+            action={setEshopPreview.bind(null, a.id)}
+            onLabel="Boutique forcée pour ce compte"
+            offLabel="Suit le réglage global"
+            aria-label="Forcer l’affichage de la boutique pour ce compte"
+            successOn="Aperçu boutique activé pour ce compte."
+            successOff="Aperçu boutique désactivé."
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

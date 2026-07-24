@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, Boxes, Nfc, Users, ShieldAlert, Receipt } from 'lucide-react'
+import { LayoutDashboard, Package, Boxes, Nfc, Users, ShieldAlert, Receipt, Settings } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -36,6 +36,7 @@ const NAV: NavGroup[] = [
       { title: 'Perte / vol', href: '/admin/theft', icon: ShieldAlert },
     ],
   },
+  { label: 'Configuration', items: [{ title: 'Réglages', href: '/admin/settings', icon: Settings }] },
 ]
 
 export function AppSidebar() {

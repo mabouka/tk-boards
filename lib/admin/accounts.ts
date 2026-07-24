@@ -37,6 +37,7 @@ export type AccountDetail = {
   emailVerified: Date | null
   phone: string | null
   locale: string
+  eshopPreview: boolean
   createdAt: Date
   boards: {
     registrationId: string
@@ -108,6 +109,7 @@ export async function getAccount(id: string): Promise<AccountDetail | null> {
     emailVerified: u.emailVerified,
     phone: u.phone,
     locale: u.locale,
+    eshopPreview: u.eshopPreview,
     createdAt: u.createdAt,
     boards,
     addresses: userAddresses,
