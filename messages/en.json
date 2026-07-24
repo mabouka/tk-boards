@@ -79,7 +79,22 @@
     "perk_shipping": "Worldwide shipping",
     "perk_payment": "Pay in 3× · no fees",
     "scroll": "scroll",
-    "scroll_aria": "Scroll to next section"
+    "scroll_aria": "Scroll to next section",
+    "contact_us": "Contact us",
+    "contact_buy_label": "Order yours",
+    "contact_whatsapp": "WhatsApp",
+    "contact_title": "A question about this product?",
+    "contact_intro": "Leave us a message, we reply fast.",
+    "contact_name": "Name",
+    "contact_email": "Email",
+    "contact_message": "Message",
+    "contact_send": "Send",
+    "contact_sending": "Sending…",
+    "contact_sent": "Message sent ✓ We'll get back to you soon.",
+    "contact_err_invalid": "Check the fields and try again.",
+    "contact_err_rate": "Too many attempts. Try again in a few minutes.",
+    "contact_err_captcha": "Anti-spam check failed — please try again.",
+    "contact_err_send": "Couldn't send. Please try again in a moment."
   },
   "footer": {
     "legal": {

@@ -4,6 +4,8 @@ import { useState } from 'react'
 import type { StorefrontProduct } from '@/lib/storefront/product'
 import { formatEur } from '@/lib/format-price'
 import { useCart } from '@/lib/use-cart'
+import { useEshop } from '@/components/commerce/eshop-context'
+import ContactCta from '@/components/commerce/contact/ContactCta'
 import { lineFromVariant } from '@/components/commerce/cart/cartLine'
 import { useBuyNow } from '@/components/commerce/cart/useBuyNow'
 import Configurator, { type ConfiguratorLabels } from './Configurator'
@@ -22,6 +24,13 @@ export default function BuyCta({ product, locale, labels, productName, previewIm
   const [open, setOpen] = useState(false)
   const { addItem } = useCart()
   const { buyNow, pending } = useBuyNow(locale)
+  const { visible: shopVisible } = useEshop()
+
+  // Shop off (V1): every branch below is a way to buy, so swap the whole control
+  // for the contact fallback. One gate rather than one per branch.
+  if (!shopVisible) {
+    return <ContactCta product={product} locale={locale} productName={productName} />
+  }
 
   // Board has a skuCode but no linked product in the admin yet → placeholder buttons.
   if (!product) {

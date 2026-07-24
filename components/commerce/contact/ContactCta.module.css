@@ -1,0 +1,37 @@
+/* Read-only option axes shown in contact mode: the visitor can't pick a size or
+   colour (no checkout), but still needs to see what's on offer before asking. */
+.axes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.axis {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.axisName {
+  font-family: var(--font-mono, var(--font-body));
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-white-50, rgba(255, 255, 255, 0.5));
+}
+
+.values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.value {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 8px 12px;
+}

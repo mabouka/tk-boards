@@ -5,6 +5,8 @@ import MainMenu from '@/components/layout/menu/MainMenu'
 import { MenuProvider } from '@/components/layout/menu/MenuContext'
 import { CartProvider } from '@/components/commerce/cart/CartContext'
 import CartDrawer from '@/components/commerce/cart/CartDrawer'
+import { EshopProvider } from '@/components/commerce/eshop-context'
+import { eshopVisible } from '@/lib/eshop'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { navigationQuery } from '@/sanity/lib/queries'
@@ -81,7 +83,13 @@ export default async function SiteLayout({ children, params }: Props) {
     .filter(([, url]) => typeof url === 'string' && url)
     .map(([key, url]) => ({ key, url: url as string }))
 
+  // The storefront switch for this request (global flag OR the account's override),
+  // plus the WhatsApp link the contact fallback needs when the shop is hidden.
+  const shopVisible = await eshopVisible()
+  const whatsapp = settings?.contact?.whatsapp ?? null
+
   return (
+    <EshopProvider value={{ visible: shopVisible, whatsapp }}>
     <CartProvider>
       <MenuProvider>
         <Header locale={locale} />
@@ -93,7 +101,8 @@ export default async function SiteLayout({ children, params }: Props) {
           featuredBoards={featuredBoards}
           socials={socials}
         />
-        <CartDrawer locale={locale} />
+        {/* No cart drawer when the shop is hidden — nothing can be added to it. */}
+        {shopVisible && <CartDrawer locale={locale} />}
         {isDraft && (
           <>
             <LiveRefresh token={process.env.SANITY_API_READ_TOKEN} />
@@ -103,5 +112,6 @@ export default async function SiteLayout({ children, params }: Props) {
         )}
       </MenuProvider>
     </CartProvider>
+    </EshopProvider>
   )
 }

@@ -10,6 +10,7 @@ import IconCart from '@/components/ui/icons/IconCart'
 import IconAccount from '@/components/ui/icons/IconAccount'
 import { useMenu } from '@/components/layout/menu/MenuContext'
 import { useCart } from '@/lib/use-cart'
+import { useEshop } from '@/components/commerce/eshop-context'
 import styles from './Header.module.css'
 
 const COMPACT_HEIGHT = 60 // hauteur du header compact en mode fixed
@@ -20,6 +21,7 @@ export default function Header({ locale }: { locale: string }) {
   const t = useTranslations('nav')
   const { open, setOpen } = useMenu()
   const cart = useCart()
+  const { visible: shopVisible } = useEshop()
   const pathname = usePathname()
   // Per-locale paths published by the current page (CMS pages / products whose
   // slug differs per locale). Falls back to the current pathname for static and
@@ -150,11 +152,13 @@ export default function Header({ locale }: { locale: string }) {
             <span className={styles.header__lang_current}>{locale.toUpperCase()}</span>
           </div>
 
-          <button type="button" className={styles.header__cart} onClick={() => cart.setOpen(true)}>
-            <IconCart />
-            <span>{t('cart')}</span>
-            {cart.count > 0 && <span className={styles.header__cart_count}>{cart.count}</span>}
-          </button>
+          {shopVisible && (
+            <button type="button" className={styles.header__cart} onClick={() => cart.setOpen(true)}>
+              <IconCart />
+              <span>{t('cart')}</span>
+              {cart.count > 0 && <span className={styles.header__cart_count}>{cart.count}</span>}
+            </button>
+          )}
 
           <Link href="/account" className={styles.header__account}>
             <IconAccount />

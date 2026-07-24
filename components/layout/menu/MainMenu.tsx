@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useDrawer } from '@/lib/use-drawer'
 import { useCart } from '@/lib/use-cart'
+import { useEshop } from '@/components/commerce/eshop-context'
 import { Link, usePathname } from '@/i18n/navigation'
 import { useLocalePaths } from '@/components/i18n/LocalePaths'
 import LogoTK from '@/components/ui/icons/LogoTK'
@@ -60,6 +61,7 @@ export default function MainMenu({
   const pathname = usePathname()
   const localePaths = useLocalePaths()
   const cart = useCart()
+  const { visible: shopVisible } = useEshop()
 
   const socialLinks = socials.filter((s) => SOCIAL_ICONS[s.key])
 
@@ -141,18 +143,20 @@ export default function MainMenu({
             them and this would be a duplicate. Without it, a phone has no route to
             the cart at all, so checkout becomes unreachable. */}
         <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.actionItem}
-            onClick={() => {
-              close()
-              cart.setOpen(true)
-            }}
-          >
-            <IconCart />
-            <span>{t('cart')}</span>
-            {cart.count > 0 && <span className={styles.actionCount}>{cart.count}</span>}
-          </button>
+          {shopVisible && (
+            <button
+              type="button"
+              className={styles.actionItem}
+              onClick={() => {
+                close()
+                cart.setOpen(true)
+              }}
+            >
+              <IconCart />
+              <span>{t('cart')}</span>
+              {cart.count > 0 && <span className={styles.actionCount}>{cart.count}</span>}
+            </button>
+          )}
 
           <Link href="/account" className={styles.actionItem} onClick={close}>
             <IconAccount />

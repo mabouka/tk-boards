@@ -79,7 +79,22 @@
     "perk_shipping": "Envío internacional",
     "perk_payment": "Pago en 3× · sin comisiones",
     "scroll": "scroll",
-    "scroll_aria": "Ir a la siguiente sección"
+    "scroll_aria": "Ir a la siguiente sección",
+    "contact_us": "Contáctanos",
+    "contact_buy_label": "Pide la tuya",
+    "contact_whatsapp": "WhatsApp",
+    "contact_title": "¿Una pregunta sobre este producto?",
+    "contact_intro": "Déjanos un mensaje, respondemos rápido.",
+    "contact_name": "Nombre",
+    "contact_email": "Email",
+    "contact_message": "Mensaje",
+    "contact_send": "Enviar",
+    "contact_sending": "Enviando…",
+    "contact_sent": "Mensaje enviado ✓ Te contactaremos pronto.",
+    "contact_err_invalid": "Revisa los campos e inténtalo de nuevo.",
+    "contact_err_rate": "Demasiados intentos. Inténtalo de nuevo en unos minutos.",
+    "contact_err_captcha": "La verificación anti-spam falló — inténtalo de nuevo.",
+    "contact_err_send": "No se pudo enviar. Inténtalo de nuevo en un momento."
   },
   "footer": {
     "legal": {
