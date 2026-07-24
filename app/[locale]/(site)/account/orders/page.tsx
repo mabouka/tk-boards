@@ -1,6 +1,8 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { liveSession } from '@/lib/session'
+import { eshopVisible } from '@/lib/eshop'
 import { getUserOrders } from '@/lib/orders'
 import { formatEur } from '@/lib/format-price'
 import { ORDER_STATUS_CLASS } from './status'
@@ -10,6 +12,9 @@ type Props = { params: Promise<{ locale: string }> }
 
 export default async function MyOrdersPage({ params }: Props) {
   const { locale } = await params
+  // Orders belong to the shop; in V1 the tab is hidden, so a bookmarked URL bounces
+  // back to the account home rather than showing an orphaned page.
+  if (!(await eshopVisible())) redirect(`/${locale}/account`)
   const t = await getTranslations('account')
   const session = await liveSession()
   const orders = await getUserOrders(session?.userId ?? '')

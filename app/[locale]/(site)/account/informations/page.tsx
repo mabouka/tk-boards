@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { asc, desc, eq } from 'drizzle-orm'
 import { liveSession } from '@/lib/session'
+import { eshopVisible } from '@/lib/eshop'
 import { db } from '@/db'
 import { users, addresses as addressesTable, accounts as accountsTable } from '@/db/schema'
 import ProfileModal from '../ProfileModal'
@@ -18,6 +19,8 @@ export default async function MyInformationsPage({ params }: Props) {
   const t = await getTranslations('account')
   const session = await liveSession()
   const userId = session?.userId ?? ''
+  // Shipping addresses only matter when there's a checkout to ship from; hidden in V1.
+  const shopVisible = await eshopVisible()
 
   const [u] = userId
     ? await db
@@ -142,6 +145,7 @@ export default async function MyInformationsPage({ params }: Props) {
 
       {/* ── Right column ── */}
       <div className={styles.infoCol}>
+        {shopVisible && (
         <section className={styles.infoCard}>
           <div className={styles.infoCardHead}>
             <h2 className={styles.infoCardTitle}>
@@ -196,6 +200,7 @@ export default async function MyInformationsPage({ params }: Props) {
             </div>
           )}
         </section>
+        )}
 
         {/* ── GDPR: delete my account ── */}
         <section className={styles.infoCard}>

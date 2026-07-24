@@ -12,6 +12,7 @@ import { isCountryCode } from '@/lib/countries'
 import { vatBreakdown, vatFromTtcCents, SHIPPING_VAT_RATE } from '@/lib/vat'
 import { rateLimit } from '@/lib/rate-limit'
 import { clientIp } from '@/lib/client-ip'
+import { eshopVisible } from '@/lib/eshop'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const LOCALES = ['fr', 'en', 'es']
@@ -116,6 +117,9 @@ export type CheckoutQuote =
 // subtotal, the VAT included in the goods, and the destinations the whole cart can
 // ship to — each with its TTC charge and the total VAT that destination implies.
 export async function getCheckoutQuote(items: CheckoutItem[]): Promise<CheckoutQuote> {
+  // Server-side gate: the checkout page already redirects when the shop is off, but
+  // this action is public, so it refuses on its own too.
+  if (!(await eshopVisible())) return { ok: false, error: 'unavailable' }
   const read = await readCartLines(items)
   if ('error' in read) return { ok: false, error: read.error }
   const { lines } = read
@@ -202,6 +206,10 @@ export async function createCheckoutSession(
   localeRaw: string,
   address: ShipAddress
 ): Promise<CheckoutResult> {
+  // Same server-side gate as the quote: refuse to open a Stripe session while the
+  // shop is off, even if the action is called directly.
+  if (!(await eshopVisible())) return { error: 'failed' }
+
   const locale = loc(localeRaw)
   const dest = clean(address?.country).toUpperCase()
   if (!isCountryCode(dest)) return { error: 'shipping_country' }

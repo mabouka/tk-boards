@@ -1,8 +1,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { liveSession } from '@/lib/session'
+import { eshopVisible } from '@/lib/eshop'
 import { getUserOrder } from '@/lib/orders'
 import { productThumbnails } from '@/lib/product-images'
 import { countryLabel } from '@/lib/countries'
@@ -15,6 +16,7 @@ type Props = { params: Promise<{ locale: string; id: string }> }
 
 export default async function OrderDetailPage({ params }: Props) {
   const { locale, id } = await params
+  if (!(await eshopVisible())) redirect(`/${locale}/account`)
   const t = await getTranslations('account')
   const session = await liveSession()
   const data = await getUserOrder(session?.userId ?? '', decodeURIComponent(id))

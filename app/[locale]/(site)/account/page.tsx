@@ -33,11 +33,15 @@ export default async function MyBoardsPage({ params }: Props) {
 
   return (
     <>
-      <div className={styles.toolbar}>
-        <Link href={`/${locale}/tk-id`} className="u-cta u-cta--white-fill">
-          {t('register_board')}
-        </Link>
-      </div>
+      {/* Toolbar button only once there are boards — the empty state carries its own
+          centred CTA, so showing both would repeat the same action twice. */}
+      {boards.length > 0 && (
+        <div className={styles.toolbar}>
+          <Link href={`/${locale}/tk-id`} className="u-cta u-cta--white-fill">
+            {t('register_board')}
+          </Link>
+        </div>
+      )}
 
       {boards.length === 0 ? (
         <div className={styles.empty}>
