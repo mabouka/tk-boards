@@ -1,0 +1,65 @@
+/* Look and behaviour only — placement belongs to the section that uses it, passed
+   in as `className`, since a hero centers it and another pins it to the right. */
+.root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  /* room for the line, which sits on the left edge */
+  padding-left: 5px;
+}
+
+.line {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* A gradient twice the track's height, slid through it: reads as a pulse running
+   down the line rather than the line itself moving. */
+.line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 200%;
+  background: linear-gradient(to bottom, transparent, #fff 50%, transparent);
+  transform: translateY(-100%);
+  animation: scrollFlow 3s ease-in-out infinite;
+}
+
+@keyframes scrollFlow {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line::after {
+    animation: none;
+    transform: translateY(-25%);
+  }
+}
+
+.text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-white);
+  writing-mode: vertical-rl;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+}

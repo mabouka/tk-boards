@@ -78,7 +78,8 @@
     "close": "Cerrar",
     "perk_shipping": "Envío internacional",
     "perk_payment": "Pago en 3× · sin comisiones",
-    "scroll": "scroll"
+    "scroll": "scroll",
+    "scroll_aria": "Ir a la siguiente sección"
   },
   "footer": {
     "legal": {

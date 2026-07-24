@@ -78,7 +78,8 @@
     "close": "Fermer",
     "perk_shipping": "Livraison dans le monde entier",
     "perk_payment": "Paiement en 3× · sans frais",
-    "scroll": "scroll"
+    "scroll": "scroll",
+    "scroll_aria": "Aller à la section suivante"
   },
   "footer": {
     "legal": {

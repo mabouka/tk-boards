@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import type { SanityImage } from '@/sanity/lib/types'
-import ScrollButton from './ScrollButton'
+import ScrollIndicator from '@/components/ui/ScrollIndicator'
 import styles from './Hero.module.css'
 
 type HeroProps = {
@@ -34,7 +34,7 @@ export default function Hero({ title, subtitle, backgroundImage }: HeroProps) {
         <p className={styles.hero__subtitle}>{subtitle}</p>
       </div>
 
-      <ScrollButton />
+      <ScrollIndicator className={styles.hero__scroll} />
 
     </div>
   )

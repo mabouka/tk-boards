@@ -55,34 +55,10 @@
 }
 /* ── Scroll indicator ── */
 
+/* Placement only — the cue itself is components/ui/ScrollIndicator. */
 .hero__scroll {
   position: absolute;
   right: calc(var(--gutter) * 1.5);
   bottom: 80px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
 }
 
-.hero__scroll_text {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--color-white);
-  writing-mode: vertical-rl;
-  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
-}
-
-.hero__scroll_line {
-  display: block;
-  width: 1px;
-  height: 37px;
-  background: var(--color-white);
-  opacity: 0.6;
-}

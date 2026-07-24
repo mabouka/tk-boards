@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import type { SanityImage } from '@/sanity/lib/types'
-import ScrollIndicator from './ScrollIndicator'
+import ScrollIndicator from '@/components/ui/ScrollIndicator'
 import styles from './HeroBoard.module.css'
 
 type Props = {
@@ -32,7 +32,7 @@ export default function HeroBoard({ title, tagline, backgroundImage }: Props) {
         {tagline && <p className={styles.heroBoard__tagline}>{tagline}</p>}
       </div>
 
-      <ScrollIndicator />
+      <ScrollIndicator className={styles.heroBoard__scroll} />
     </div>
   )
 }
