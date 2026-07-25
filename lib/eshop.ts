@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { siteSettings } from '@/db/schema'
 import { liveSession } from '@/lib/session'
+import { decideEshopVisible } from '@/lib/eshop-decision'
 
 // The one settings row. Pinned id so there is never more than one.
 const SETTINGS_ID = 'default'
@@ -25,18 +26,16 @@ export const eshopEnabled = cache(async (): Promise<boolean> => {
 
 /**
  * Whether THIS request should see the real storefront (buy / cart / checkout) or
- * the contact-only V1.
- *
- * The global switch, OR a per-account override for a signed-in user working ahead
- * of launch — the owner and the client can preview the true checkout without it
- * being on for the public. Force-on only: once the global switch is set, everyone
- * sees the shop and the override no longer matters.
+ * the contact-only V1 — the global switch OR a per-account override for a signed-in
+ * user working ahead of launch.
  *
  * Per request, since it depends on the session; cached so repeated asks within one
- * render are free.
+ * render are free. Short-circuits on the global switch so a launched shop never
+ * pays for the session lookup.
  */
 export const eshopVisible = cache(async (): Promise<boolean> => {
-  if (await eshopEnabled()) return true
+  const enabled = await eshopEnabled()
+  if (enabled) return true
   const session = await liveSession()
-  return session?.eshopPreview ?? false
+  return decideEshopVisible(enabled, session?.eshopPreview)
 })

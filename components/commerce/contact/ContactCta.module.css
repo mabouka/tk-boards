@@ -35,3 +35,11 @@
   border: 1px solid rgba(255, 255, 255, 0.22);
   padding: 8px 12px;
 }
+
+/* The buy CTA: same label-over-content stack as an axis, but its own class so a
+   later change to how option axes lay out doesn't move the buttons. */
+.buyGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

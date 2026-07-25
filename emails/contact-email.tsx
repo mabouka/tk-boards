@@ -12,6 +12,9 @@ type Props = {
 
 /** Internal notification sent to the TK inbox when the contact form is submitted. */
 function ContactEmail({ firstName, lastName, email, phone, product, message }: Props) {
+  // Joined so a caller with only one name box (the product contact form sends an
+  // empty lastName) doesn't render a trailing space after the name.
+  const fullName = [firstName, lastName].filter(Boolean).join(' ')
   const row = (label: string, value?: string) =>
     value ? (
       <Text className="text-paper m-0 mt-2 text-[14px] leading-[1.6]">
@@ -22,12 +25,12 @@ function ContactEmail({ firstName, lastName, email, phone, product, message }: P
 
   return (
     <EmailLayout
-      preheader={`New contact message from ${firstName} ${lastName}`}
+      preheader={`New contact message from ${fullName}`}
       heading="New contact message"
       locale="en"
     >
       <Section className="mt-2">
-        {row('Name', `${firstName} ${lastName}`)}
+        {row('Name', fullName)}
         {row('Email', email)}
         {row('Phone', phone)}
         {row('Product', product)}

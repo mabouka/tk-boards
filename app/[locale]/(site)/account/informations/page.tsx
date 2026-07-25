@@ -38,23 +38,26 @@ export default async function MyInformationsPage({ params }: Props) {
         .limit(1)
     : [undefined]
 
-  const addrs = userId
-    ? await db
-        .select({
-          id: addressesTable.id,
-          label: addressesTable.label,
-          line1: addressesTable.line1,
-          line2: addressesTable.line2,
-          postalCode: addressesTable.postalCode,
-          city: addressesTable.city,
-          country: addressesTable.country,
-          phone: addressesTable.phone,
-          isDefault: addressesTable.isDefault,
-        })
-        .from(addressesTable)
-        .where(eq(addressesTable.userId, userId))
-        .orderBy(desc(addressesTable.isDefault), asc(addressesTable.createdAt))
-    : []
+  // Only read addresses when the section will actually render (shop on / preview) —
+  // in V1 the block is hidden, so this would query and discard.
+  const addrs =
+    userId && shopVisible
+      ? await db
+          .select({
+            id: addressesTable.id,
+            label: addressesTable.label,
+            line1: addressesTable.line1,
+            line2: addressesTable.line2,
+            postalCode: addressesTable.postalCode,
+            city: addressesTable.city,
+            country: addressesTable.country,
+            phone: addressesTable.phone,
+            isDefault: addressesTable.isDefault,
+          })
+          .from(addressesTable)
+          .where(eq(addressesTable.userId, userId))
+          .orderBy(desc(addressesTable.isDefault), asc(addressesTable.createdAt))
+      : []
 
   // OAuth accounts have no password — surface the sign-in provider instead.
   const [oauth] =

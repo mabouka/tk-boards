@@ -37,7 +37,9 @@ export async function setEshopPreview(userId: string, preview: boolean): Promise
   await requireAdmin()
   if (!userId) return { ok: false, error: 'Requête invalide.' }
   await db.update(users).set({ eshopPreview: preview }).where(eq(users.id, userId))
-  revalidatePath('/', 'layout')
+  // Only the admin page needs refreshing: the storefront layout is rendered per
+  // request (it reads the session), so the affected user picks up their new preview
+  // on next navigation without busting everyone else's layout cache.
   revalidatePath(`/admin/accounts/${userId}`)
   return { ok: true }
 }

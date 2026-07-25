@@ -1,8 +1,9 @@
 'use client'
 
-import { useActionState, useEffect } from 'react'
+import { useActionState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocale, useTranslations } from 'next-intl'
+import { useDrawer } from '@/lib/use-drawer'
 import TurnstileField from '@/components/auth/TurnstileField'
 import { submitProductContact, type ProductContactState } from './actions'
 import styles from './ProductContactModal.module.css'
@@ -27,12 +28,18 @@ export default function ProductContactModal({
     null
   )
 
-  // Close on Escape.
+  // Escape + body-scroll lock, shared with every other modal. Always "open" here:
+  // the component is only mounted while the modal is showing.
+  useDrawer(true, onClose)
+
+  // Move focus into the dialog on open, hand it back to the trigger on close, so a
+  // keyboard user isn't left focused on the page behind the overlay.
+  const modalRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
+    const previous = document.activeElement as HTMLElement | null
+    modalRef.current?.focus()
+    return () => previous?.focus?.()
+  }, [])
 
   const errorMessage = state?.error
     ? t(
@@ -51,10 +58,20 @@ export default function ProductContactModal({
   // viewport — which trapped the overlay inside the section. Safe without a mount
   // guard: this only renders after a click, never during SSR.
   return createPortal(
-    <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.overlay} onClick={onClose}>
+      <div
+        ref={modalRef}
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="product-contact-title"
+        tabIndex={-1}
+      >
         <div className={styles.head}>
-          <h2 className={styles.title}>{t('contact_title')}</h2>
+          <h2 id="product-contact-title" className={styles.title}>
+            {t('contact_title')}
+          </h2>
           <button type="button" className={styles.close} onClick={onClose} aria-label={t('close')}>
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 5l14 14M19 5L5 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

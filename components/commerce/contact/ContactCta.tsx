@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import type { StorefrontProduct } from '@/lib/storefront/product'
 import { formatEur } from '@/lib/format-price'
 import { useEshop } from '@/components/commerce/eshop-context'
+import { waLink } from '@/lib/whatsapp'
 import ProductContactModal from './ProductContactModal'
 import styles from '@/components/commerce/configurator/BuyCta.module.css'
 import axisStyles from './ContactCta.module.css'
@@ -28,23 +29,13 @@ export default function ContactCta({
   const { whatsapp } = useEshop()
   const [open, setOpen] = useState(false)
 
-  // The lowest effective price, prefixed with "from" only when the variants span a
-  // range — three sizes all at 150 € read "150 €", not "from 150 €".
-  let price: number | null = null
-  let isFrom = false
-  if (product) {
-    const prices = product.variants.map((v) => v.salePrice ?? v.price)
-    if (prices.length > 0) {
-      const min = Math.min(...prices)
-      price = min
-      isFrom = Math.max(...prices) !== min
-    }
-  }
+  // Server-computed min (fromPrice), prefixed with "from" only when the variants
+  // actually span a range — three sizes all at 150 € read "150 €", not "from 150 €".
+  const price = product?.fromPrice ?? null
+  const prices = product?.variants.map((v) => v.salePrice ?? v.price) ?? []
+  const isFrom = prices.length > 1 && Math.max(...prices) !== Math.min(...prices)
 
-  const waDigits = whatsapp?.replace(/\D/g, '') ?? ''
-  const waHref = waDigits
-    ? `https://wa.me/${waDigits}?text=${encodeURIComponent(`${productName} — ${t('contact_title')}`)}`
-    : null
+  const waHref = waLink(whatsapp, `${productName} — ${t('contact_title')}`)
 
   return (
     <div className={styles.cta}>
@@ -77,7 +68,7 @@ export default function ContactCta({
 
       {/* Labelled like the sizes above, so it's clear these buttons are the way to
           buy — the checkout being off, "buy" here means reach out. */}
-      <div className={axisStyles.axis}>
+      <div className={axisStyles.buyGroup}>
         <span className={axisStyles.axisName}>{t('contact_buy_label')}</span>
         <div className={styles.btnRow}>
           <button type="button" className="u-cta u-cta--white-fill" onClick={() => setOpen(true)}>

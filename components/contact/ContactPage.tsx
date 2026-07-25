@@ -6,6 +6,7 @@ import IconMail from '@/components/ui/icons/IconMail'
 import ContactForm from './ContactForm'
 import PageBuilder from '@/components/sections/page-builder/PageBuilder'
 import { haloProps } from '@/components/ui/halo/haloProps'
+import { waLink } from '@/lib/whatsapp'
 import styles from './ContactPage.module.css'
 
 type Sections = NonNullable<ContactPageQueryResult>['sections']
@@ -43,7 +44,7 @@ export default async function ContactPage({
   sections,
   locale,
 }: Props) {
-  const waNumber = whatsapp?.replace(/\D/g, '') ?? ''
+  const waHref = waLink(whatsapp)
   // Default the phone country to the visitor's IP country (Vercel geo header);
   // falls back to FR locally or when the header is absent.
   const ipCountry = (await headers()).get('x-vercel-ip-country')
@@ -83,11 +84,11 @@ export default async function ContactPage({
               ))}
             </div>
 
-            {(waNumber || email) && (
+            {(waHref || email) && (
               <div className={styles.actions}>
-                {waNumber && (
+                {waHref && (
                   <a
-                    href={`https://wa.me/${waNumber}`}
+                    href={waHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.actionBtn}

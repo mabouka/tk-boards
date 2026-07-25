@@ -20,6 +20,8 @@
   background: #14171e;
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--color-white);
+  /* Focused programmatically on open only to scope the dialog — no visible ring. */
+  outline: none;
 }
 
 .head {
