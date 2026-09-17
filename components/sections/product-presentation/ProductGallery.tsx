@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
@@ -22,6 +22,18 @@ export default function ProductGallery({
   const [open, setOpen] = useState(false)
   const [index, setIndex] = useState(0)
 
+  // Mobile slider: track which slide is centred so the dots can reflect it.
+  const trackRef = useRef<HTMLDivElement>(null)
+  const [active, setActive] = useState(0)
+  const onScroll = () => {
+    const el = trackRef.current
+    if (el) setActive(Math.round(el.scrollLeft / el.clientWidth))
+  }
+  const goTo = (i: number) => {
+    const el = trackRef.current
+    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' })
+  }
+
   // High-res slides for the lightbox (zoom needs detail). Served straight by Sanity.
   const slides = images.map((img) => ({
     src: urlFor(img).width(2000).quality(90).url(),
@@ -30,7 +42,7 @@ export default function ProductGallery({
 
   return (
     <>
-      <div className={styles.productPresentation__right}>
+      <div ref={trackRef} className={styles.productPresentation__right} onScroll={onScroll}>
         {images.map((img, i) => (
           <button
             key={i}
@@ -53,6 +65,24 @@ export default function ProductGallery({
           </button>
         ))}
       </div>
+
+      {/* Slider position — mobile only (hidden by CSS on desktop), 2+ images. */}
+      {images.length > 1 && (
+        <div className={styles.productPresentation__dots} role="tablist" aria-label={productName}>
+          {images.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              className={styles.productPresentation__dot}
+              data-active={i === active}
+              aria-label={`Image ${i + 1}`}
+              aria-selected={i === active}
+              role="tab"
+              onClick={() => goTo(i)}
+            />
+          ))}
+        </div>
+      )}
 
       <Lightbox
         open={open}

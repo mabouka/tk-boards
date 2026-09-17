@@ -8,13 +8,20 @@
 @media (max-width: 1023px) {
   .productPresentation {
     grid-template-columns: 1fr;
+    display: block;
+  }
+}
+
+@media (max-width: 599px) {
+  .productPresentation {
+    margin-bottom: 48px;
   }
 }
 
 /* First element on the page (no hero above) → clear the fixed header. */
 .productPresentation--atPageTop {
   margin-top: 0;
-  padding-top: 148px;
+  padding-top: 90px;
 }
 
 /* ── Left panel (sticky) ── */
@@ -37,6 +44,21 @@
   .productPresentation__left {
     position: static;
     padding: var(--space-lg) var(--gutter);
+    /* Drop the desktop sticky-panel sizing: min-height:100vh + centering left the
+       title floating in a screen-tall gap once the panel is in normal flow. */
+    min-height: 0;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 599px) {
+  .productPresentation__left {
+    position: static;
+    padding: var(--space-md) 0;
+    /* Drop the desktop sticky-panel sizing: min-height:100vh + centering left the
+       title floating in a screen-tall gap once the panel is in normal flow. */
+    min-height: 0;
+    justify-content: flex-start;
   }
 }
 
@@ -89,6 +111,14 @@
   composes: u-body from global;
   color: var(--color-white-80);
   max-width: col(4);
+}
+
+/* col(4) is a fixed 4-of-12-column width — fine beside the image on desktop, but on
+   a single-column phone it clamps the text to a sliver, breaking it every 2-3 words. */
+@media (max-width: 1023px) {
+  .productPresentation__description {
+    max-width: none;
+  }
 }
 
 .productPresentation__description p {
@@ -160,6 +190,13 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+@media (max-width: 380px) {
+  .productPresentation__specListRow {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
 .productPresentation__specListRow:last-child {
   border-bottom: none;
 }
@@ -180,6 +217,18 @@
   color: var(--color-white);
   text-align: right;
 }
+
+@media (max-width: 380px) {
+  .productPresentation__specListRow {
+    flex-direction: column;
+    /* gap: 4px; */
+  }
+
+  .productPresentation__specListValue {
+    text-align: left;
+  }
+}
+
 
 /* ── CTAs ── */
 
@@ -252,6 +301,59 @@
 
 .productPresentation__galleryItem img {
   object-fit: cover;
+}
+
+/* ── Mobile: gallery becomes a swipeable slider on top ──
+   The desktop column stacks every image full-width, so on a phone you'd scroll past
+   all of them before reaching the title. Here it's one horizontal scroll-snap track,
+   pinned above the info panel (order:-1) whatever imageSide the desktop uses. */
+@media (max-width: 1023px) {
+  .productPresentation__right {
+    order: -1;
+    flex-direction: row;
+    justify-content: flex-start;
+    min-height: 0;
+    gap: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .productPresentation__right::-webkit-scrollbar {
+    display: none;
+  }
+  .productPresentation__galleryItem {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+  }
+}
+
+/* ── Slider dots (mobile only, shown for 2+ images) ── */
+.productPresentation__dots {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .productPresentation__dots {
+    order: -1; /* sit just under the slider, above the info panel */
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 14px 0 0;
+  }
+  .productPresentation__dot {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.28);
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .productPresentation__dot[data-active='true'] {
+    background: var(--color-white);
+  }
 }
 
 /* ── Image-left variant ──
