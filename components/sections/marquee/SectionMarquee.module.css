@@ -40,3 +40,17 @@
   color: var(--color-cream);
   white-space: nowrap;
 }
+
+
+@media (max-width: 1023px) {
+  .marquee { 
+    margin: 96px 0;
+  }
+}
+
+
+@media (max-width: 599px) {
+  .marquee { 
+    margin: 48px 0;
+  }
+}

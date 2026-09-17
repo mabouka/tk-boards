@@ -60,3 +60,38 @@
 .aboutPreview__cta {
   align-self: flex-start;
 }
+
+/* ── Below the desktop grid: one column, everything stacked ──
+   The 12-col grid pairs eyebrow|title and image|aside on two rows; under 1024 the
+   columns are too narrow for that, so each block spans the full width and flows in
+   DOM order (eyebrow, title, image, aside). 1023 = the site's tablet breakpoint,
+   where --gutter already steps down, so both changes happen at the same width. */
+@media (max-width: 1023px) {
+  .aboutPreview {
+    grid-template-columns: 1fr;
+    row-gap: 24px;
+    /* The desktop --space-4xl (180px) is too much air on a phone. */
+    margin-block: 96px;
+  }
+  .aboutPreview__eyebrow,
+  .aboutPreview__title,
+  .aboutPreview__image,
+  .aboutPreview__aside {
+    grid-column: 1 / -1;
+    grid-row: auto; /* drop the desktop row assignments so they stack, not overlap */
+  }
+  .aboutPreview__eyebrow {
+    padding-top: 0; /* the desktop baseline nudge makes no sense once stacked */
+  }
+  .aboutPreview__title {
+    /* 48px is sized for the wide column; let it shrink on a narrow one. */
+    font-size: clamp(30px, 6vw, 48px);
+    line-height: 1.02;
+  }
+}
+
+@media (max-width: 599px) {
+  .aboutPreview {
+    margin-block: 48px;
+  }
+}

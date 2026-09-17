@@ -170,6 +170,9 @@
        control); the header follows it, so opening the menu moves nothing. */
     height: 90px;
   }
+  .header--fixed .header__inner {
+    height: 60px;
+  }
   .header__logo {
     order: 1;
     justify-content: flex-start;

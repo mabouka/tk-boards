@@ -80,6 +80,6 @@
 @media (max-width: 1023px) {
   .bigQuote {
     gap: var(--space-md);
-    padding-block: var(--space-2xl);
+    margin: 96px 0;
   }
 }

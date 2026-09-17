@@ -31,11 +31,14 @@ export default function SectionAboutPreview({ eyebrow, title, image, body, cta }
           {...haloProps({ rgb: '215, 215, 255', opacity: 0.22, w: '87vw', h: '44vh', spread: '1%', anchor: 'bottom-left' })}
         >
           <Image
-            src={urlFor(image).width(800).url()}
+            src={urlFor(image).width(1024).url()}
             alt=""
             fill
             style={{ objectFit: 'cover', objectPosition: 'center' }}
-            sizes="25vw"
+            /* Full width once stacked (≤1023), ~a quarter on the desktop grid. Without
+               the first clause the browser keeps loading the 25vw candidate and
+               upscales it across the full-width image. */
+            sizes="(max-width: 1023px) 100vw, 25vw"
           />
         </div>
       )}

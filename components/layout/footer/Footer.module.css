@@ -181,3 +181,9 @@
     gap: var(--space-sm);
   }
 }
+
+@media (max-width: 599px) {
+  .footer__grid {
+    padding-top: 60px;
+  }
+}
