@@ -1,0 +1,46 @@
+/* Shared image-card chrome — composed by BoardCard + AccessoryCard.
+   Each card keeps its own aspect-ratio, overlay gradient and extras. */
+.card {
+  position: relative;
+  padding: 24px;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--color-white);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.meta {
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-bottom: 10px;
+}
+
+.tag {
+  composes: u-tag from global;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.name {
+  composes: u-title u-title--24 from global;
+  z-index: 2;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}

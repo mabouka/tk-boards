@@ -50,6 +50,9 @@ export default function SectionFeatures({ items, theme = 'light' }: Props) {
       // not in CSS — so if GSAP never runs (reduced-motion, no-JS, load failure)
       // the CSS fallback (native horizontal scroll) stays and items are never cut.
       mm.add('(min-width: 769px) and (prefers-reduced-motion: no-preference)', () => {
+        // GSAP can throw a cross-origin SecurityError when the page hosts a
+        // cross-origin iframe (e.g. a YouTube embed). Skip rather than crash.
+        try {
         root.style.height = '100vh'
         root.style.overflow = 'hidden'
 
@@ -70,6 +73,9 @@ export default function SectionFeatures({ items, theme = 'light' }: Props) {
         return () => {
           root.style.height = ''
           root.style.overflow = ''
+        }
+        } catch (e) {
+          console.warn('[Features] animation skipped:', e)
         }
       })
     },
