@@ -6,6 +6,7 @@ import { asc, desc, eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
 import { units, variants, products } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
+import { csvField } from '@/lib/csv'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const tagUrl = (token: string) => `${BASE}/tk-id/${token}`
@@ -129,13 +130,6 @@ export async function deleteUnits(ids: string[]): Promise<DeleteResult> {
 }
 
 // ── CSV export of the full registry ──
-// Neutralize formula injection: a cell starting with = + - @ (or a control char)
-// executes as a formula in Excel/Sheets, so prefix those with an apostrophe.
-const csvField = (v: string) => {
-  const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v
-  return `"${safe.replace(/"/g, '""')}"`
-}
-
 export async function exportUnitsCsv(): Promise<string> {
   await requireAdmin()
   const rows = await db

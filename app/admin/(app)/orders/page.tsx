@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { getOrders } from '@/lib/admin/orders'
 import { formatEur } from '@/lib/format-price'
 import { OrdersTable } from '@/components/admin/orders/orders-table'
+import { OrdersExportButton } from '@/components/admin/orders/orders-export-button'
 import { Button } from '@/components/admin/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/admin/ui/card'
 
@@ -26,11 +27,14 @@ export default async function AdminOrdersPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Commandes</h1>
           <p className="text-muted-foreground text-sm">Toutes les commandes, web et créées à la main.</p>
         </div>
-        <Button asChild>
-          <Link href="/admin/orders/new">
-            <Plus className="size-4" /> Nouvelle commande
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <OrdersExportButton />
+          <Button asChild>
+            <Link href="/admin/orders/new">
+              <Plus className="size-4" /> Nouvelle commande
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
