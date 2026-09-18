@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowDown, ArrowUp, ChevronsUpDown, Download, Search } from 'lucide-react'
+import { Download, Search } from 'lucide-react'
 import { fmtDate } from '@/lib/admin/format'
 import { formatEur } from '@/lib/format-price'
 import { buildCsv } from '@/lib/csv'
@@ -28,22 +28,11 @@ import {
   TableRow,
 } from '@/components/admin/ui/table'
 import { ORDER_STATUS_KEYS, orderStatusOf, PAYMENT_LABEL } from './status'
-
-type SortKey = 'date' | 'total'
-type Sort = { key: SortKey; dir: 'asc' | 'desc' }
-
-function SortIcon({ active, dir }: { active: boolean; dir: 'asc' | 'desc' }) {
-  if (!active) return <ChevronsUpDown className="text-muted-foreground size-3.5" />
-  return dir === 'asc' ? <ArrowUp className="size-3.5" /> : <ArrowDown className="size-3.5" />
-}
+import { useSort, SortHeader } from '@/components/admin/ui/sortable'
 
 export function OrdersTable({ orders }: { orders: AdminOrderRow[] }) {
   const [q, setQ] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [sort, setSort] = useState<Sort>({ key: 'date', dir: 'desc' })
-
-  const toggleSort = (key: SortKey) =>
-    setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' }))
 
   const needle = q.trim().toLowerCase()
   const shown = orders.filter(
@@ -55,11 +44,13 @@ export function OrdersTable({ orders }: { orders: AdminOrderRow[] }) {
         o.email.toLowerCase().includes(needle))
   )
 
-  const dir = sort.dir === 'asc' ? 1 : -1
-  const sorted = [...shown].sort((a, b) =>
-    sort.key === 'total'
-      ? (Number(a.totalEur) - Number(b.totalEur)) * dir
-      : (a.createdAt.getTime() - b.createdAt.getTime()) * dir
+  const { sorted, sort, toggle } = useSort(
+    shown,
+    {
+      date: (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+      total: (a, b) => Number(a.totalEur) - Number(b.totalEur),
+    },
+    { key: 'date', dir: 'desc' }
   )
 
   // Export exactly what's on screen (current search + status filter), built from
@@ -126,22 +117,10 @@ export function OrdersTable({ orders }: { orders: AdminOrderRow[] }) {
               <TableHead>Paiement</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead className="text-right">
-                <button
-                  type="button"
-                  onClick={() => toggleSort('total')}
-                  className="hover:text-foreground ml-auto inline-flex items-center gap-1"
-                >
-                  Total <SortIcon active={sort.key === 'total'} dir={sort.dir} />
-                </button>
+                <SortHeader label="Total" sortKey="total" sort={sort} onToggle={toggle} align="right" />
               </TableHead>
               <TableHead>
-                <button
-                  type="button"
-                  onClick={() => toggleSort('date')}
-                  className="hover:text-foreground inline-flex items-center gap-1"
-                >
-                  Date <SortIcon active={sort.key === 'date'} dir={sort.dir} />
-                </button>
+                <SortHeader label="Date" sortKey="date" sort={sort} onToggle={toggle} />
               </TableHead>
             </TableRow>
           </TableHeader>

@@ -7,6 +7,7 @@ import type { ProductListRow } from '@/lib/admin/products'
 import { Badge } from '@/components/admin/ui/badge'
 import { Card } from '@/components/admin/ui/card'
 import { Input } from '@/components/admin/ui/input'
+import { useSort, SortHeader } from '@/components/admin/ui/sortable'
 import {
   Select,
   SelectContent,
@@ -53,6 +54,16 @@ export function ProductsTable({ rows }: { rows: ProductListRow[] }) {
         p.sku.toLowerCase().includes(needle))
   )
 
+  const { sorted, sort, toggle } = useSort(
+    shown,
+    {
+      name: (a, b) => a.name.localeCompare(b.name),
+      variants: (a, b) => a.variantCount - b.variantCount,
+      price: (a, b) => (a.priceMin ?? 0) - (b.priceMin ?? 0),
+    },
+    { key: 'name', dir: 'asc' }
+  )
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -91,11 +102,17 @@ export function ProductsTable({ rows }: { rows: ProductListRow[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nom</TableHead>
+              <TableHead>
+                <SortHeader label="Nom" sortKey="name" sort={sort} onToggle={toggle} />
+              </TableHead>
               <TableHead>SKU</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Variantes</TableHead>
-              <TableHead>Prix</TableHead>
+              <TableHead>
+                <SortHeader label="Variantes" sortKey="variants" sort={sort} onToggle={toggle} />
+              </TableHead>
+              <TableHead>
+                <SortHeader label="Prix" sortKey="price" sort={sort} onToggle={toggle} />
+              </TableHead>
               <TableHead>Statut</TableHead>
             </TableRow>
           </TableHeader>
@@ -107,7 +124,7 @@ export function ProductsTable({ rows }: { rows: ProductListRow[] }) {
                 </TableCell>
               </TableRow>
             ) : (
-              shown.map((p) => (
+              sorted.map((p) => (
                 <TableRow key={p.id} className="cursor-pointer">
                   <TableCell className="font-medium">
                     <Link href={`/admin/products/${p.id}`} className="block">

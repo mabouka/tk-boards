@@ -8,6 +8,7 @@ import { Download, MoreHorizontal, Search } from 'lucide-react'
 import { setRole } from '@/app/admin/(app)/accounts/actions'
 import { buildCsv } from '@/lib/csv'
 import { downloadTextFile } from '@/lib/download'
+import { useSort, SortHeader } from '@/components/admin/ui/sortable'
 import type { AccountRow } from '@/lib/admin/accounts'
 import { Badge } from '@/components/admin/ui/badge'
 import { Button } from '@/components/admin/ui/button'
@@ -69,10 +70,19 @@ export function AccountsTable({
         a.email.toLowerCase().includes(needle))
   )
 
+  const { sorted, sort, toggle } = useSort(
+    filtered,
+    {
+      name: (a, b) => a.name.localeCompare(b.name),
+      date: (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+    },
+    { key: 'date', dir: 'desc' }
+  )
+
   const exportCsv = () => {
     const csv = buildCsv(
       ['name', 'email', 'role', 'auth_method', 'locale', 'created'],
-      filtered.map((a) => [a.name, a.email, a.role, a.method, a.locale, a.createdAt.toISOString()])
+      sorted.map((a) => [a.name, a.email, a.role, a.method, a.locale, a.createdAt.toISOString()])
     )
     downloadTextFile(`comptes-${new Date().toISOString().slice(0, 10)}.csv`, csv)
   }
@@ -121,10 +131,14 @@ export function AccountsTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Compte</TableHead>
+              <TableHead>
+                <SortHeader label="Compte" sortKey="name" sort={sort} onToggle={toggle} />
+              </TableHead>
               <TableHead>Rôle</TableHead>
               <TableHead>Méthode</TableHead>
-              <TableHead>Inscrit le</TableHead>
+              <TableHead>
+                <SortHeader label="Inscrit le" sortKey="date" sort={sort} onToggle={toggle} />
+              </TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -136,7 +150,7 @@ export function AccountsTable({
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((a) => {
+              sorted.map((a) => {
                 const isMe = a.id === currentUserId
                 const isAdmin = a.role === 'admin'
                 return (
