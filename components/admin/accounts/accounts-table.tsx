@@ -4,8 +4,10 @@ import { useState, useTransition } from 'react'
 import { fmtDate } from '@/lib/admin/format'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { MoreHorizontal, Search } from 'lucide-react'
+import { Download, MoreHorizontal, Search } from 'lucide-react'
 import { setRole } from '@/app/admin/(app)/accounts/actions'
+import { buildCsv } from '@/lib/csv'
+import { downloadTextFile } from '@/lib/download'
 import type { AccountRow } from '@/lib/admin/accounts'
 import { Badge } from '@/components/admin/ui/badge'
 import { Button } from '@/components/admin/ui/button'
@@ -67,6 +69,14 @@ export function AccountsTable({
         a.email.toLowerCase().includes(needle))
   )
 
+  const exportCsv = () => {
+    const csv = buildCsv(
+      ['name', 'email', 'role', 'auth_method', 'locale', 'created'],
+      filtered.map((a) => [a.name, a.email, a.role, a.method, a.locale, a.createdAt.toISOString()])
+    )
+    downloadTextFile(`comptes-${new Date().toISOString().slice(0, 10)}.csv`, csv)
+  }
+
   function changeRole(id: string, role: 'customer' | 'admin') {
     startTransition(async () => {
       const res = await setRole(id, role)
@@ -97,6 +107,14 @@ export function AccountsTable({
             <SelectItem value="admin">Admins</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          className="ml-auto"
+          onClick={exportCsv}
+          disabled={filtered.length === 0}
+        >
+          <Download className="size-4" /> Exporter ({filtered.length})
+        </Button>
       </div>
 
       <Card>

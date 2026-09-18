@@ -2,7 +2,6 @@ import { auth } from '@/auth'
 import { getAccounts } from '@/lib/admin/accounts'
 import { AccountsTable } from '@/components/admin/accounts/accounts-table'
 import { CreateAccountDialog } from '@/components/admin/accounts/create-account-dialog'
-import { AccountsExportButton } from '@/components/admin/accounts/accounts-export-button'
 import {
   Card,
   CardContent,
@@ -37,10 +36,7 @@ export default async function AccountsPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Comptes</h1>
           <p className="text-muted-foreground text-sm">Clients et administrateurs.</p>
         </div>
-        <div className="flex gap-2">
-          <AccountsExportButton />
-          <CreateAccountDialog />
-        </div>
+        <CreateAccountDialog />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

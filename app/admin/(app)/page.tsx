@@ -7,6 +7,7 @@ import { formatEur } from '@/lib/format-price'
 import { fmtDate } from '@/lib/admin/format'
 import { LOW_STOCK_THRESHOLD } from '@/lib/admin/stock-ui'
 import { Badge } from '@/components/admin/ui/badge'
+import { orderStatusOf } from '@/components/admin/orders/status'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/admin/ui/card'
 import {
   Table,
@@ -16,17 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/admin/ui/table'
-
-type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline'
-const ORDER_STATUS: Record<string, { label: string; variant: BadgeVariant }> = {
-  pending_payment: { label: 'En attente', variant: 'secondary' },
-  paid: { label: 'Payée', variant: 'default' },
-  preparing: { label: 'Préparation', variant: 'default' },
-  shipped: { label: 'Expédiée', variant: 'outline' },
-  delivered: { label: 'Livrée', variant: 'outline' },
-  cancelled: { label: 'Annulée', variant: 'destructive' },
-  refunded: { label: 'Remboursée', variant: 'destructive' },
-}
 
 export default async function AdminDashboard() {
   const [orders, [prod], [outStock], [lowStock], [stolen], [acct], [openClaims]] = await Promise.all([
@@ -113,7 +103,7 @@ export default async function AdminDashboard() {
                 </TableHeader>
                 <TableBody>
                   {recent.map((o) => {
-                    const st = ORDER_STATUS[o.status] ?? { label: o.status, variant: 'outline' as const }
+                    const st = orderStatusOf(o.status)
                     return (
                       <TableRow key={o.id}>
                         <TableCell>
