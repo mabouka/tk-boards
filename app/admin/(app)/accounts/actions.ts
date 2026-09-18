@@ -7,6 +7,8 @@ import { db } from '@/db'
 import { users, addresses } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
 import { EMAIL_RE } from '@/lib/email-validation'
+import { getAccounts } from '@/lib/admin/accounts'
+import { buildCsv } from '@/lib/csv'
 
 const LOCALES = ['fr', 'en', 'es']
 
@@ -153,4 +155,14 @@ export async function setDefaultAddress(addressId: string, userId: string): Prom
     .where(eq(addresses.userId, userId))
   revalidatePath(`/admin/accounts/${userId}`)
   return { ok: true }
+}
+
+// ── CSV export of all accounts (customer list / mailing / GDPR) ──
+export async function exportAccountsCsv(): Promise<string> {
+  await requireAdmin()
+  const rows = await getAccounts()
+  return buildCsv(
+    ['name', 'email', 'role', 'auth_method', 'locale', 'created'],
+    rows.map((a) => [a.name, a.email, a.role, a.method, a.locale, a.createdAt.toISOString()])
+  )
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Download, Plus, Tag } from 'lucide-react'
 import { addUnit, exportUnitsCsv, generateBatch } from '@/app/admin/(app)/units/actions'
+import { downloadTextFile } from '@/lib/download'
 import type { BoardVariant, MintedUnit } from '@/lib/admin/units'
 import { Button } from '@/components/admin/ui/button'
 import {
@@ -25,16 +26,6 @@ import {
   SelectValue,
 } from '@/components/admin/ui/select'
 
-function download(filename: string, csv: string) {
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
 const today = () => new Date().toISOString().slice(0, 10)
 
 export function UnitsToolbar({
@@ -54,7 +45,7 @@ export function UnitsToolbar({
       const res = await generateBatch(Number(qty))
       if (res.ok) {
         const csv = ['token,url', ...res.units.map((u) => `${u.token},${u.url}`)].join('\n')
-        download(`tk-id-lot-${today()}.csv`, csv)
+        downloadTextFile(`tk-id-lot-${today()}.csv`, csv)
         toast.success(`${res.units.length} tokens générés — CSV téléchargé.`)
         setBatchOpen(false)
       } else {
@@ -90,7 +81,7 @@ export function UnitsToolbar({
   const runExport = () => {
     startTransition(async () => {
       const csv = await exportUnitsCsv()
-      download(`tk-id-registre-${today()}.csv`, csv)
+      downloadTextFile(`tk-id-registre-${today()}.csv`, csv)
     })
   }
 
