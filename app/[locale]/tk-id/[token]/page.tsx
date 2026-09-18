@@ -5,7 +5,7 @@ import { auth } from '@/auth'
 import { getUnitByToken, getVariantAttributes } from '@/lib/tk-id'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { boardImageBySkuQuery } from '@/sanity/lib/queries'
 import Halos, { type Halo } from '@/components/ui/halo/Halos'
 import { registerBoard, markRecovered } from './actions'
@@ -87,7 +87,7 @@ export default async function TkIdPage({ params }: Props) {
       : Promise.resolve(null),
     tk?.variantId ? getVariantAttributes(tk.variantId, locale) : Promise.resolve([]),
   ])
-  const photoUrl = board?.mainImage
+  const photoUrl = hasAsset(board?.mainImage)
     ? urlFor(board.mainImage).width(900).quality(85).auto('format').url()
     : null
   const photoAr = board?.aspectRatio && board.aspectRatio > 0 ? board.aspectRatio : 1

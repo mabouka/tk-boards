@@ -4,7 +4,7 @@ import { liveSession } from '@/lib/session'
 import { getUserBoards } from '@/lib/tk-id'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { boardImageBySkuQuery } from '@/sanity/lib/queries'
 import BoardCard from './BoardCard'
 import styles from './account.module.css'
@@ -25,7 +25,7 @@ export default async function MyBoardsPage({ params }: Props) {
   await Promise.all(
     skus.map(async (sku) => {
       const board = await client.fetch(boardImageBySkuQuery, { sku, locale }, sanityCache('board'))
-      if (board?.mainImage) {
+      if (hasAsset(board?.mainImage)) {
         photoBySku.set(sku, urlFor(board.mainImage).width(700).quality(85).auto('format').url())
       }
     })

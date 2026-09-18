@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import type { SanityImage } from '@/sanity/lib/types'
 import FullMediaVideo from '@/components/sections/full-media/FullMediaVideo'
 import styles from './SectionMediaLine.module.css'
@@ -41,7 +41,7 @@ export default function SectionMediaLine({ media, aspectRatio, size = 'in-grid' 
 
   // Image items become the lightbox slides (videos play inline, not zoomed).
   const imageItems = items.filter(
-    (it): it is ImageItem => it.mediaType !== 'video' && Boolean(it.image)
+    (it): it is ImageItem => it.mediaType !== 'video' && hasAsset(it.image)
   )
   const slides = imageItems.map((it) => ({
     src: urlFor(it.image).width(2000).quality(90).url(),
@@ -60,7 +60,7 @@ export default function SectionMediaLine({ media, aspectRatio, size = 'in-grid' 
                 <FullMediaVideo
                   src={item.videoUrl}
                   poster={
-                    item.videoPoster
+                    hasAsset(item.videoPoster)
                       ? urlFor(item.videoPoster).width(1200).quality(80).url()
                       : undefined
                   }
@@ -70,7 +70,7 @@ export default function SectionMediaLine({ media, aspectRatio, size = 'in-grid' 
             )
           }
 
-          if (!item.image) return null
+          if (!hasAsset(item.image)) return null
 
           return (
             <button

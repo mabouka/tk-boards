@@ -7,7 +7,7 @@ import {
   accessoryCategoriesQuery,
   accessoriesPageSettingsQuery,
 } from '@/sanity/lib/queries'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import AccessoriesClient from '@/components/sections/accessories/AccessoriesClient'
 import PageBuilder from '@/components/sections/page-builder/PageBuilder'
@@ -49,7 +49,7 @@ export default async function AccessoriesPage({ params }: Props) {
     _id: a._id,
     title: a.title,
     slug: a.slug?.current ?? '',
-    imageUrl: a.mainImage ? urlFor(a.mainImage).width(800).height(800).quality(85).url() : null,
+    imageUrl: hasAsset(a.mainImage) ? urlFor(a.mainImage).width(800).height(800).quality(85).url() : null,
     categoryName: a.category?.name ?? null,
     categorySlug: a.category?.slug ?? null,
   }))

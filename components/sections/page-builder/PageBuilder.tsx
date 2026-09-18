@@ -2,7 +2,7 @@ import dynamic from 'next/dynamic'
 import { getTranslations } from 'next-intl/server'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
-import { urlFor, resolveHeroImage } from '@/sanity/lib/image'
+import { urlFor, resolveHeroImage, hasAsset } from '@/sanity/lib/image'
 import { seriesQuery } from '@/sanity/lib/queries'
 import type { SanityImage, Cta } from '@/sanity/lib/types'
 import type { PageBySlugQueryResult } from '@/sanity.types'
@@ -96,7 +96,10 @@ export default async function PageBuilder({ sections, locale }: Props) {
       name: board.name,
       slug: board.slug,
       style: board.style,
-      imageUrl: board.mainImage
+      // Guard on `.asset`, not just the field: an editor can leave alt text with
+      // no uploaded file, and urlFor() throws ("Unable to resolve image URL") on
+      // an assetless image — which would 500 the whole page.
+      imageUrl: hasAsset(board.mainImage)
         ? urlFor(board.mainImage).width(780).height(1218).quality(85).url()
         : undefined,
     })),
@@ -202,12 +205,12 @@ export default async function PageBuilder({ sections, locale }: Props) {
               title: f.title ?? '',
               text: f.text ?? '',
               imageUrl:
-                f.mediaType !== 'video' && f.image
+                f.mediaType !== 'video' && f.image?.asset
                   ? urlFor(f.image).width(900).height(628).quality(85).url()
                   : undefined,
               videoUrl: f.mediaType === 'video' ? (f.videoUrl ?? undefined) : undefined,
               videoPoster:
-                f.mediaType === 'video' && f.videoPoster
+                f.mediaType === 'video' && f.videoPoster?.asset
                   ? urlFor(f.videoPoster).width(900).height(628).quality(85).url()
                   : undefined,
               cta:
@@ -237,7 +240,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
                 title={section.title ?? ''}
                 intro={section.intro ?? ''}
                 milestones={milestones}
-                finalImageUrl={section.finalImage ? urlFor(section.finalImage).width(900).quality(85).url() : undefined}
+                finalImageUrl={section.finalImage?.asset ? urlFor(section.finalImage).width(900).quality(85).url() : undefined}
                 finalLabel={
                   section.finalLabelTitle
                     ? { title: section.finalLabelTitle, subtitle: section.finalLabelSubtitle ?? '' }
@@ -249,7 +252,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
           case 'sectionFixedImage': {
             const fixedItems: FixedImageItem[] = (section.fixedImages ?? []).map((it) => ({
               _key: it._key,
-              imageUrl: it.image ? urlFor(it.image).width(2000).quality(85).url() : undefined,
+              imageUrl: it.image?.asset ? urlFor(it.image).width(2000).quality(85).url() : undefined,
               title: it.title ?? undefined,
               text: it.text ?? undefined,
               startColumn: it.startColumn ?? undefined,
@@ -307,7 +310,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
                 body={section.body ?? undefined}
                 youtubeUrl={section.youtubeUrl ?? undefined}
                 posterUrl={
-                  section.poster
+                  section.poster?.asset
                     ? urlFor(section.poster).width(1280).height(720).quality(85).url()
                     : undefined
                 }
@@ -319,7 +322,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
           case 'sectionScrollImage': {
             const scrollItems: ScrollImageItem[] = (section.scrollImages ?? []).map((it) => ({
               _key: it._key,
-              imageUrl: it.image ? urlFor(it.image).width(1400).quality(85).auto('format').url() : undefined,
+              imageUrl: it.image?.asset ? urlFor(it.image).width(1400).quality(85).auto('format').url() : undefined,
               alt: it.image?.alt ?? '',
               aspectRatio: it.aspectRatio ?? 1,
               startColumn: it.startColumn ?? 1,

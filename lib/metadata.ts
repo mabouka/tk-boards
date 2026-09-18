@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { cache } from 'react'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { siteSettingsQuery } from '@/sanity/lib/queries'
@@ -100,7 +100,7 @@ export async function buildMetadata({
     ogImageAlt = imageAlt ?? settings.ogImage.alt
   }
 
-  const images = ogImage
+  const images = hasAsset(ogImage)
     ? [
         {
           url: urlFor(ogImage).width(1200).height(630).fit('crop').url(),

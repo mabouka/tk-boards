@@ -1,6 +1,6 @@
 import type { BoardBySlugQueryResult, SiteSettingsQueryResult } from '@/sanity.types'
 import { routing } from '@/i18n/routing'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { siteUrl } from './metadata'
 
 /** Stable @id references so nodes can cross-link within the JSON-LD graph. */
@@ -19,7 +19,7 @@ export function organizationGraph(settings: SiteSettingsQueryResult): Record<str
   const email = settings?.contact?.email
   const phone = settings?.contact?.phone
   const description = settings?.seoDescription?.replace(/\s+/g, ' ').trim()
-  const logoUrl = settings?.logo ? urlFor(settings.logo).width(512).url() : undefined
+  const logoUrl = hasAsset(settings?.logo) ? urlFor(settings.logo).width(512).url() : undefined
 
   const organization: Record<string, unknown> = {
     '@type': ['Organization', 'Brand'],
@@ -83,7 +83,7 @@ export function productGraph(
   const boardUrl = `${siteUrl}/${locale}/boards/${board.slug?.current ?? ''}`
   const productId = `${boardUrl}#product`
 
-  const images = board.mainImage
+  const images = hasAsset(board.mainImage)
     ? [urlFor(board.mainImage).width(1200).height(900).fit('crop').url()]
     : undefined
 

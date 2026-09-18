@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { PortableText } from 'next-sanity'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue, Cta } from '@/sanity/lib/types'
 import { haloProps } from '@/components/ui/halo/haloProps'
 import SectionCtas from '@/components/sections/_shared/SectionCtas'
@@ -56,7 +56,7 @@ export default function SectionTextImage({
         ? haloProps({ rgb: '225, 255, 255', opacity: 0.25, w: '60vw', h: '40vh', spread: '29%' })
         : {})}
     >
-      {image && (
+      {hasAsset(image) && (
         <div
           className={styles.textImage__image}
           style={

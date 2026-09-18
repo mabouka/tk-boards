@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { PortableText } from 'next-sanity'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue } from '@/sanity/lib/types'
 import { haloProps } from '@/components/ui/halo/haloProps'
 import styles from './SectionTextGallery.module.css'
@@ -23,11 +23,15 @@ export default function SectionTextGallery({
   label,
   title,
   body,
-  gallery,
+  gallery: rawGallery,
   theme = 'light',
   imagePosition = 'left',
 }: Props) {
   const [active, setActive] = useState(0)
+
+  // Skip images with no uploaded asset — urlFor() throws on them and would crash
+  // the whole page (an editor can leave alt text on an empty image field).
+  const gallery = rawGallery.filter(hasAsset)
 
   const isDark = theme === 'dark'
   const isReverse = imagePosition === 'right'

@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { PortableText } from 'next-sanity'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue, Cta } from '@/sanity/lib/types'
 import { haloProps } from '@/components/ui/halo/haloProps'
 import styles from './SectionAboutPreview.module.css'
@@ -25,7 +25,7 @@ export default function SectionAboutPreview({ eyebrow, title, image, body, cta }
       {title && <h2 className={styles.aboutPreview__title}>{title}</h2>}
 
       {/* ── Row 2 : image + texte/CTA ── */}
-      {image && (
+      {hasAsset(image) && (
         <div
           className={styles.aboutPreview__image}
           {...haloProps({ rgb: '215, 215, 255', opacity: 0.22, w: '87vw', h: '44vh', spread: '1%', anchor: 'bottom-left' })}

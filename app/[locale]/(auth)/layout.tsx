@@ -5,7 +5,7 @@ import { haloProps } from '@/components/ui/halo/haloProps'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { authPageQuery } from '@/sanity/lib/queries'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import styles from './auth.module.css'
 
 type Props = {
@@ -20,7 +20,7 @@ export default async function AuthLayout({ children, params }: Props) {
     client.fetch(authPageQuery, { locale }, sanityCache('authPage')),
   ])
 
-  const bgUrl = authContent?.backgroundImage
+  const bgUrl = hasAsset(authContent?.backgroundImage)
     ? urlFor(authContent.backgroundImage).width(1600).quality(80).url()
     : null
 

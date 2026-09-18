@@ -10,7 +10,7 @@ import { getPendingTransfer } from '@/lib/transfers'
 import { getVariantAttributes } from '@/lib/tk-id'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { boardImageBySkuQuery } from '@/sanity/lib/queries'
 import { acceptTransfer } from '../account/transferActions'
 import styles from '../../tk-id/[token]/tkid.module.css'
@@ -53,7 +53,7 @@ export default async function TransferPage({ params, searchParams }: Props) {
         : Promise.resolve(null),
       transfer.variantId ? getVariantAttributes(transfer.variantId, locale) : Promise.resolve([]),
     ])
-    photoUrl = board?.mainImage
+    photoUrl = hasAsset(board?.mainImage)
       ? urlFor(board.mainImage).width(900).quality(85).auto('format').url()
       : null
     photoAr = board?.aspectRatio && board.aspectRatio > 0 ? board.aspectRatio : 1

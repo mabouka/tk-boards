@@ -13,7 +13,7 @@ import { sendTransferEmail } from '@/lib/email'
 import { getVariantAttributes } from '@/lib/tk-id'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { boardImageBySkuQuery } from '@/sanity/lib/queries'
 
 const LOCALES = ['fr', 'en', 'es']
@@ -68,7 +68,7 @@ export async function initiateTransfer(_prev: TransferState, formData: FormData)
       : Promise.resolve(null),
     owned.variantId ? getVariantAttributes(owned.variantId, locale) : Promise.resolve([]),
   ])
-  const photoUrl = board?.mainImage
+  const photoUrl = hasAsset(board?.mainImage)
     ? urlFor(board.mainImage).width(800).quality(80).auto('format').url()
     : null
 

@@ -8,7 +8,7 @@ import { loadQuery } from '@/sanity/lib/loadQuery'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
 import type { BoardBySlugQueryResult } from '@/sanity.types'
 import { getStorefrontProduct } from '@/lib/storefront/product'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { productGraph } from '@/lib/structured-data'
 import JsonLd from '@/components/ui/json-ld/JsonLd'
@@ -70,7 +70,7 @@ export default async function BoardPage({ params }: Props) {
   }
 
   const product = board.skuCode ? await getStorefrontProduct(board.skuCode, locale) : null
-  const previewImage = board.mainImage
+  const previewImage = hasAsset(board.mainImage)
     ? urlFor(board.mainImage).width(1000).quality(85).auto('format').url()
     : null
 

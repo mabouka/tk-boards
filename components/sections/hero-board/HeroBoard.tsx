@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import type { SanityImage } from '@/sanity/lib/types'
 import ScrollIndicator from '@/components/ui/ScrollIndicator'
 import styles from './HeroBoard.module.css'
@@ -14,7 +14,7 @@ export default function HeroBoard({ title, tagline, backgroundImage }: Props) {
   return (
     <div className={styles.heroBoard}>
       <div className={styles.heroBoard__bg} aria-hidden="true">
-        {backgroundImage && (
+        {hasAsset(backgroundImage) && (
           <Image
             src={urlFor(backgroundImage).width(1920).url()}
             alt=""

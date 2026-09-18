@@ -68,8 +68,10 @@ export default async function SiteLayout({ children, params }: Props) {
   const legalItems = toNavItems(legalNav?.items)
 
   const featuredBoards = ((featuredNav?.featured ?? []) as RawFeatured[])
+    // Require an uploaded asset, not just the field: urlFor() throws on an
+    // assetless image, which would 500 every page (this runs in the layout).
     .filter((f): f is RawFeatured & { name: string; image: SanityImageSource } =>
-      Boolean(f.name && f.image)
+      Boolean(f.name && (f.image as { asset?: unknown } | null | undefined)?.asset)
     )
     .map((f) => ({
       _key: f._key,

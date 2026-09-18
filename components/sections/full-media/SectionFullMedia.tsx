@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import type { SanityImage } from '@/sanity/lib/types'
 import FullMediaVideo from './FullMediaVideo'
 import styles from './SectionFullMedia.module.css'
@@ -40,7 +40,7 @@ export default function SectionFullMedia({
         : '16 / 9'
       : (refRatio(image) ?? '16 / 9')
 
-  const poster = videoPoster ? urlFor(videoPoster).width(1920).quality(80).url() : undefined
+  const poster = hasAsset(videoPoster) ? urlFor(videoPoster).width(1920).quality(80).url() : undefined
 
   const classList = [styles.fullMedia, size === 'in-grid' ? styles['fullMedia--inGrid'] : '']
     .filter(Boolean)
@@ -50,7 +50,7 @@ export default function SectionFullMedia({
     <figure className={classList} style={{ aspectRatio: ratio }}>
       {mediaType === 'video' && videoUrl ? (
         <FullMediaVideo src={videoUrl} poster={poster} controls={controls ?? undefined} />
-      ) : image ? (
+      ) : hasAsset(image) ? (
         <Image
           className={styles.fullMedia__media}
           src={urlFor(image).width(1920).quality(85).url()}

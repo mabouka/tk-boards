@@ -8,7 +8,7 @@ import { loadQuery } from '@/sanity/lib/loadQuery'
 import { accessoryBySlugQuery } from '@/sanity/lib/queries'
 import type { AccessoryBySlugQueryResult } from '@/sanity.types'
 import { getStorefrontProduct } from '@/lib/storefront/product'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import { LocalePathsSync } from '@/components/i18n/LocalePaths'
 import ProductPresentation from '@/components/sections/product-presentation/ProductPresentation'
@@ -67,7 +67,7 @@ export default async function AccessoryPage({ params }: Props) {
   }
 
   const product = accessory.skuCode ? await getStorefrontProduct(accessory.skuCode, locale) : null
-  const previewImage = accessory.mainImage
+  const previewImage = hasAsset(accessory.mainImage)
     ? urlFor(accessory.mainImage).width(1000).quality(85).auto('format').url()
     : null
 

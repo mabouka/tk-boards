@@ -5,7 +5,7 @@ import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { boardsQuery, seriesQuery, boardsPageSettingsQuery } from '@/sanity/lib/queries'
 import type { BoardsQueryResult } from '@/sanity.types'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import BoardCard from '@/components/sections/boards-preview/BoardCard'
 import SectionMarquee from '@/components/sections/marquee/SectionMarquee'
@@ -23,7 +23,7 @@ type Props = {
 }
 
 const cardImage = (mainImage: BoardsQueryResult[number]['mainImage']) =>
-  mainImage ? urlFor(mainImage).width(780).height(1010).quality(85).url() : null
+  hasAsset(mainImage) ? urlFor(mainImage).width(780).height(1010).quality(85).url() : null
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
