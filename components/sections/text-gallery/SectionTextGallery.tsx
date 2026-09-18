@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Image from 'next/image'
 import { PortableText } from 'next-sanity'
 import { urlFor, hasAsset } from '@/sanity/lib/image'
@@ -31,7 +31,7 @@ export default function SectionTextGallery({
 
   // Skip images with no uploaded asset — urlFor() throws on them and would crash
   // the whole page (an editor can leave alt text on an empty image field).
-  const gallery = rawGallery.filter(hasAsset)
+  const gallery = useMemo(() => rawGallery.filter(hasAsset), [rawGallery])
 
   const isDark = theme === 'dark'
   const isReverse = imagePosition === 'right'

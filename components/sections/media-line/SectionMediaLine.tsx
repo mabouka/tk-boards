@@ -70,7 +70,7 @@ export default function SectionMediaLine({ media, aspectRatio, size = 'in-grid' 
             )
           }
 
-          if (!hasAsset(item.image)) return null
+          if (item.mediaType === 'video' || !hasAsset(item.image)) return null
 
           return (
             <button

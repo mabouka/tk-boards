@@ -10,7 +10,7 @@ import { eshopVisible } from '@/lib/eshop'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { navigationQuery } from '@/sanity/lib/queries'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { getSiteSettings } from '@/lib/metadata'
 import { draftMode } from 'next/headers'
 import { VisualEditing } from 'next-sanity/visual-editing'
@@ -71,7 +71,7 @@ export default async function SiteLayout({ children, params }: Props) {
     // Require an uploaded asset, not just the field: urlFor() throws on an
     // assetless image, which would 500 every page (this runs in the layout).
     .filter((f): f is RawFeatured & { name: string; image: SanityImageSource } =>
-      Boolean(f.name && (f.image as { asset?: unknown } | null | undefined)?.asset)
+      Boolean(f.name && hasAsset(f.image))
     )
     .map((f) => ({
       _key: f._key,

@@ -39,12 +39,13 @@ export default async function DesignSystemPage({
     { title: 'Carbone sergé biaxial', text: 'Une coque carbone haute résistance pour une rigidité et une réactivité sans compromis.' },
     { title: 'Façonné à Tarifa', text: "Un travail d'orfèvrerie, board après board, dans notre atelier en Espagne." },
   ]
-  const featureItems = featureSample.map((f, i) => ({
-    ...f,
-    imageUrl: hasAsset(galleryPreview[i % Math.max(galleryPreview.length, 1)])
-      ? urlFor(galleryPreview[i % galleryPreview.length]).width(900).height(628).quality(85).url()
-      : undefined,
-  }))
+  const featureItems = featureSample.map((f, i) => {
+    const img = galleryPreview[i % Math.max(galleryPreview.length, 1)]
+    return {
+      ...f,
+      imageUrl: hasAsset(img) ? urlFor(img).width(900).height(628).quality(85).url() : undefined,
+    }
+  })
   // Demonstrate "image OR video": swap the 3rd item to a video.
   const featureItemsMixed = featureItems.map((f, i) =>
     i === 2

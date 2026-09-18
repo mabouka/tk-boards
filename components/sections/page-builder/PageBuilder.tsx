@@ -205,12 +205,12 @@ export default async function PageBuilder({ sections, locale }: Props) {
               title: f.title ?? '',
               text: f.text ?? '',
               imageUrl:
-                f.mediaType !== 'video' && f.image?.asset
+                f.mediaType !== 'video' && hasAsset(f.image)
                   ? urlFor(f.image).width(900).height(628).quality(85).url()
                   : undefined,
               videoUrl: f.mediaType === 'video' ? (f.videoUrl ?? undefined) : undefined,
               videoPoster:
-                f.mediaType === 'video' && f.videoPoster?.asset
+                f.mediaType === 'video' && hasAsset(f.videoPoster)
                   ? urlFor(f.videoPoster).width(900).height(628).quality(85).url()
                   : undefined,
               cta:
@@ -240,7 +240,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
                 title={section.title ?? ''}
                 intro={section.intro ?? ''}
                 milestones={milestones}
-                finalImageUrl={section.finalImage?.asset ? urlFor(section.finalImage).width(900).quality(85).url() : undefined}
+                finalImageUrl={hasAsset(section.finalImage) ? urlFor(section.finalImage).width(900).quality(85).url() : undefined}
                 finalLabel={
                   section.finalLabelTitle
                     ? { title: section.finalLabelTitle, subtitle: section.finalLabelSubtitle ?? '' }
@@ -252,7 +252,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
           case 'sectionFixedImage': {
             const fixedItems: FixedImageItem[] = (section.fixedImages ?? []).map((it) => ({
               _key: it._key,
-              imageUrl: it.image?.asset ? urlFor(it.image).width(2000).quality(85).url() : undefined,
+              imageUrl: hasAsset(it.image) ? urlFor(it.image).width(2000).quality(85).url() : undefined,
               title: it.title ?? undefined,
               text: it.text ?? undefined,
               startColumn: it.startColumn ?? undefined,
@@ -310,7 +310,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
                 body={section.body ?? undefined}
                 youtubeUrl={section.youtubeUrl ?? undefined}
                 posterUrl={
-                  section.poster?.asset
+                  hasAsset(section.poster)
                     ? urlFor(section.poster).width(1280).height(720).quality(85).url()
                     : undefined
                 }
@@ -322,7 +322,7 @@ export default async function PageBuilder({ sections, locale }: Props) {
           case 'sectionScrollImage': {
             const scrollItems: ScrollImageItem[] = (section.scrollImages ?? []).map((it) => ({
               _key: it._key,
-              imageUrl: it.image?.asset ? urlFor(it.image).width(1400).quality(85).auto('format').url() : undefined,
+              imageUrl: hasAsset(it.image) ? urlFor(it.image).width(1400).quality(85).auto('format').url() : undefined,
               alt: it.image?.alt ?? '',
               aspectRatio: it.aspectRatio ?? 1,
               startColumn: it.startColumn ?? 1,

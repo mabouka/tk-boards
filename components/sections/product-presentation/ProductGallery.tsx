@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
@@ -21,7 +21,7 @@ export default function ProductGallery({
 }) {
   // Skip images with no uploaded asset — urlFor() throws on them and would crash
   // the whole page (an editor can leave alt text on an empty image field).
-  const images = rawImages.filter(hasAsset)
+  const images = useMemo(() => rawImages.filter(hasAsset), [rawImages])
   const [open, setOpen] = useState(false)
   const [index, setIndex] = useState(0)
 
