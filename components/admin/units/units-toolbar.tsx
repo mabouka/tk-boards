@@ -209,7 +209,7 @@ export function UnitsToolbar({
         </DialogContent>
       </Dialog>
 
-      <Button variant="ghost" onClick={runExport} disabled={pending}>
+      <Button variant="outline" onClick={runExport} disabled={pending}>
         <Download className="size-4" /> Exporter CSV
       </Button>
     </div>
