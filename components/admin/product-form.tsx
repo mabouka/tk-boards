@@ -67,7 +67,11 @@ export function ProductForm({
     if (!initial?.id) return
     const id = initial.id
     startDeleting(async () => {
-      await deleteProduct(id)
+      const res = await deleteProduct(id)
+      if (!res.ok) {
+        toast.error(res.error)
+        return
+      }
       toast.success('Produit supprimé.')
       router.push('/admin/products')
       router.refresh()

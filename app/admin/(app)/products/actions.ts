@@ -9,6 +9,7 @@ import { productInputSchema, type ProductInput } from '@/lib/admin/schemas'
 import { persistProduct } from '@/lib/admin/products-write'
 
 type SaveResult = { ok: true; id: string } | { ok: false; error: string }
+type DeleteResult = { ok: true } | { ok: false; error: string }
 
 export async function saveProduct(raw: ProductInput): Promise<SaveResult> {
   await requireAdmin()
@@ -30,8 +31,14 @@ export async function saveProduct(raw: ProductInput): Promise<SaveResult> {
   }
 }
 
-export async function deleteProduct(id: string) {
+export async function deleteProduct(id: string): Promise<DeleteResult> {
   await requireAdmin()
-  if (id) await db.delete(products).where(eq(products.id, id))
+  if (!id) return { ok: false, error: 'Produit introuvable.' }
+  try {
+    await db.delete(products).where(eq(products.id, id))
+  } catch {
+    return { ok: false, error: 'Échec de la suppression.' }
+  }
   revalidatePath('/admin/products')
+  return { ok: true }
 }
