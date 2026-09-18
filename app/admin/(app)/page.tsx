@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { and, count, eq, gt, lte } from 'drizzle-orm'
 import { db } from '@/db'
-import { products, variants, units, users } from '@/db/schema'
+import { products, variants, units, users, claims } from '@/db/schema'
 import { getOrders } from '@/lib/admin/orders'
 import { formatEur } from '@/lib/format-price'
 import { fmtDate } from '@/lib/admin/format'
@@ -29,7 +29,7 @@ const ORDER_STATUS: Record<string, { label: string; variant: BadgeVariant }> = {
 }
 
 export default async function AdminDashboard() {
-  const [orders, [prod], [outStock], [lowStock], [stolen], [acct]] = await Promise.all([
+  const [orders, [prod], [outStock], [lowStock], [stolen], [acct], [openClaims]] = await Promise.all([
     getOrders(),
     db.select({ n: count() }).from(products),
     db
@@ -42,6 +42,7 @@ export default async function AdminDashboard() {
       .where(and(eq(variants.active, true), gt(variants.stock, 0), lte(variants.stock, LOW_STOCK_THRESHOLD))),
     db.select({ n: count() }).from(units).where(eq(units.status, 'stolen')),
     db.select({ n: count() }).from(users),
+    db.select({ n: count() }).from(claims).where(eq(claims.status, 'open')),
   ])
 
   const revenue = orders
@@ -60,6 +61,7 @@ export default async function AdminDashboard() {
   const alerts = [
     { label: 'Ruptures de stock', value: outStock?.n ?? 0, href: '/admin/stock', danger: true },
     { label: `Stock faible (≤ ${LOW_STOCK_THRESHOLD})`, value: lowStock?.n ?? 0, href: '/admin/stock', danger: false },
+    { label: 'Réclamations ouvertes', value: openClaims?.n ?? 0, href: '/admin/theft', danger: true },
     { label: 'Planches perdues / volées', value: stolen?.n ?? 0, href: '/admin/theft', danger: true },
     { label: 'Produits au catalogue', value: prod?.n ?? 0, href: '/admin/products', danger: false },
   ]
