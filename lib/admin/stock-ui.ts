@@ -4,6 +4,9 @@
 export type StockStatus = 'out' | 'low' | 'ok'
 export type StockFilter = 'all' | 'low' | 'out'
 
+/** At or below this quantity (but not 0) a variant counts as "low stock". */
+export const LOW_STOCK_THRESHOLD = 5
+
 /** Inventory status for a quantity against the low-stock threshold. */
 export function stockStatus(value: number, lowThreshold: number): StockStatus {
   if (value === 0) return 'out'

@@ -1,8 +1,7 @@
 import { getStockRows } from '@/lib/admin/stock'
 import { StockTable } from '@/components/admin/stock/stock-table'
+import { LOW_STOCK_THRESHOLD as LOW } from '@/lib/admin/stock-ui'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/admin/ui/card'
-
-const LOW = 5
 
 const eur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
