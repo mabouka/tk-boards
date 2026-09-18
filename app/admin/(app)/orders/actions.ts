@@ -22,8 +22,6 @@ import { trackingUrlFor } from '@/lib/carriers'
 import { countryLabel } from '@/lib/countries'
 import { stripe } from '@/lib/stripe'
 import { vatBreakdown } from '@/lib/vat'
-import { getOrders } from '@/lib/admin/orders'
-import { buildCsv } from '@/lib/csv'
 
 const STATUSES = [
   'pending_payment',
@@ -436,25 +434,4 @@ export async function createManualOrder(
 
   revalidatePath('/admin/orders')
   return { ok: true, id: created.id }
-}
-
-// ── CSV export of all orders (accounting / bookkeeping) ──
-// Raw numeric totals and ISO dates so the file drops straight into a spreadsheet.
-export async function exportOrdersCsv(): Promise<string> {
-  await requireAdmin()
-  const rows = await getOrders()
-  return buildCsv(
-    ['number', 'date', 'customer', 'email', 'items', 'payment_method', 'payment_status', 'status', 'total_eur'],
-    rows.map((o) => [
-      o.number,
-      o.createdAt.toISOString(),
-      o.customer,
-      o.email,
-      o.itemCount,
-      o.paymentMethod,
-      o.paymentStatus,
-      o.status,
-      o.totalEur,
-    ])
-  )
 }

@@ -2,11 +2,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Search } from 'lucide-react'
+import { Download, Search } from 'lucide-react'
 import { fmtDate } from '@/lib/admin/format'
 import { formatEur } from '@/lib/format-price'
+import { buildCsv } from '@/lib/csv'
+import { downloadTextFile } from '@/lib/download'
 import type { AdminOrderRow } from '@/lib/admin/orders'
 import { Badge } from '@/components/admin/ui/badge'
+import { Button } from '@/components/admin/ui/button'
 import { Card } from '@/components/admin/ui/card'
 import { Input } from '@/components/admin/ui/input'
 import {
@@ -40,6 +43,26 @@ export function OrdersTable({ orders }: { orders: AdminOrderRow[] }) {
         o.email.toLowerCase().includes(needle))
   )
 
+  // Export exactly what's on screen (current search + status filter), built from
+  // the already-loaded rows — so "export" matches the view, not the whole table.
+  const exportCsv = () => {
+    const csv = buildCsv(
+      ['number', 'date', 'customer', 'email', 'items', 'payment_method', 'payment_status', 'status', 'total_eur'],
+      shown.map((o) => [
+        o.number,
+        o.createdAt.toISOString(),
+        o.customer,
+        o.email,
+        o.itemCount,
+        o.paymentMethod,
+        o.paymentStatus,
+        o.status,
+        o.totalEur,
+      ])
+    )
+    downloadTextFile(`commandes-${new Date().toISOString().slice(0, 10)}.csv`, csv)
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -65,6 +88,14 @@ export function OrdersTable({ orders }: { orders: AdminOrderRow[] }) {
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          className="ml-auto"
+          onClick={exportCsv}
+          disabled={shown.length === 0}
+        >
+          <Download className="size-4" /> Exporter ({shown.length})
+        </Button>
       </div>
 
       <Card>
