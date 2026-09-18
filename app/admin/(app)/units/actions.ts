@@ -2,7 +2,7 @@
 
 import { randomBytes } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
-import { asc, desc, eq } from 'drizzle-orm'
+import { asc, desc, eq, inArray } from 'drizzle-orm'
 import { db } from '@/db'
 import { units, variants, products } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
@@ -106,6 +106,26 @@ export async function updateUnit(
   }
   revalidatePath('/admin/units')
   return { ok: true }
+}
+
+// ── Delete units (single or bulk) ──
+// Irreversible. The FK onDelete rules cascade the delete to each unit's
+// registrations, claims and transfers — so deleting a *registered* unit also
+// removes the owner's board and its history. Admin-only.
+export type DeleteResult = { ok: true; count: number } | { ok: false; error: string }
+
+export async function deleteUnits(ids: string[]): Promise<DeleteResult> {
+  await requireAdmin()
+  const unique = [...new Set((ids ?? []).filter((id): id is string => typeof id === 'string' && id.length > 0))]
+  if (unique.length === 0) return { ok: false, error: 'Aucune unité sélectionnée.' }
+
+  try {
+    const deleted = await db.delete(units).where(inArray(units.id, unique)).returning({ id: units.id })
+    revalidatePath('/admin/units')
+    return { ok: true, count: deleted.length }
+  } catch {
+    return { ok: false, error: 'Échec de la suppression.' }
+  }
 }
 
 // ── CSV export of the full registry ──

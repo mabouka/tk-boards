@@ -3,13 +3,14 @@
 import { useState, useTransition } from 'react'
 import { fmtDate } from '@/lib/admin/format'
 import { toast } from 'sonner'
-import { Check, Copy, Search } from 'lucide-react'
+import { Check, Copy, Search, Trash2 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
-import { updateUnit } from '@/app/admin/(app)/units/actions'
+import { updateUnit, deleteUnits } from '@/app/admin/(app)/units/actions'
 import type { BoardVariant, UnitRow } from '@/lib/admin/units'
 import { Badge } from '@/components/admin/ui/badge'
 import { Button } from '@/components/admin/ui/button'
 import { Card } from '@/components/admin/ui/card'
+import { Checkbox } from '@/components/admin/ui/checkbox'
 import { Input } from '@/components/admin/ui/input'
 import { Label } from '@/components/admin/ui/label'
 import {
@@ -68,6 +69,10 @@ export function UnitsTable({
   const [serial, setSerial] = useState('')
   const [err, setErr] = useState<string | null>(null)
 
+  // Selection (bulk) + delete-confirmation state
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [confirmIds, setConfirmIds] = useState<string[] | null>(null)
+
   const needle = q.trim().toLowerCase()
   const shown = units.filter(
     (u) =>
@@ -108,6 +113,44 @@ export function UnitsTable({
     })
   }
 
+  const toggle = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+
+  const allShownSelected = shown.length > 0 && shown.every((u) => selected.has(u.id))
+  const someShownSelected = shown.some((u) => selected.has(u.id))
+  const toggleAllShown = () =>
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (allShownSelected) shown.forEach((u) => next.delete(u.id))
+      else shown.forEach((u) => next.add(u.id))
+      return next
+    })
+
+  // Units targeted by the open confirmation, and how many carry an owner (their
+  // registration + history is cascade-deleted along with the unit).
+  const confirmUnits = confirmIds ? units.filter((u) => confirmIds.includes(u.id)) : []
+  const ownedCount = confirmUnits.filter((u) => u.ownerEmail).length
+
+  const runDelete = () => {
+    if (!confirmIds || confirmIds.length === 0) return
+    startTransition(async () => {
+      const res = await deleteUnits(confirmIds)
+      if (res.ok) {
+        toast.success(res.count > 1 ? `${res.count} unités supprimées.` : 'Unité supprimée.')
+        setConfirmIds(null)
+        setSelected(new Set())
+        setEditing(null)
+      } else {
+        toast.error(res.error)
+      }
+    })
+  }
+
   const isAssign = editing?.status === 'minted'
 
   return (
@@ -136,10 +179,36 @@ export function UnitsTable({
         </Select>
       </div>
 
+      {selected.size > 0 && (
+        <div className="bg-muted/40 flex flex-wrap items-center gap-3 rounded-md border px-3 py-2">
+          <span className="text-sm font-medium">
+            {selected.size} sélectionnée{selected.size > 1 ? 's' : ''}
+          </span>
+          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+            Tout désélectionner
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="ml-auto"
+            onClick={() => setConfirmIds([...selected])}
+          >
+            <Trash2 className="size-4" /> Supprimer ({selected.size})
+          </Button>
+        </div>
+      )}
+
       <Card>
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allShownSelected ? true : someShownSelected ? 'indeterminate' : false}
+                  onCheckedChange={toggleAllShown}
+                  aria-label="Tout sélectionner"
+                />
+              </TableHead>
               <TableHead>Token</TableHead>
               <TableHead>Board</TableHead>
               <TableHead>Série</TableHead>
@@ -152,7 +221,7 @@ export function UnitsTable({
           <TableBody>
             {shown.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-muted-foreground py-10 text-center text-sm">
+                <TableCell colSpan={8} className="text-muted-foreground py-10 text-center text-sm">
                   Aucune unité.
                 </TableCell>
               </TableRow>
@@ -161,6 +230,13 @@ export function UnitsTable({
                 const s = STATUS[u.status] ?? { label: u.status, variant: 'outline' as const }
                 return (
                   <TableRow key={u.id} onClick={() => openEdit(u)} className="cursor-pointer">
+                    <TableCell onClick={(e) => e.stopPropagation()} className="w-10">
+                      <Checkbox
+                        checked={selected.has(u.id)}
+                        onCheckedChange={() => toggle(u.id)}
+                        aria-label="Sélectionner l’unité"
+                      />
+                    </TableCell>
                     <TableCell>
                       <button
                         type="button"
@@ -280,10 +356,51 @@ export function UnitsTable({
               </div>
             )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="sm:justify-between">
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (editing) {
+                  setConfirmIds([editing.id])
+                  setEditing(null)
+                }
+              }}
+              disabled={pending}
+            >
+              <Trash2 className="size-4" /> Supprimer
+            </Button>
             <Button onClick={submit} disabled={pending}>
               <Check className="size-4" />{' '}
               {pending ? 'Enregistrement…' : isAssign ? 'Assigner' : 'Enregistrer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmIds !== null} onOpenChange={(o) => !o && setConfirmIds(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Supprimer {confirmUnits.length > 1 ? `${confirmUnits.length} unités` : 'cette unité'} ?
+            </DialogTitle>
+            <DialogDescription>
+              Action irréversible. {confirmUnits.length > 1 ? 'Ces tokens NFC' : 'Ce token NFC'} et leurs
+              données seront définitivement supprimés.
+            </DialogDescription>
+          </DialogHeader>
+          {ownedCount > 0 && (
+            <p className="text-destructive text-sm">
+              ⚠️ {ownedCount > 1 ? `${ownedCount} unités sont enregistrées` : 'Une unité est enregistrée'} :
+              la planche disparaîtra du compte {ownedCount > 1 ? 'des propriétaires' : 'du propriétaire'}{' '}
+              (enregistrement, réclamations et transferts inclus).
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmIds(null)} disabled={pending}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={runDelete} disabled={pending}>
+              <Trash2 className="size-4" /> {pending ? 'Suppression…' : 'Supprimer'}
             </Button>
           </DialogFooter>
         </DialogContent>
