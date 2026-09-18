@@ -2,7 +2,7 @@ import styles from './design-system.module.css'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
 import { boardBySlugQuery } from '@/sanity/lib/queries'
-import { urlFor } from '@/sanity/lib/image'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import type { SanityImage, PortableTextValue } from '@/sanity/lib/types'
 import SectionTextGallery from '@/components/sections/text-gallery/SectionTextGallery'
 import SectionTextImage from '@/components/sections/text-image/SectionTextImage'
@@ -41,7 +41,7 @@ export default async function DesignSystemPage({
   ]
   const featureItems = featureSample.map((f, i) => ({
     ...f,
-    imageUrl: galleryPreview[i % Math.max(galleryPreview.length, 1)]
+    imageUrl: hasAsset(galleryPreview[i % Math.max(galleryPreview.length, 1)])
       ? urlFor(galleryPreview[i % galleryPreview.length]).width(900).height(628).quality(85).url()
       : undefined,
   }))
@@ -337,7 +337,7 @@ export default async function DesignSystemPage({
               cta: { text: 'Discover', href: '#' },
             },
             {
-              imageUrl: galleryPreview[0]
+              imageUrl: hasAsset(galleryPreview[0])
                 ? urlFor(galleryPreview[0]).width(2000).quality(85).url()
                 : '/samples/rocket.png',
               title: 'Paulownia core',
@@ -346,7 +346,7 @@ export default async function DesignSystemPage({
               verticalPosition: 40,
             },
             {
-              imageUrl: galleryPreview[1]
+              imageUrl: hasAsset(galleryPreview[1])
                 ? urlFor(galleryPreview[1]).width(2000).quality(85).url()
                 : '/samples/rocket.png',
               title: 'Centered block',
