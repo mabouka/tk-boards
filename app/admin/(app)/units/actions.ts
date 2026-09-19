@@ -4,10 +4,12 @@ import { randomBytes } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { asc, desc, eq, inArray, sql } from 'drizzle-orm'
 import { db } from '@/db'
-import { units, variants, products } from '@/db/schema'
+import { units, variants, products, productAttributes, productAttributeValues, variantValues } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
 import { csvField } from '@/lib/csv'
 import { serialPrefix, formatSerial } from '@/lib/serial'
+import { buildSpecs, type UnitSpecs } from '@/lib/unit-specs'
+import { localized } from '@/lib/i18n-text'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const tagUrl = (token: string) => `${BASE}/tk-id/${token}`
@@ -38,6 +40,31 @@ async function nextSerial(productSku: string): Promise<string> {
 }
 
 const isDupSerial = (e: unknown) => e instanceof Error && /unique|duplicate/i.test(e.message)
+
+/** Physical snapshot of a variant's axes (stable codes + FR labels — the admin is
+ *  FR-only), stored on the unit at assignment so it outlives catalogue changes. */
+async function variantSpecs(productSku: string, variantId: string): Promise<UnitSpecs> {
+  const rows = await db
+    .select({
+      code: productAttributes.code,
+      name: productAttributes.nameI18n,
+      value: productAttributeValues.code,
+      label: productAttributeValues.labelI18n,
+    })
+    .from(variantValues)
+    .innerJoin(productAttributes, eq(productAttributes.id, variantValues.attributeId))
+    .innerJoin(productAttributeValues, eq(productAttributeValues.id, variantValues.valueId))
+    .where(eq(variantValues.variantId, variantId))
+  return buildSpecs(
+    productSku,
+    rows.map((r) => ({
+      code: r.code,
+      name: localized(r.name, 'fr', r.code),
+      value: r.value,
+      label: localized(r.label, 'fr', r.value),
+    }))
+  )
+}
 
 // ── Mode 1: mint a batch of tokens (status = minted) ──
 export type BatchResult =
@@ -75,6 +102,7 @@ export async function addUnit(input: AddInput): Promise<AssignResult> {
   if (!input.variantId) return { ok: false, error: 'Variante requise.' }
   const info = await variantInfo(input.variantId)
   if (info?.kind !== 'board') return { ok: false, error: 'Variante non-board.' }
+  const specs = await variantSpecs(info.sku, input.variantId)
 
   // Blank serial → auto-generate "SN-<model>-<year>-<seq>". Retry on a concurrent
   // collision (the unique index rejects the duplicate); a manual serial never retries.
@@ -86,12 +114,12 @@ export async function addUnit(input: AddInput): Promise<AssignResult> {
         if (!input.existingUnitId) return { ok: false, error: 'Token manquant.' }
         await db
           .update(units)
-          .set({ variantId: input.variantId, serial, status: 'provisioned' })
+          .set({ variantId: input.variantId, serial, specs, status: 'provisioned' })
           .where(eq(units.id, input.existingUnitId))
       } else {
         await db
           .insert(units)
-          .values({ token: newToken(), variantId: input.variantId, serial, status: 'provisioned' })
+          .values({ token: newToken(), variantId: input.variantId, serial, specs, status: 'provisioned' })
       }
       revalidatePath('/admin/units')
       return { ok: true }
@@ -121,13 +149,14 @@ export async function updateUnit(
   const [u] = await db.select({ status: units.status }).from(units).where(eq(units.id, unitId)).limit(1)
   if (!u) return { ok: false, error: 'Unité introuvable.' }
   const status = u.status === 'minted' ? 'provisioned' : u.status
+  const specs = await variantSpecs(info.sku, variantId)
 
   // Blank serial → auto-generate (e.g. assigning a minted tag). Same retry as addUnit.
   const manual = serial?.trim()
   for (let attempt = 0; attempt < 5; attempt++) {
     const s = manual || (await nextSerial(info.sku))
     try {
-      await db.update(units).set({ variantId, serial: s, status }).where(eq(units.id, unitId))
+      await db.update(units).set({ variantId, serial: s, specs, status }).where(eq(units.id, unitId))
       revalidatePath('/admin/units')
       return { ok: true }
     } catch (e) {
@@ -159,6 +188,31 @@ export async function deleteUnits(ids: string[]): Promise<DeleteResult> {
   } catch {
     return { ok: false, error: 'Échec de la suppression.' }
   }
+}
+
+// ── One-time backfill: snapshot specs for units assigned before this shipped ──
+// Fills only NULL specs, from each unit's current variant axes, so it's safe to
+// run again. New assignments already capture specs in addUnit/updateUnit.
+export type BackfillResult = { ok: true; updated: number } | { ok: false; error: string }
+
+export async function backfillUnitSpecs(): Promise<BackfillResult> {
+  await requireAdmin()
+  const rows = await db
+    .select({ id: units.id, variantId: units.variantId, sku: products.sku })
+    .from(units)
+    .innerJoin(variants, eq(variants.id, units.variantId))
+    .innerJoin(products, eq(products.id, variants.productId))
+    .where(sql`${units.specs} is null`)
+
+  let updated = 0
+  for (const r of rows) {
+    if (!r.variantId) continue
+    const specs = await variantSpecs(r.sku, r.variantId)
+    await db.update(units).set({ specs }).where(eq(units.id, r.id))
+    updated++
+  }
+  revalidatePath('/admin/units')
+  return { ok: true, updated }
 }
 
 // ── CSV export of the full registry ──

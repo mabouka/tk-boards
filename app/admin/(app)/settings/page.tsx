@@ -1,5 +1,6 @@
 import { eshopEnabled } from '@/lib/eshop'
 import { SettingToggle } from '@/components/admin/settings/setting-toggle'
+import { BackfillSpecsButton } from '@/components/admin/settings/backfill-specs-button'
 import { setEshopEnabled } from './actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/admin/ui/card'
 
@@ -35,6 +36,20 @@ export default async function SettingsPage() {
             successOn="Boutique activée."
             successOff="Boutique désactivée."
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Maintenance</CardTitle>
+          <CardDescription>
+            Enregistre les caractéristiques (couleur, taille…) sur les planches déjà pucées qui n’en
+            ont pas encore, à partir de leur variante actuelle — pour que leur identité survive aux
+            évolutions du catalogue. Sans effet sur celles déjà à jour ; peut être relancé sans risque.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BackfillSpecsButton />
         </CardContent>
       </Card>
     </div>
