@@ -189,12 +189,12 @@ export function UnitsToolbar({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="serial">Numéro de série</Label>
+              <Label htmlFor="serial">Numéro de série (auto si vide)</Label>
               <Input
                 id="serial"
                 value={serial}
                 onChange={(e) => setSerial(e.target.value)}
-                placeholder="SN-…"
+                placeholder="Auto — ex. SN-RKT-2026-0001"
                 className="font-mono"
               />
             </div>

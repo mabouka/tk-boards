@@ -2,25 +2,42 @@
 
 import { randomBytes } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
-import { asc, desc, eq, inArray } from 'drizzle-orm'
+import { asc, desc, eq, inArray, sql } from 'drizzle-orm'
 import { db } from '@/db'
 import { units, variants, products } from '@/db/schema'
 import { requireAdmin } from '@/lib/require-admin'
 import { csvField } from '@/lib/csv'
+import { serialPrefix, formatSerial } from '@/lib/serial'
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 const tagUrl = (token: string) => `${BASE}/tk-id/${token}`
 const newToken = () => randomBytes(12).toString('base64url') // ~16 chars, URL-safe, unguessable
 
-async function isBoardVariant(variantId: string): Promise<boolean> {
+/** The variant's product kind + parent SKU (for the board check and serial model). */
+async function variantInfo(variantId: string): Promise<{ kind: string | null; sku: string } | null> {
   const [v] = await db
-    .select({ kind: products.kind })
+    .select({ kind: products.kind, sku: products.sku })
     .from(variants)
     .innerJoin(products, eq(products.id, variants.productId))
     .where(eq(variants.id, variantId))
     .limit(1)
-  return v?.kind === 'board'
+  return v ?? null
 }
+
+/** Next serial for a product's model + current year, from the highest suffix
+ *  already issued (not a row count — gaps would reuse a number). The unique index
+ *  on unit.serial is the concurrency backstop; the caller retries on collision. */
+async function nextSerial(productSku: string): Promise<string> {
+  const prefix = serialPrefix(productSku, new Date().getFullYear())
+  const [row] = await db
+    .select({ last: sql<number | null>`max(cast(substring(${units.serial} from '[0-9]+$') as integer))` })
+    .from(units)
+    .where(sql`${units.serial} like ${`${prefix}%`}`)
+  const seq = Number(row?.last ?? 0)
+  return formatSerial(prefix, (Number.isFinite(seq) ? seq : 0) + 1)
+}
+
+const isDupSerial = (e: unknown) => e instanceof Error && /unique|duplicate/i.test(e.message)
 
 // ── Mode 1: mint a batch of tokens (status = minted) ──
 export type BatchResult =
@@ -55,30 +72,38 @@ type AddInput = {
 
 export async function addUnit(input: AddInput): Promise<AssignResult> {
   await requireAdmin()
-  const serial = input.serial?.trim()
-  if (!input.variantId || !serial) return { ok: false, error: 'Variante et série requises.' }
-  if (!(await isBoardVariant(input.variantId))) return { ok: false, error: 'Variante non-board.' }
+  if (!input.variantId) return { ok: false, error: 'Variante requise.' }
+  const info = await variantInfo(input.variantId)
+  if (info?.kind !== 'board') return { ok: false, error: 'Variante non-board.' }
 
-  try {
-    if (input.tokenMode === 'existing') {
-      if (!input.existingUnitId) return { ok: false, error: 'Token manquant.' }
-      await db
-        .update(units)
-        .set({ variantId: input.variantId, serial, status: 'provisioned' })
-        .where(eq(units.id, input.existingUnitId))
-    } else {
-      await db
-        .insert(units)
-        .values({ token: newToken(), variantId: input.variantId, serial, status: 'provisioned' })
+  // Blank serial → auto-generate "SN-<model>-<year>-<seq>". Retry on a concurrent
+  // collision (the unique index rejects the duplicate); a manual serial never retries.
+  const manual = input.serial?.trim()
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const serial = manual || (await nextSerial(info.sku))
+    try {
+      if (input.tokenMode === 'existing') {
+        if (!input.existingUnitId) return { ok: false, error: 'Token manquant.' }
+        await db
+          .update(units)
+          .set({ variantId: input.variantId, serial, status: 'provisioned' })
+          .where(eq(units.id, input.existingUnitId))
+      } else {
+        await db
+          .insert(units)
+          .values({ token: newToken(), variantId: input.variantId, serial, status: 'provisioned' })
+      }
+      revalidatePath('/admin/units')
+      return { ok: true }
+    } catch (e) {
+      if (isDupSerial(e)) {
+        if (manual) return { ok: false, error: 'Cette série est déjà utilisée.' }
+        continue // auto-generated serial collided — recompute and retry
+      }
+      return { ok: false, error: 'Échec de l’enregistrement.' }
     }
-  } catch (e) {
-    const msg = e instanceof Error && /unique|duplicate/i.test(e.message)
-      ? 'Cette série est déjà utilisée.'
-      : 'Échec de l’enregistrement.'
-    return { ok: false, error: msg }
   }
-  revalidatePath('/admin/units')
-  return { ok: true }
+  return { ok: false, error: 'Génération de série épuisée, réessaie.' }
 }
 
 // Assign or edit a unit's board variant + serial. A minted tag becomes provisioned
@@ -89,24 +114,31 @@ export async function updateUnit(
   serial: string
 ): Promise<AssignResult> {
   await requireAdmin()
-  const s = serial?.trim()
-  if (!unitId || !variantId || !s) return { ok: false, error: 'Variante et série requises.' }
-  if (!(await isBoardVariant(variantId))) return { ok: false, error: 'Variante non-board.' }
+  if (!unitId || !variantId) return { ok: false, error: 'Variante requise.' }
+  const info = await variantInfo(variantId)
+  if (info?.kind !== 'board') return { ok: false, error: 'Variante non-board.' }
 
   const [u] = await db.select({ status: units.status }).from(units).where(eq(units.id, unitId)).limit(1)
   if (!u) return { ok: false, error: 'Unité introuvable.' }
   const status = u.status === 'minted' ? 'provisioned' : u.status
 
-  try {
-    await db.update(units).set({ variantId, serial: s, status }).where(eq(units.id, unitId))
-  } catch (e) {
-    const msg = e instanceof Error && /unique|duplicate/i.test(e.message)
-      ? 'Cette série est déjà utilisée.'
-      : 'Échec de l’enregistrement.'
-    return { ok: false, error: msg }
+  // Blank serial → auto-generate (e.g. assigning a minted tag). Same retry as addUnit.
+  const manual = serial?.trim()
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const s = manual || (await nextSerial(info.sku))
+    try {
+      await db.update(units).set({ variantId, serial: s, status }).where(eq(units.id, unitId))
+      revalidatePath('/admin/units')
+      return { ok: true }
+    } catch (e) {
+      if (isDupSerial(e)) {
+        if (manual) return { ok: false, error: 'Cette série est déjà utilisée.' }
+        continue
+      }
+      return { ok: false, error: 'Échec de l’enregistrement.' }
+    }
   }
-  revalidatePath('/admin/units')
-  return { ok: true }
+  return { ok: false, error: 'Génération de série épuisée, réessaie.' }
 }
 
 // ── Delete units (single or bulk) ──
