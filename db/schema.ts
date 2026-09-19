@@ -11,6 +11,7 @@ import {
   uniqueIndex,
   index,
 } from 'drizzle-orm/pg-core'
+import type { UnitSpecs } from '@/lib/unit-specs'
 
 /** Multilingual label stored inline, e.g. { fr: 'Bleu', en: 'Blue', es: 'Azul' }. */
 export type I18nText = Record<string, string>
@@ -297,6 +298,10 @@ export const units = pgTable(
     token: text('token').notNull(), // opaque, in the NFC tag
     variantId: text('variant_id').references(() => variants.id, { onDelete: 'set null' }),
     serial: text('serial'),
+    // Physical snapshot captured at assignment (axes with stable code + display
+    // label) — keeps a board's identity even if its variant is renamed, archived
+    // or gains a new axis later. NULL until assigned. See lib/unit-specs.
+    specs: jsonb('specs').$type<UnitSpecs>(),
     status: text('status').notNull().default('minted'), // minted|provisioned|registered|stolen|transferred
     // Owner-provided lost/stolen report, shown on the public TK-ID page; cleared on recovery.
     lostNote: text('lost_note'),
