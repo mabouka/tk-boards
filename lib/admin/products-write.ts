@@ -12,6 +12,7 @@ import {
 } from '@/db/schema'
 import type { ProductInput } from './schemas'
 import { i18n } from '@/lib/i18n-text'
+import { planVariantReconciliation } from './variant-reconcile'
 import type { AnyPgDatabase } from '@/lib/db-types'
 
 /**
@@ -64,7 +65,6 @@ export async function persistProduct(db: AnyPgDatabase, input: ProductInput): Pr
     .select({ id: variants.id, sku: variants.sku })
     .from(variants)
     .where(eq(variants.productId, productId))
-  const existingBySku = new Map(existing.map((v) => [v.sku, v]))
 
   // Attributes + values are rebuilt wholesale each save; deleting them cascades to
   // variant_value, clearing every variant's axis links (the variants themselves stay).
@@ -103,47 +103,45 @@ export async function persistProduct(db: AnyPgDatabase, input: ProductInput): Pr
     }
   }
 
-  // 4. Reconcile variants by SKU (preserve identity → keep NFC units linked).
-  const desiredSkus = new Set(input.variants.map((v) => v.sku))
-
-  // 4a. A variant whose SKU disappeared: archive it (active=false) if it still has
-  //     NFC units or order lines — never orphan a produced board — else hard-delete it.
-  const gone = existing.filter((v) => !desiredSkus.has(v.sku))
-  if (gone.length) {
-    const goneIds = gone.map((v) => v.id)
-    const referenced = new Set<string>()
+  // 4. Reconcile variants by SKU (preserve identity → keep NFC units linked). The
+  //    reuse/insert/archive/delete decision is the pure planVariantReconciliation.
+  const existingIds = existing.map((v) => v.id)
+  const referenced = new Set<string>()
+  if (existingIds.length) {
     for (const r of await db
       .select({ v: units.variantId })
       .from(units)
-      .where(inArray(units.variantId, goneIds))) {
+      .where(inArray(units.variantId, existingIds))) {
       if (r.v) referenced.add(r.v)
     }
     for (const r of await db
       .select({ v: orderLines.variantId })
       .from(orderLines)
-      .where(inArray(orderLines.variantId, goneIds))) {
+      .where(inArray(orderLines.variantId, existingIds))) {
       if (r.v) referenced.add(r.v)
     }
-    const toArchive = goneIds.filter((id) => referenced.has(id))
-    const toDelete = goneIds.filter((id) => !referenced.has(id))
-    if (toArchive.length) {
-      await db.update(variants).set({ active: false }).where(inArray(variants.id, toArchive))
-    }
-    if (toDelete.length) await db.delete(variants).where(inArray(variants.id, toDelete))
   }
+  const plan = planVariantReconciliation(existing, input.variants.map((v) => v.sku), referenced)
 
-  // 4b. Update matched SKUs in place (id preserved → units stay linked); insert new
-  //     SKUs at stock 0. Stock is owned by /admin/stock and is never touched here.
+  // 4a. Drop unwanted SKUs: archive those still referenced (never orphan a produced
+  //     board), hard-delete the rest.
+  if (plan.archive.length) {
+    await db.update(variants).set({ active: false }).where(inArray(variants.id, plan.archive))
+  }
+  if (plan.delete.length) await db.delete(variants).where(inArray(variants.id, plan.delete))
+
+  // 4b. Upsert wanted variants: reuse the matched id (UPDATE in place → units stay
+  //     linked) or insert a new one (stock 0; inventory is owned by /admin/stock).
   for (let i = 0; i < input.variants.length; i++) {
     const ev = input.variants[i]
-    const match = existingBySku.get(ev.sku)
+    const reuseId = plan.reuseIdBySku.get(ev.sku)
     let variantId: string
-    if (match) {
+    if (reuseId) {
       await db
         .update(variants)
         .set({ priceEur: ev.priceEur, salePriceEur: ev.salePriceEur, active: ev.active, sortOrder: i })
-        .where(eq(variants.id, match.id))
-      variantId = match.id
+        .where(eq(variants.id, reuseId))
+      variantId = reuseId
     } else {
       const [v] = await db
         .insert(variants)
