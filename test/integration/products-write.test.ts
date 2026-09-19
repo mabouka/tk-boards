@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { eq } from 'drizzle-orm'
-import { variants } from '@/db/schema'
+import { variants, units } from '@/db/schema'
 import { persistProduct } from '@/lib/admin/products-write'
 import type { ProductInput } from '@/lib/admin/schemas'
 import { makeTestDb, truncateAll } from './db'
@@ -77,6 +77,44 @@ describe('persistProduct — inventory preservation', () => {
     await persistProduct(db, boardInput(['S'], id)) // size M removed
 
     expect(await stockBySku(id)).toEqual({ 'BX-S': 0 })
+  })
+})
+
+describe('persistProduct — NFC unit identity across a re-save', () => {
+  async function variantIdBySku(sku: string): Promise<string> {
+    const [v] = await db.select({ id: variants.id }).from(variants).where(eq(variants.sku, sku))
+    return v.id
+  }
+
+  it('keeps a unit linked to its variant when the product is edited (matched SKU)', async () => {
+    const id = await persistProduct(db, boardInput(['S', 'M']))
+    const vSku = await variantIdBySku('BX-S')
+    // A produced, NFC-chipped board assigned to BX-S.
+    await db.insert(units).values({ token: 'tok-keep', variantId: vSku, serial: 'SN-1', status: 'registered' })
+
+    // Edit the product (add a size) — the classic re-save.
+    await persistProduct(db, boardInput(['S', 'M', 'L'], id))
+
+    const [u] = await db.select({ variantId: units.variantId }).from(units).where(eq(units.token, 'tok-keep'))
+    expect(u.variantId).toBe(vSku) // same id preserved…
+    expect(u.variantId).toBe(await variantIdBySku('BX-S')) // …and still the current BX-S variant
+  })
+
+  it('archives (not deletes) a variant that has a unit when its SKU is removed', async () => {
+    const id = await persistProduct(db, boardInput(['S', 'M']))
+    const vM = await variantIdBySku('BX-M')
+    await db.insert(units).values({ token: 'tok-arch', variantId: vM, serial: 'SN-2', status: 'registered' })
+
+    await persistProduct(db, boardInput(['S'], id)) // drop size M
+
+    const [vMafter] = await db
+      .select({ id: variants.id, active: variants.active })
+      .from(variants)
+      .where(eq(variants.sku, 'BX-M'))
+    expect(vMafter).toBeDefined() // still there, not deleted
+    expect(vMafter.active).toBe(false) // archived
+    const [u] = await db.select({ variantId: units.variantId }).from(units).where(eq(units.token, 'tok-arch'))
+    expect(u.variantId).toBe(vM) // unit still linked
   })
 })
 

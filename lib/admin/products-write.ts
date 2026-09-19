@@ -7,6 +7,8 @@ import {
   variantValues,
   productOptions,
   productLinks,
+  units,
+  orderLines,
 } from '@/db/schema'
 import type { ProductInput } from './schemas'
 import { i18n } from '@/lib/i18n-text'
@@ -14,9 +16,12 @@ import type { AnyPgDatabase } from '@/lib/db-types'
 
 /**
  * Persist the full product tree (product → attributes → values → variants → links
- * + paid add-ons) as a full replace, while preserving inventory: stock is owned by
- * /admin/stock, not the product model, so it's carried over by SKU. New SKUs start
- * at 0. Returns the product id; throws on DB errors (caller maps the message).
+ * + paid add-ons). Attributes/values are fully replaced, but VARIANTS are upserted
+ * by SKU so each keeps its id — NFC units (units.variantId) and order history stay
+ * linked across an edit. A variant whose SKU is dropped is archived (active=false)
+ * when it still has units/orders, else hard-deleted. Stock is owned by /admin/stock:
+ * matched SKUs keep theirs, new SKUs start at 0. Returns the product id; throws on
+ * DB errors (caller maps the message).
  */
 export async function persistProduct(db: AnyPgDatabase, input: ProductInput): Promise<string> {
   // 0. Pre-flight, BEFORE any write. neon-http has no transactions and step 2 below
@@ -53,19 +58,17 @@ export async function persistProduct(db: AnyPgDatabase, input: ProductInput): Pr
     productId = created.id
   }
 
-  // 2. Wipe the catalog subtree (full replace), but preserve inventory:
-  //    stock is owned by /admin/stock, not by the product model — carry it over by SKU.
+  // 2. Read existing variants — we upsert them by SKU (never blanket-delete) so a
+  //    re-save keeps each variant's id, and with it its NFC units and order history.
   const existing = await db
-    .select({ id: variants.id, sku: variants.sku, stock: variants.stock })
+    .select({ id: variants.id, sku: variants.sku })
     .from(variants)
     .where(eq(variants.productId, productId))
-  const stockBySku = new Map(existing.map((v) => [v.sku, v.stock]))
-  const existingIds = existing.map((v) => v.id)
-  if (existingIds.length) {
-    await db.delete(variantValues).where(inArray(variantValues.variantId, existingIds))
-  }
-  await db.delete(variants).where(eq(variants.productId, productId))
-  await db.delete(productAttributes).where(eq(productAttributes.productId, productId)) // cascades values
+  const existingBySku = new Map(existing.map((v) => [v.sku, v]))
+
+  // Attributes + values are rebuilt wholesale each save; deleting them cascades to
+  // variant_value, clearing every variant's axis links (the variants themselves stay).
+  await db.delete(productAttributes).where(eq(productAttributes.productId, productId)) // cascades values + variant_value
 
   // 3. Recreate attributes + values, tracking generated ids.
   const attrIdByCode = new Map<string, string>()
@@ -100,25 +103,66 @@ export async function persistProduct(db: AnyPgDatabase, input: ProductInput): Pr
     }
   }
 
-  // 4. Recreate variants + their value links.
+  // 4. Reconcile variants by SKU (preserve identity → keep NFC units linked).
+  const desiredSkus = new Set(input.variants.map((v) => v.sku))
+
+  // 4a. A variant whose SKU disappeared: archive it (active=false) if it still has
+  //     NFC units or order lines — never orphan a produced board — else hard-delete it.
+  const gone = existing.filter((v) => !desiredSkus.has(v.sku))
+  if (gone.length) {
+    const goneIds = gone.map((v) => v.id)
+    const referenced = new Set<string>()
+    for (const r of await db
+      .select({ v: units.variantId })
+      .from(units)
+      .where(inArray(units.variantId, goneIds))) {
+      if (r.v) referenced.add(r.v)
+    }
+    for (const r of await db
+      .select({ v: orderLines.variantId })
+      .from(orderLines)
+      .where(inArray(orderLines.variantId, goneIds))) {
+      if (r.v) referenced.add(r.v)
+    }
+    const toArchive = goneIds.filter((id) => referenced.has(id))
+    const toDelete = goneIds.filter((id) => !referenced.has(id))
+    if (toArchive.length) {
+      await db.update(variants).set({ active: false }).where(inArray(variants.id, toArchive))
+    }
+    if (toDelete.length) await db.delete(variants).where(inArray(variants.id, toDelete))
+  }
+
+  // 4b. Update matched SKUs in place (id preserved → units stay linked); insert new
+  //     SKUs at stock 0. Stock is owned by /admin/stock and is never touched here.
   for (let i = 0; i < input.variants.length; i++) {
     const ev = input.variants[i]
-    const [v] = await db
-      .insert(variants)
-      .values({
-        productId,
-        sku: ev.sku,
-        priceEur: ev.priceEur,
-        salePriceEur: ev.salePriceEur,
-        stock: stockBySku.get(ev.sku) ?? 0, // preserved from inventory, default 0 for new SKUs
-        active: ev.active,
-        sortOrder: i,
-      })
-      .returning({ id: variants.id })
+    const match = existingBySku.get(ev.sku)
+    let variantId: string
+    if (match) {
+      await db
+        .update(variants)
+        .set({ priceEur: ev.priceEur, salePriceEur: ev.salePriceEur, active: ev.active, sortOrder: i })
+        .where(eq(variants.id, match.id))
+      variantId = match.id
+    } else {
+      const [v] = await db
+        .insert(variants)
+        .values({
+          productId,
+          sku: ev.sku,
+          priceEur: ev.priceEur,
+          salePriceEur: ev.salePriceEur,
+          stock: 0,
+          active: ev.active,
+          sortOrder: i,
+        })
+        .returning({ id: variants.id })
+      variantId = v.id
+    }
 
     const links = Object.entries(ev.combo)
       .map(([optCode, valCode]) => ({
-        variantId: v.id,
+        variantId,
         attributeId: attrIdByCode.get(optCode),
         valueId: valIdByKey.get(`${optCode}|${valCode}`),
       }))
