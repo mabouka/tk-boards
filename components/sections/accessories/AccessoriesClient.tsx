@@ -1,9 +1,5 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import AccessoryCard from './AccessoryCard'
+import FilterableCardGrid from '../_shared/FilterableCardGrid'
 import { haloProps } from '@/components/ui/halo/haloProps'
-import styles from './Accessories.module.css'
 
 // Glow behind the page title.
 const titleHalo = haloProps({ rgb: '225, 255, 255', opacity: 0.26, w: '67vw', h: '32vh', spread: '1%' })
@@ -26,6 +22,7 @@ type Props = {
   accessories: Accessory[]
 }
 
+/** Accessories listing — adapts the data onto the shared <FilterableCardGrid>. */
 export default function AccessoriesClient({
   title,
   allLabel,
@@ -33,58 +30,21 @@ export default function AccessoriesClient({
   categories,
   accessories,
 }: Props) {
-  const [active, setActive] = useState<string>('all')
-  const filtered =
-    active === 'all' ? accessories : accessories.filter((a) => a.categorySlug === active)
-
-  // Filtering adds/removes [data-halo] cards → tell the global BgHalos layer to
-  // recompute (matches the Halos.tsx / SectionOutline.tsx pattern).
-  useEffect(() => {
-    window.dispatchEvent(new Event('bg:rebuild'))
-  }, [active])
-
   return (
-    <div className={styles.accessories}>
-      <header className={styles.accessories__header}>
-        <h1 className={styles.accessories__title} {...titleHalo}>{title}</h1>
-      </header>
-
-      {showFilters && categories.length > 0 && (
-        <div className={styles.accessories__filters}>
-          <button
-            type="button"
-            className={`${styles.filter}${active === 'all' ? ` ${styles['filter--active']}` : ''}`}
-            onClick={() => setActive('all')}
-          >
-            {allLabel}
-          </button>
-          {categories
-            .filter((c) => c.slug)
-            .map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                className={`${styles.filter}${active === c.slug ? ` ${styles['filter--active']}` : ''}`}
-                onClick={() => setActive(c.slug as string)}
-              >
-                {c.name}
-              </button>
-            ))}
-        </div>
-      )}
-
-      <ul className={styles.grid}>
-        {filtered.map((a) => (
-          <li key={a._id}>
-            <AccessoryCard
-              href={`/accessories/${a.slug}`}
-              name={a.title}
-              imageUrl={a.imageUrl}
-              categoryName={a.categoryName}
-            />
-          </li>
-        ))}
-      </ul>
-    </div>
+    <FilterableCardGrid
+      title={title}
+      titleHalo={titleHalo}
+      allLabel={allLabel}
+      showFilters={showFilters}
+      filters={categories}
+      items={accessories.map((a) => ({
+        _id: a._id,
+        name: a.title,
+        href: `/accessories/${a.slug}`,
+        imageUrl: a.imageUrl,
+        tagLabel: a.categoryName,
+        filterKey: a.categorySlug,
+      }))}
+    />
   )
 }

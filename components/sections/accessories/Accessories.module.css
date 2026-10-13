@@ -30,6 +30,20 @@
   composes: u-tab-filter--active from global;
 }
 
+/* Filter pills show the full name by default and a shorter one on phones (e.g.
+   "Carbon Series" → "Carbon") so they don't wrap to two lines. */
+.filterShort {
+  display: none;
+}
+@media (max-width: 639px) {
+  .filterFull {
+    display: none;
+  }
+  .filterShort {
+    display: inline;
+  }
+}
+
 /* ── Grid ── */
 .grid {
   list-style: none;
