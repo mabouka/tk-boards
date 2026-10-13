@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import { client } from '@/sanity/lib/client'
 import { sanityCache } from '@/sanity/lib/fetch'
-import { boardsQuery, seriesQuery, boardsPageSettingsQuery } from '@/sanity/lib/queries'
+import { boardsQuery, boardSeriesListQuery, boardsPageSettingsQuery } from '@/sanity/lib/queries'
 import type { BoardsQueryResult } from '@/sanity.types'
 import { urlFor, hasAsset } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
@@ -42,7 +42,7 @@ export default async function BoardsPage({ params }: Props) {
   const [t, settings, seriesList, allBoards] = await Promise.all([
     getTranslations('boards'),
     client.fetch(boardsPageSettingsQuery, { locale }, sanityCache('boardsPageSettings')),
-    client.fetch(seriesQuery, { locale }, sanityCache('series', 'board')),
+    client.fetch(boardSeriesListQuery, { locale }, sanityCache('series', 'board')),
     client.fetch(boardsQuery, { locale }, sanityCache('board')),
   ])
 
@@ -64,6 +64,7 @@ export default async function BoardsPage({ params }: Props) {
       <BoardsGridClient
         title={settings?.title || t('title')}
         allLabel={t('all')}
+        showFilters={settings?.showFilters !== false}
         series={series}
         boards={boards}
       />

@@ -20,19 +20,11 @@ export const boardsPageSettings = defineType({
       group: 'basic',
     }),
     defineField({
-      name: 'groupBySeries',
-      title: 'Group boards by series',
+      name: 'showFilters',
+      title: 'Show series filters',
       type: 'boolean',
       initialValue: true,
-      description:
-        'On: a titled section per series (Carbon, Tiki…), each with its description. Off: every board in one grid.',
-      group: 'basic',
-    }),
-    defineField({
-      name: 'marquee',
-      title: 'Marquee (between series)',
-      type: 'sectionMarquee',
-      description: 'Scrolling band shown between the series. Only appears when boards are grouped by series.',
+      description: 'On: show the series filter pills (All / Carbon Series / Wood Series…). Off: hide them and list every board.',
       group: 'basic',
     }),
     defineField({

@@ -233,6 +233,24 @@ export const seriesQuery = defineQuery(`
   }[count(boards) > 0]
 `)
 
+// Lightweight series list for the /boards filter pills — id/name/slug only, no
+// nested boards (the board grid comes from boardsQuery), ordered, and limited to
+// series that actually have a board in this locale.
+export const boardSeriesListQuery = defineQuery(`
+  *[
+    _type == "series" && !(_id in path("drafts.**")) &&
+    count(*[_type == "board" && !(_id in path("drafts.**")) && language == $locale && references(^._id)]) > 0
+  ] | order(order asc, _createdAt asc) {
+    _id,
+    "name": coalesce(
+      name[language == $locale][0].value,
+      name[language == "en"][0].value,
+      name[0].value
+    ),
+    slug
+  }
+`)
+
 
 // Flat shape (kept identical to the old single-document result) sourced from the
 // three split singletons: seoSettings / contactSettings / footerSettings.
@@ -272,10 +290,9 @@ export const boardsPageSettingsQuery = defineQuery(`
     *[_type == "boardsPageSettings" && language == $locale && !(_id in path("drafts.**"))][0],
     *[_type == "boardsPageSettings" && language == "en" && !(_id in path("drafts.**"))][0]
   ) {
-    groupBySeries,
-    "marquee": marquee.items[]{ _key, text, accent },
-    ${SECTIONS_PROJECTION},
     title,
+    showFilters,
+    ${SECTIONS_PROJECTION},
     seoTitle,
     seoDescription,
     ogImage
