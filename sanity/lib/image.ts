@@ -1,6 +1,7 @@
 import { createImageUrlBuilder } from '@sanity/image-url'
 import type { SanityImageSource } from '@sanity/image-url'
 import { client } from './client'
+import { heroWidths } from '@/lib/hero-srcset'
 
 const builder = createImageUrlBuilder(client)
 
@@ -32,10 +33,6 @@ export function resolveHeroImage(image: { asset?: unknown } | null | undefined):
     : null
 }
 
-// Candidate widths for full-bleed hero <picture> srcsets (cap matches deviceSizes).
-const HERO_DESKTOP_WIDTHS = [828, 1080, 1200, 1536, 1920]
-const HERO_MOBILE_WIDTHS = [375, 640, 750, 828, 1080, 1200]
-
 export type HeroSrcSets = { fallbackSrc: string; desktopSrcSet: string; mobileSrcSet: string }
 
 /**
@@ -44,10 +41,15 @@ export type HeroSrcSets = { fallbackSrc: string; desktopSrcSet: string; mobileSr
  * - mobile: width + height + fit=crop, so a portrait box is cropped around the
  *   HOTSPOT (the builder emits the crop rect + focal point) instead of the browser
  *   upscaling a landscape via object-fit:cover.
- * `mobileRatio` is the portrait box's height / width (e.g. 466/375 for BasicHero,
- * 812/375 for the full-screen homepage hero). Pass a source that has an asset.
+ * Widths are capped to the source's real pixels (see lib/hero-srcset) so a
+ * landscape source behind a tall mobile box is never upscaled into a blurry,
+ * oversized file. `mobileRatio` is the portrait box's height / width (e.g.
+ * 466/375 for BasicHero, 812/375 for the full-screen heroes). Pass a source with
+ * an asset.
  */
 export function heroImageSrcSets(source: SanityImageSource, mobileRatio: number): HeroSrcSets {
+  const { mobileWidths, desktopWidths } = heroWidths(source, mobileRatio)
+
   const desktop = (w: number) => urlFor(source).width(w).quality(85).auto('format').url()
   const mobile = (w: number) =>
     urlFor(source)
@@ -58,8 +60,8 @@ export function heroImageSrcSets(source: SanityImageSource, mobileRatio: number)
       .auto('format')
       .url()
   return {
-    fallbackSrc: desktop(1920),
-    desktopSrcSet: HERO_DESKTOP_WIDTHS.map((w) => `${desktop(w)} ${w}w`).join(', '),
-    mobileSrcSet: HERO_MOBILE_WIDTHS.map((w) => `${mobile(w)} ${w}w`).join(', '),
+    fallbackSrc: desktop(desktopWidths[desktopWidths.length - 1] ?? 1920),
+    desktopSrcSet: desktopWidths.map((w) => `${desktop(w)} ${w}w`).join(', '),
+    mobileSrcSet: mobileWidths.map((w) => `${mobile(w)} ${w}w`).join(', '),
   }
 }
