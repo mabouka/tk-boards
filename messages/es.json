@@ -61,6 +61,7 @@
   },
   "boards": {
     "title": "Boards",
+    "all": "Todos",
     "view_board": "Ver board",
     "specs": "Especificaciones",
     "weight": "Peso",

@@ -61,6 +61,7 @@
   },
   "boards": {
     "title": "Boards",
+    "all": "All",
     "view_board": "View Board",
     "specs": "Specs",
     "weight": "Weight",
