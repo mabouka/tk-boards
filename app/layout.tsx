@@ -66,7 +66,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth" className={`${spaceMono.variable} ${spaceGrotesk.variable} ${integralCF.variable}`}>
-      <body>{children}</body>
+      {/* suppressHydrationWarning: browser extensions (password managers, form
+          fillers…) inject attributes like __processed_<uuid>__ onto <body> before
+          React hydrates, which otherwise trips a hydration mismatch. This only
+          suppresses the warning for <body>'s own attributes, not its children. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }

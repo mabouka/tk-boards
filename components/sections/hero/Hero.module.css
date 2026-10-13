@@ -65,3 +65,11 @@
   bottom: 80px;
 }
 
+/* Mobile: drop the desktop grid offset — content spans full width with a plain
+   16px side gutter (--gutter is 16px at ≤639px). */
+@media (max-width: 639px) {
+  .hero__content {
+    margin-inline: var(--gutter);
+  }
+}
+
