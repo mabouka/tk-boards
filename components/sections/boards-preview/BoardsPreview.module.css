@@ -59,6 +59,17 @@
   flex-shrink: 0;
 }
 
+/* col(3) is a 3-of-12-column width — four cards across on desktop, but on a
+   narrow screen that collapses to a ~100px sliver (clipped card). Below desktop,
+   give each card a readable carousel width. The track is min-width:100% so it
+   grows past the viewport when cards overflow (the row scrolls from the first
+   card); a single card still centers via the base justify-content. */
+@media (max-width: 1023px) {
+  .boards__track > a {
+    width: clamp(240px, 62vw, 360px);
+  }
+}
+
 /* ── Discover CTA ── */
 
 .boards__discover {
