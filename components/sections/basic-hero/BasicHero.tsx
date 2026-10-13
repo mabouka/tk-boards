@@ -1,5 +1,5 @@
 import type { SanityImageSource } from '@sanity/image-url'
-import { urlFor, hasAsset } from '@/sanity/lib/image'
+import { heroImageSrcSets, hasAsset } from '@/sanity/lib/image'
 import styles from './BasicHero.module.css'
 
 type Props = {
@@ -15,10 +15,6 @@ type Props = {
 
 // Portrait crop ratio for the mobile hero: 375 × 466 (what the design asks for).
 const MOBILE_RATIO = 466 / 375
-const MOBILE_WIDTHS = [375, 640, 750, 828, 1080, 1200]
-const DESKTOP_WIDTHS = [828, 1080, 1200, 1536, 1920]
-
-const srcSet = (variants: string[]) => variants.join(', ')
 
 /**
  * Full-bleed image hero with a centered title + optional subtitle (Figma 1422-1091).
@@ -41,37 +37,17 @@ export default function BasicHero({
   fallbackUrl = '/samples/channel.jpg',
 }: Props) {
   const src = hasAsset(image) ? (image as SanityImageSource) : null
-
-  // Desktop: width-only — keeps the editorial crop, no forced aspect.
-  // Mobile: width+height+crop — forces the 375:466 box around the hotspot.
-  const desktopSrcSet = src
-    ? srcSet(DESKTOP_WIDTHS.map((w) => `${urlFor(src).width(w).quality(85).auto('format').url()} ${w}w`))
-    : undefined
-  const mobileSrcSet = src
-    ? srcSet(
-        MOBILE_WIDTHS.map(
-          (w) =>
-            `${urlFor(src)
-              .width(w)
-              .height(Math.round(w * MOBILE_RATIO))
-              .fit('crop')
-              .quality(85)
-              .auto('format')
-              .url()} ${w}w`
-        )
-      )
-    : undefined
-  const fallbackSrc = src ? urlFor(src).width(1920).quality(85).auto('format').url() : fallbackUrl
+  const sets = src ? heroImageSrcSets(src, MOBILE_RATIO) : null
 
   return (
     <section className={styles.hero}>
       <div className={styles.bg}>
         <picture>
-          {src && <source media="(max-width: 700px)" srcSet={mobileSrcSet} sizes="100vw" />}
+          {sets && <source media="(max-width: 700px)" srcSet={sets.mobileSrcSet} sizes="100vw" />}
           <img
-            src={fallbackSrc}
-            srcSet={desktopSrcSet}
-            sizes={src ? '100vw' : undefined}
+            src={sets ? sets.fallbackSrc : fallbackUrl}
+            srcSet={sets?.desktopSrcSet}
+            sizes={sets ? '100vw' : undefined}
             alt={imageAlt}
             className={styles.image}
             fetchPriority="high"

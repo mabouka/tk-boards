@@ -19,9 +19,12 @@
 }
 
 .hero__bg_image {
-  /* object-fit/position gérés via style prop sur le composant Image */
-
-
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .hero__overlay {
