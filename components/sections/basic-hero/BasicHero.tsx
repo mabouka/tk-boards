@@ -16,7 +16,17 @@ export default function BasicHero({ title, subtitle, imageUrl, imageAlt = '' }: 
   return (
     <section className={styles.hero}>
       <div className={styles.bg}>
-        <Image src={imageUrl} alt={imageAlt} fill priority sizes="100vw" className={styles.image} />
+        {/* On mobile the hero is portrait-ish, so object-fit: cover crops by HEIGHT —
+            100vw (a width hint) under-serves the candidate and the image looks blurry.
+            Request the largest candidate there so the vertical crop stays sharp. */}
+        <Image
+          src={imageUrl}
+          alt={imageAlt}
+          fill
+          priority
+          sizes="(max-width: 700px) 200vw, 100vw"
+          className={styles.image}
+        />
         <div className={styles.overlay} aria-hidden="true" />
       </div>
       <div className={styles.content}>
