@@ -56,6 +56,11 @@ export const navigation = defineType({
               name: 'internalLink',
               title: 'Internal page',
               type: 'reference',
+              // Weak on purpose: a menu link is presentational, so it must never
+              // block unpublishing/retiring the page it points to. When the target
+              // is unpublished the href resolves to null and the item is filtered
+              // out of the menu (see toNavItems + Footer), same as featured boards.
+              weak: true,
               to: [
                 { type: 'page' },
                 { type: 'homePage' },
