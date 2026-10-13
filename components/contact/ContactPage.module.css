@@ -348,3 +348,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Mobile: the card drops its frame — no border, no padding, so the form sits
+   flush within the page gutter. */
+@media (max-width: 599px) {
+  .card {
+    padding: 0;
+    border: 0;
+  }
+}
