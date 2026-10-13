@@ -1,5 +1,4 @@
-import Image from 'next/image'
-import { urlFor, hasAsset } from '@/sanity/lib/image'
+import { heroImageSrcSets, hasAsset } from '@/sanity/lib/image'
 import type { SanityImage } from '@/sanity/lib/types'
 import ScrollIndicator from '@/components/ui/ScrollIndicator'
 import styles from './HeroBoard.module.css'
@@ -10,20 +9,31 @@ type Props = {
   backgroundImage?: SanityImage | null
 }
 
+// Full-screen (100svh) → the mobile box is a tall portrait (~375×812).
+const MOBILE_RATIO = 812 / 375
+
 export default function HeroBoard({ title, tagline, backgroundImage }: Props) {
+  // Art direction: phones get a portrait crop around the hotspot (honours the
+  // editorial crop + focal point via urlFor), desktop keeps the wide image. Only
+  // the matching <source> is fetched, eagerly + high fetchpriority (hero = LCP).
+  const sets = hasAsset(backgroundImage) ? heroImageSrcSets(backgroundImage, MOBILE_RATIO) : null
+
   return (
     <div className={styles.heroBoard}>
       <div className={styles.heroBoard__bg} aria-hidden="true">
-        {hasAsset(backgroundImage) && (
-          <Image
-            src={urlFor(backgroundImage).width(1920).url()}
-            alt=""
-            fill
-            quality={85}
-            priority
-            style={{ objectFit: 'cover', objectPosition: 'center' }}
-            sizes="100vw"
-          />
+        {sets && (
+          <picture>
+            <source media="(max-width: 700px)" srcSet={sets.mobileSrcSet} sizes="100vw" />
+            <img
+              src={sets.fallbackSrc}
+              srcSet={sets.desktopSrcSet}
+              sizes="100vw"
+              alt=""
+              className={styles.heroBoard__bg_image}
+              fetchPriority="high"
+              decoding="async"
+            />
+          </picture>
         )}
       </div>
 
