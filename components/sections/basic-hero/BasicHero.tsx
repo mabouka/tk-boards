@@ -1,10 +1,16 @@
+import type { SanityImageSource } from '@sanity/image-url'
+import { urlFor, hasAsset } from '@/sanity/lib/image'
 import styles from './BasicHero.module.css'
 
 type Props = {
   title: string
   subtitle?: string
-  imageUrl: string
+  /** The Sanity image object (asset + crop + hotspot) — NOT a pre-resolved URL,
+   *  so urlFor can honour the editor's crop & focal point. */
+  image?: { asset?: unknown } | null
   imageAlt?: string
+  /** Shown when the field has no uploaded asset. */
+  fallbackUrl?: string
 }
 
 // Portrait crop ratio for the mobile hero: 375 × 466 (what the design asks for).
@@ -12,29 +18,7 @@ const MOBILE_RATIO = 466 / 375
 const MOBILE_WIDTHS = [375, 640, 750, 828, 1080, 1200]
 const DESKTOP_WIDTHS = [828, 1080, 1200, 1536, 1920]
 
-// Build a Sanity CDN variant of `url`: resize to `w`, and when `h` is given also
-// crop to that box (fit=crop) — the original ?q=…&auto=format are preserved. A
-// non-Sanity src (local sample fallback) can't be transformed, so it passes through.
-function variant(url: string, w: number, h?: number): string {
-  try {
-    const u = new URL(url)
-    const p = u.searchParams
-    p.set('w', String(w))
-    if (h) {
-      p.set('h', String(h))
-      p.set('fit', 'crop')
-    } else {
-      p.delete('h')
-      p.delete('fit')
-    }
-    return u.toString()
-  } catch {
-    return url
-  }
-}
-
-const srcSet = (url: string, widths: number[], portrait: boolean) =>
-  widths.map((w) => `${variant(url, w, portrait ? Math.round(w * MOBILE_RATIO) : undefined)} ${w}w`).join(', ')
+const srcSet = (variants: string[]) => variants.join(', ')
 
 /**
  * Full-bleed image hero with a centered title + optional subtitle (Figma 1422-1091).
@@ -43,19 +27,51 @@ const srcSet = (url: string, widths: number[], portrait: boolean) =>
  * Art direction via <picture>: phones (≤700px) get a 375×466 portrait CROP of the
  * source (≈750×932 @2×, ~10× lighter than the landscape), desktops get the wide
  * image. The browser downloads only the matching <source> — eagerly + high
- * fetchpriority, since the hero is the LCP element. object-fit:cover on a landscape
- * source used to upscale (blur) on the tall mobile box; the real crop fixes that.
+ * fetchpriority, since the hero is the LCP element.
+ *
+ * Both srcsets are built with urlFor().width().height().fit('crop'), so Sanity's
+ * editorial crop (rect) AND hotspot (focal point) are respected — a hand-rolled
+ * ?w=…&h=…&fit=crop on a pre-resolved URL would center-crop and ignore both.
  */
-export default function BasicHero({ title, subtitle, imageUrl, imageAlt = '' }: Props) {
+export default function BasicHero({
+  title,
+  subtitle,
+  image,
+  imageAlt = '',
+  fallbackUrl = '/samples/channel.jpg',
+}: Props) {
+  const src = hasAsset(image) ? (image as SanityImageSource) : null
+
+  // Desktop: width-only — keeps the editorial crop, no forced aspect.
+  // Mobile: width+height+crop — forces the 375:466 box around the hotspot.
+  const desktopSrcSet = src
+    ? srcSet(DESKTOP_WIDTHS.map((w) => `${urlFor(src).width(w).quality(85).auto('format').url()} ${w}w`))
+    : undefined
+  const mobileSrcSet = src
+    ? srcSet(
+        MOBILE_WIDTHS.map(
+          (w) =>
+            `${urlFor(src)
+              .width(w)
+              .height(Math.round(w * MOBILE_RATIO))
+              .fit('crop')
+              .quality(85)
+              .auto('format')
+              .url()} ${w}w`
+        )
+      )
+    : undefined
+  const fallbackSrc = src ? urlFor(src).width(1920).quality(85).auto('format').url() : fallbackUrl
+
   return (
     <section className={styles.hero}>
       <div className={styles.bg}>
         <picture>
-          <source media="(max-width: 700px)" srcSet={srcSet(imageUrl, MOBILE_WIDTHS, true)} sizes="100vw" />
+          {src && <source media="(max-width: 700px)" srcSet={mobileSrcSet} sizes="100vw" />}
           <img
-            src={variant(imageUrl, 1920)}
-            srcSet={srcSet(imageUrl, DESKTOP_WIDTHS, false)}
-            sizes="100vw"
+            src={fallbackSrc}
+            srcSet={desktopSrcSet}
+            sizes={src ? '100vw' : undefined}
             alt={imageAlt}
             className={styles.image}
             fetchPriority="high"

@@ -5,7 +5,6 @@ import { sanityCache } from '@/sanity/lib/fetch'
 import { loadQuery } from '@/sanity/lib/loadQuery'
 import { tkIdPageByLocaleQuery } from '@/sanity/lib/queries'
 import type { TkIdPageByLocaleQueryResult } from '@/sanity.types'
-import { resolveHeroImage } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import BasicHero from '@/components/sections/basic-hero/BasicHero'
 import PageBuilder from '@/components/sections/page-builder/PageBuilder'
@@ -36,14 +35,12 @@ export default async function TkIdPage({ params }: Props) {
   // Draft-aware read (Presentation overlays in preview; published + cache otherwise).
   const page = await loadQuery<TkIdPageByLocaleQueryResult>(tkIdPageByLocaleQuery, { locale }, ['tkIdPage'])
 
-  const heroImageUrl = resolveHeroImage(page?.heroImage) ?? '/samples/channel.jpg'
-
   return (
     <main>
       <BasicHero
         title={page?.heroTitle || page?.title || 'TK ID'}
         subtitle={page?.heroSubtitle || undefined}
-        imageUrl={heroImageUrl}
+        image={page?.heroImage}
         imageAlt={page?.heroImage?.alt || ''}
       />
       {page?.sections && page.sections.length > 0 && (

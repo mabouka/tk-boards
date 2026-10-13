@@ -18,7 +18,6 @@ import type {
   FaqPageQueryResult,
   OurStoryPageQueryResult,
 } from '@/sanity.types'
-import { resolveHeroImage } from '@/sanity/lib/image'
 import { buildMetadata, getSiteSettings } from '@/lib/metadata'
 import BigTitle from '@/components/ui/placeholder/BigTitle'
 import FaqPage from '@/components/faq/FaqPage'
@@ -90,7 +89,6 @@ export default async function CmsPage({ params }: Props) {
       loadQuery<ContactPageQueryResult>(contactPageQuery, { slug, locale }, ['contactPage']),
       loadQuery<ContactSettingsQueryResult>(contactSettingsQuery, {}, ['contactSettings']),
     ])
-    const heroImageUrl = resolveHeroImage(contact?.heroImage)
 
     return (
       <>
@@ -98,7 +96,7 @@ export default async function CmsPage({ params }: Props) {
         <ContactPage
           heroTitle={contact?.heroTitle}
           heroSubtitle={contact?.heroSubtitle}
-          heroImageUrl={heroImageUrl}
+          heroImage={contact?.heroImage}
           heroImageAlt={contact?.heroImage?.alt}
           introEyebrow={contact?.introEyebrow}
           introTitle={contact?.introTitle}

@@ -14,7 +14,7 @@ type Sections = NonNullable<ContactPageQueryResult>['sections']
 type Props = {
   heroTitle?: string | null
   heroSubtitle?: string | null
-  heroImageUrl?: string | null
+  heroImage?: NonNullable<ContactPageQueryResult>['heroImage']
   heroImageAlt?: string | null
   introEyebrow?: string | null
   introTitle?: string | null
@@ -34,7 +34,7 @@ const DEFAULT_INTRO = [
 export default async function ContactPage({
   heroTitle,
   heroSubtitle,
-  heroImageUrl,
+  heroImage,
   heroImageAlt,
   introEyebrow,
   introTitle,
@@ -63,7 +63,7 @@ export default async function ContactPage({
       <BasicHero
         title={heroTitle || 'Contact us'}
         subtitle={heroSubtitle || 'Drop us a line'}
-        imageUrl={heroImageUrl || '/samples/channel.jpg'}
+        image={heroImage}
         imageAlt={heroImageAlt || ''}
       />
 
