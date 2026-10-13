@@ -118,6 +118,10 @@ export const navigation = defineType({
               title: 'Board',
               type: 'reference',
               to: [{ type: 'board' }],
+              // Weak on purpose: featuring a board is presentational, so it must
+              // never block unpublishing/retiring that board. A dangling feature is
+              // filtered out on the site (the dereferenced name/slug comes back null).
+              weak: true,
               // Only required on Featured-boards menus — otherwise this field is
               // hidden and any leftover items shouldn't block publishing.
               validation: (r) =>
